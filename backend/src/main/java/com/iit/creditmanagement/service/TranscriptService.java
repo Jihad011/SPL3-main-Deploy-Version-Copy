@@ -65,13 +65,13 @@ public class TranscriptService {
             document.add(new Paragraph("\n\n"));
 
             // Table
-            PdfPTable table = new PdfPTable(5);
+            PdfPTable table = new PdfPTable(6);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{2f, 4f, 1.5f, 1.5f, 1.5f});
+            table.setWidths(new float[]{2.5f, 2f, 4f, 1.5f, 1.5f, 1.5f});
 
             // Table Headers
             Font headFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
-            String[] headers = {"Course Code", "Course Name", "Credits", "Grade", "GP"};
+            String[] headers = {"Semester", "Course Code", "Course Name", "Credits", "Grade", "GP"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -86,12 +86,14 @@ public class TranscriptService {
             for (Grade grade : grades) {
                 if (grade.getGradeLetter() == null) continue; // Skip incomplete courses
 
+                String semesterLabel = grade.getEnrollment().getSemester().getLabel();
                 String courseCode = grade.getEnrollment().getCourse().getCode();
                 String courseName = grade.getEnrollment().getCourse().getName();
                 int credits = grade.getEnrollment().getCourse().getCreditHours();
                 String letter = grade.getGradeLetter().name().replace("_PLUS", "+").replace("_MINUS", "-");
                 BigDecimal gp = grade.getGradePoint();
 
+                table.addCell(createCell(semesterLabel, Element.ALIGN_CENTER));
                 table.addCell(createCell(courseCode, Element.ALIGN_CENTER));
                 table.addCell(createCell(courseName, Element.ALIGN_LEFT));
                 table.addCell(createCell(String.valueOf(credits), Element.ALIGN_CENTER));
