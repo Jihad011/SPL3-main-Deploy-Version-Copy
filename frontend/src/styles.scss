@@ -8,13 +8,13 @@
 
 /* ✨ CSS Variables — Masterclass Design Tokens ✨ */
 :root {
-  /* Midnight Blue Premium Dark Theme Base */
-  --bg-base:        #0B1121; /* Deep rich midnight blue */
-  --bg-surface:     #111827; /* Slate 900 for surface */
-  --bg-elevated:    #1E293B; /* Slate 800 */
-  --bg-card:        #111827;
-  --bg-card-hover:  #1E293B;
-  --bg-glass:       #0B1121;
+  /* Onyx & Zinc Premium Dark Theme Base */
+  --bg-base:        #000000; /* Pure Black for massive contrast */
+  --bg-surface:     #18181B; /* Zinc 900 for cards and modals */
+  --bg-elevated:    #27272A; /* Zinc 800 for hovers/elevations */
+  --bg-card:        #18181B;
+  --bg-card-hover:  #27272A;
+  --bg-glass:       rgba(0, 0, 0, 0.7); /* Sleek translucent black */
   
   /* Blurs (kept for some elements but much more subtle) */
   --blur-md:        blur(12px);
