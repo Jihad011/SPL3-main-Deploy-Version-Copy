@@ -6,91 +6,92 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
-/* ✨ CSS Variables — Masterclass Design Tokens ✨ */
+/* ✨ CSS Variables — Masterclass Design Tokens (Enterprise Edition) ✨ */
 :root {
-  /* Onyx & Zinc Premium Dark Theme Base */
-  --bg-base:        #000000; /* Pure Black for massive contrast */
-  --bg-surface:     #18181B; /* Zinc 900 for cards and modals */
-  --bg-elevated:    #27272A; /* Zinc 800 for hovers/elevations */
-  --bg-card:        #18181B;
-  --bg-card-hover:  #27272A;
-  --bg-glass:       rgba(0, 0, 0, 0.7); /* Sleek translucent black */
+  /* Enterprise Light Theme Base (Clean & Professional) */
+  --bg-base:        #F8FAFC; /* Slate 50 - Soft off-white background */
+  --bg-surface:     #FFFFFF; /* Pure white for sidebar/header */
+  --bg-elevated:    #F1F5F9; /* Slate 100 */
+  --bg-card:        #FFFFFF;
+  --bg-card-hover:  #F8FAFC;
+  --bg-glass:       rgba(255, 255, 255, 0.95);
   
-  /* Blurs (kept for some elements but much more subtle) */
-  --blur-md:        blur(12px);
-  --blur-lg:        blur(16px);
-  --blur-xl:        blur(24px);
+  /* Blurs */
+  --blur-md:        blur(8px);
+  --blur-lg:        blur(12px);
+  --blur-xl:        blur(16px);
 
-  /* Sophisticated Accents */
-  --cyan:           #0EA5E9; /* Sky Blue mapping for legacy vars */
-  --cyan-dark:      #0284C7;
-  --purple:         #4F46E5; /* Indigo mapping */
-  --purple-dark:    #4338CA;
-  --pink:           #7C3AED; /* Violet mapping */
-  --blue:           #3B82F6;
+  /* The Iconic Figma Design System Accents */
+  --cyan:           #1BC47D; /* Figma Green */
+  --cyan-dark:      #149c63; 
+  --purple:         #7B61FF; /* Figma Purple */
+  --purple-dark:    #5c48bf; 
+  --pink:           #F24822; /* Figma Red/Orange */
+  --blue:           #18A0FB; /* Figma Blue */
 
-  /* Semantic Accents */
-  --accent-primary:   #4F46E5; /* Indigo */
-  --accent-secondary: #0EA5E9; /* Sky */
-  --accent-green:     #10B981;
-  --accent-red:       #EF4444;
-  --accent-orange:    #F59E0B;
-  --accent-yellow:    #FBBF24;
+  /* Semantic Accents (Figma Palette) */
+  --accent-primary:   #18A0FB; /* Figma Blue */
+  --accent-secondary: #7B61FF; /* Figma Purple */
+  --accent-green:     #1BC47D; /* Figma Green */
+  --accent-red:       #F24822; /* Figma Red */
+  --accent-orange:    #FFCD29; /* Figma Yellow */
+  --accent-yellow:    #FFCD29; /* Figma Yellow */
 
   /* Typography / Text */
-  --text-primary:   #FAFAFA; /* Crisp white */
-  --text-secondary: #A1A1AA; /* Muted silver */
-  --text-muted:     #71717A;
+  --text-primary:   #0F172A; /* Slate 900 - High contrast */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-muted:     #64748B; /* Slate 500 */
   --text-shadow:    none;
 
-  /* Borders & Glows */
-  --border:         rgba(255, 255, 255, 0.08);
-  --border-light:   rgba(255, 255, 255, 0.12);
-  --border-glow:    rgba(255, 255, 255, 0.15);
-  --glow-cyan:      0 0 30px rgba(14, 165, 233, 0.15), 0 0 60px rgba(14, 165, 233, 0.05); /* Mapped */
-  --glow-purple:    0 0 30px rgba(79, 70, 229, 0.15), 0 0 60px rgba(79, 70, 229, 0.05); /* Mapped */
+  /* Borders & Shadows (Subtle & Clean) */
+  --border:         #E2E8F0; /* Slate 200 */
+  --border-light:   #F1F5F9; /* Slate 100 */
+  --border-glow:    rgba(30, 58, 138, 0.1);
+  --glow-cyan:      none;
+  --glow-purple:    none;
 
-  /* Linear Shadows (Sharp & Deep) */
-  --shadow-sm:      0 1px 2px rgba(0,0,0,0.5);
-  --shadow-md:      0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.5);
-  --shadow-lg:      0 10px 15px -3px rgba(0,0,0,0.6), 0 4px 6px -4px rgba(0,0,0,0.6);
-  --shadow-xl:      0 20px 25px -5px rgba(0,0,0,0.7), 0 8px 10px -6px rgba(0,0,0,0.7);
-  --shadow-card:    0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.3);
+  /* Linear Shadows */
+  --shadow-sm:      0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md:      0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:      0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.025); /* Flat modern cards */
 
   /* Structure */
-  --sidebar-width:  280px;
+  --sidebar-width:  260px;
   --header-height:  72px;
-  --radius-xl:      24px;
-  --radius:         16px;
-  --radius-sm:      10px;
-  --radius-xs:      6px;
+  --radius-xl:      16px;
+  --radius:         12px;
+  --radius-sm:      8px;
+  --radius-xs:      4px;
 
-  /* Gradients */
-  --grad-primary:   linear-gradient(135deg, #4F46E5, #0EA5E9);
-  --grad-cyan:      linear-gradient(135deg, #0EA5E9, #0369A1); /* Mapped */
-  --grad-purple:    linear-gradient(135deg, #4F46E5, #3730A3); /* Mapped */
-  --grad-green:     linear-gradient(135deg, #10B981, #059669);
-  --grad-red:       linear-gradient(135deg, #EF4444, #DC2626);
-  --grad-orange:    linear-gradient(135deg, #F59E0B, #D97706);
-  --grad-dark:      linear-gradient(135deg, rgba(79,70,229,0.1), rgba(14,165,233,0.1));
+  /* Figma Gradients */
+  --grad-primary:   linear-gradient(135deg, #18A0FB, #7B61FF); /* Blue to Purple */
+  --grad-cyan:      linear-gradient(135deg, #1BC47D, #18A0FB); 
+  --grad-purple:    linear-gradient(135deg, #7B61FF, #F24822);
+  --grad-green:     linear-gradient(135deg, #1BC47D, #149c63);
+  --grad-red:       linear-gradient(135deg, #F24822, #c2391b);
+  --grad-orange:    linear-gradient(135deg, #FFCD29, #F24822);
+  --grad-dark:      linear-gradient(135deg, rgba(24,160,251,0.08), rgba(123,97,255,0.08));
 }
 
-html[data-theme='light'] {
-  --bg-base:        #F8FAFC;
-  --bg-surface:     #FFFFFF;
-  --bg-elevated:    #F1F5F9;
-  --bg-card:        rgba(255,255,255,0.9);
-  --bg-card-hover:  #FFFFFF;
-  --bg-glass:       rgba(255,255,255,0.95);
-  --text-primary:   #0F172A;
-  --text-secondary: #475569;
-  --text-muted:     #64748b;
+html[data-theme='dark'] {
+  --bg-base:        #0B0F19; /* Deep Slate */
+  --bg-surface:     #111827; /* Gray 900 */
+  --bg-elevated:    #1F2937; /* Gray 800 */
+  --bg-card:        #111827;
+  --bg-card-hover:  #1F2937;
+  --bg-glass:       rgba(17, 24, 39, 0.85);
+  --text-primary:   #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted:     #6B7280;
   --text-shadow:    none;
-  --border:         rgba(15,23,42,0.1);
-  --border-glow:    rgba(79, 70, 229, 0.2);
-  --shadow:         0 15px 40px rgba(15,23,42,0.08), 0 5px 15px rgba(15,23,42,0.03);
-  --shadow-card:    0 10px 25px rgba(15,23,42,0.05);
-  --grad-dark:      linear-gradient(135deg, rgba(79,70,229,0.08), rgba(14,165,233,0.08));
+  --border:         #374151;
+  --border-light:   #1F2937;
+  --border-glow:    rgba(59, 130, 246, 0.2);
+  --shadow:         0 15px 40px rgba(0,0,0,0.2);
+  --shadow-card:    0 4px 6px -1px rgba(0,0,0,0.2);
+  --grad-dark:      linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.1));
 }
 
 /* ✨ Base Reset & Typography ✨ */
@@ -562,11 +563,11 @@ a:hover { opacity: 0.85; }
 }
 
 .auth-card {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-glass);
   backdrop-filter: var(--blur-xl);
   -webkit-backdrop-filter: var(--blur-xl);
   border: 1px solid var(--border-light);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid var(--border);
   border-radius: 24px;
   padding: 2.5rem;
   width: 100%;
