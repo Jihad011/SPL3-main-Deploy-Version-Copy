@@ -1,0 +1,16 @@
+# Frontend .gitignore
+node_modules/
+dist/
+.angular/
+.cache/
+*.env
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db

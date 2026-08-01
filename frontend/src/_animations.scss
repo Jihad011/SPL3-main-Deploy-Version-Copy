@@ -1,0 +1,118 @@
+/* ── Global UI Animations & Enhancements ─────────────────────── */
+
+/* Skeleton Loading State */
+.skeleton-box {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  z-index: 1;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.12) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
+  content: '';
+  z-index: 2;
+}
+
+html[data-theme='light'] .skeleton-box {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme='light'] .skeleton-box::after {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.8) 20%,
+    rgba(255, 255, 255, 0.9) 60%,
+    rgba(255, 255, 255, 0)
+  );
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Micro-interactions: Advanced Button states */
+.btn:active, .btn-primary:active, .btn-secondary:active, .btn-outline:active, .btn-danger:active {
+  transform: scale(0.97);
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glassmorphism Card Enhancements */
+.stat-card, .glass-card, .data-card {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.stat-card:hover, .glass-card:hover, .data-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+/* Angular Route Transitions wrapper */
+.route-transition-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Next-Level Enhancements ───────────────────────────────── */
+
+/* Magnetic-style Button Hover */
+.btn-primary:hover, .btn-secondary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-card), 0 0 20px rgba(6,182,212,0.3);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Glass Modal Animations */
+@keyframes modal-pop {
+  0% { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes modal-backdrop-fade {
+  0% { opacity: 0; backdrop-filter: blur(0px); }
+  100% { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+.modal-overlay {
+  animation: modal-backdrop-fade 0.3s ease-out forwards;
+}
+
+.modal-card {
+  animation: modal-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(168,85,247,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Advanced Data Table Hover */
+.data-table tbody tr {
+  transition: background-color 0.2s, transform 0.2s;
+}
+.data-table tbody tr:hover {
+  background-color: rgba(255,255,255,0.02);
+  transform: scale(1.005) translateX(4px);
+}
+html[data-theme='light'] .data-table tbody tr:hover {
+  background-color: rgba(0,0,0,0.02);
+}

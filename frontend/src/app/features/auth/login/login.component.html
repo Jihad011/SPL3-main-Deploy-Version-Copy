@@ -1,0 +1,83 @@
+<div class="auth-container">
+  <div class="auth-split">
+    <!-- Left branding panel -->
+    <div class="auth-left">
+      <div class="auth-brand-icon auth-brand-mark"><app-icon name="graduation-cap" [size]="30" /></div>
+      <h1 class="auth-brand-title">MIT Open Credit Management</h1>
+      <p class="auth-brand-sub">
+        The official academic credit system for IIT, University of Dhaka. Manage enrollments, grades, and fees in one place.
+      </p>
+      <ul class="auth-features">
+        <li>Automated CGPA & grade calculation</li>
+        <li>Real-time seat capacity tracking</li>
+        <li>Role-based secure access control</li>
+        <li>Digital fee management</li>
+      </ul>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <h2 class="auth-form-title">Welcome back</h2>
+      <p class="auth-form-sub">Sign in to continue to your portal</p>
+
+      <div *ngIf="error()" class="alert alert-error">
+        <app-icon name="alert-triangle" [size]="18" /> {{ error() }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-shell">
+            <span class="input-icon"><app-icon name="users" [size]="17" /></span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="you@iit.du.ac.bd"
+              [class.invalid]="email.invalid && email.touched"
+              autocomplete="email" />
+          </div>
+          <span class="field-error" *ngIf="email.invalid && email.touched">
+            {{ email.hasError('required') ? 'Email is required' : 'Invalid email format' }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-shell">
+            <span class="input-icon"><app-icon name="settings" [size]="17" /></span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              [class.invalid]="password.invalid && password.touched"
+              autocomplete="current-password" />
+            <button
+              type="button"
+              class="input-action"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+              <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="17" />
+            </button>
+          </div>
+          <span class="field-error" *ngIf="password.invalid && password.touched">
+            Password must be at least 6 characters
+          </span>
+        </div>
+
+        <button type="submit" class="btn-primary btn-neon" [disabled]="loading()" style="margin-top:0.5rem">
+          <span *ngIf="!loading()" class="button-label">
+            Sign in <app-icon name="arrow-right" [size]="17" />
+          </span>
+          <span *ngIf="loading()" class="spinner-sm"></span>
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        Don't have an account?
+        <a routerLink="/auth/register">Register here</a>
+      </p>
+    </div>
+  </div>
+</div>

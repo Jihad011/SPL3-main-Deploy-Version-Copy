@@ -1,0 +1,98 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-eyebrow">Academic performance</div>
+      <h1 class="page-title text-gradient-flow">Academic Results</h1>
+      <p class="page-subtitle">Your full academic transcript by semester</p>
+    </div>
+    <div class="cgpa-badge" *ngIf="!loading() && grades().length > 0">
+      CGPA: <strong>{{ cgpa() | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+  <div class="alert alert-error" *ngIf="error()">
+    <app-icon name="alert-triangle" [size]="18"></app-icon>{{ error() }}
+  </div>
+
+  <div class="stats-grid" *ngIf="!loading() && grades().length > 0">
+    <div class="stat-card stat-card--blue">
+      <div class="stat-icon"><app-icon name="chart" [size]="22"></app-icon></div>
+      <div class="stat-value summary-value-sm">{{ cgpa() | number:'1.2-2' }}</div>
+      <div class="stat-label">Cumulative GPA</div>
+    </div>
+    <div class="stat-card stat-card--green">
+      <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
+      <div class="stat-value summary-value-sm">{{ completedCourses() }}</div>
+      <div class="stat-label">Graded Courses</div>
+    </div>
+    <div class="stat-card stat-card--purple">
+      <div class="stat-icon"><app-icon name="book-open" [size]="22"></app-icon></div>
+      <div class="stat-value summary-value-sm">{{ earnedCredits() }}</div>
+      <div class="stat-label">Completed Credits</div>
+    </div>
+  </div>
+
+  <ng-container *ngFor="let sem of semesters()">
+    <div class="card semester-card semester-result-card card-glow-border">
+      <div class="card-header card-glow-border">
+        <div>
+          <div class="semester-title">{{ sem }}</div>
+          <div class="semester-gpa">Semester GPA: <strong>{{ getSemesterGpa(sem) }}</strong></div>
+        </div>
+        <div class="metric-chip">
+          <app-icon name="book-open" [size]="16"></app-icon>
+          {{ getSemesterGrades(sem).length }} course(s)
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Course Name</th>
+              <th>Credits</th>
+              <th>Midterm</th>
+              <th>Final</th>
+              <th>Total</th>
+              <th>Grade</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let g of getSemesterGrades(sem)">
+              <td><span class="code-badge">{{ g.courseCode }}</span></td>
+              <td><strong>{{ g.courseName }}</strong></td>
+              <td>{{ g.creditHours }}</td>
+              <td class="numeric">
+                {{ g.midtermMarks ?? '—' }}<span *ngIf="g.midtermMarks !== null" class="mark-denominator">/40</span>
+              </td>
+              <td class="numeric">
+                {{ g.finalMarks ?? '—' }}<span *ngIf="g.finalMarks !== null" class="mark-denominator">/60</span>
+              </td>
+              <td class="numeric">
+                <strong *ngIf="g.totalMarks !== null">{{ g.totalMarks }}</strong>
+                <span *ngIf="g.totalMarks === null" class="text-muted">—</span>
+              </td>
+              <td>
+                <span class="grade-badge" [class]="gradeClass(g.gradeLetter)">
+                  {{ g.gradeDisplay }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="g.gradePoint !== null" class="grade-point">{{ g.gradePoint }}</span>
+                <span *ngIf="g.gradePoint === null" class="text-muted">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="empty-state" *ngIf="!loading() && grades().length === 0">
+    <div class="empty-icon"><app-icon name="chart" [size]="28"></app-icon></div>
+    <h3>No results yet</h3>
+    <p>Your grades will appear here once teachers enter your marks.</p>
+  </div>
+</div>

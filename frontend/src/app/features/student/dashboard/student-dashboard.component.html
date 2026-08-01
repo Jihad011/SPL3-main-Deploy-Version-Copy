@@ -1,0 +1,82 @@
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title text-gradient-flow">Dashboard</h1>
+    <span class="semester-badge" *ngIf="dashboard()">{{ dashboard()!.currentSemester }}</span>
+  </div>
+
+  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <ng-container *ngIf="dashboard() as d">
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card--blue">
+        <div class="stat-icon">📖</div>
+        <div class="stat-value">{{ d.currentSemesterCredits }}<span class="stat-max">/{{ d.maxCreditsPerSemester }}</span></div>
+        <div class="stat-label">Credits This Semester</div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="creditPercent"></div>
+        </div>
+        <div class="stat-sub">{{ d.remainingCredits }} credits remaining</div>
+      </div>
+
+      <div class="stat-card stat-card--green">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ d.cgpa | number:'1.2-2' }}</div>
+        <div class="stat-label">CGPA</div>
+        <div class="stat-sub">{{ d.totalCreditsEarned }} credits · {{ d.totalCoursesCompleted }} courses</div>
+      </div>
+
+      <div class="stat-card" [class.stat-card--red]="d.unpaidFeeCount > 0" [class.stat-card--gray]="d.unpaidFeeCount === 0">
+        <div class="stat-icon">💳</div>
+        <div class="stat-value">৳{{ d.totalDues | number:'1.0-0' }}</div>
+        <div class="stat-label">Total Dues</div>
+        <div class="stat-sub">{{ d.unpaidFeeCount }} unpaid fee(s)</div>
+        <a routerLink="../dues" class="stat-link" *ngIf="d.unpaidFeeCount > 0">View dues →</a>
+      </div>
+
+      <div class="stat-card stat-card--purple">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">{{ d.currentEnrollments.length }}</div>
+        <div class="stat-label">Active Courses</div>
+        <div class="stat-sub">This semester</div>
+        <a routerLink="../courses" class="stat-link">Register more →</a>
+      </div>
+    </div>
+
+    <!-- Current Enrollments Table -->
+    <div class="card card-glow-border" *ngIf="d.currentEnrollments.length > 0">
+      <div class="card-header card-glow-border">
+        <h2 class="card-title card-glow-border">Current Semester Courses</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Course Code</th>
+              <th>Course Name</th>
+              <th>Credits</th>
+              <th>Status</th>
+              <th>Retake</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of d.currentEnrollments">
+              <td><span class="code-badge">{{ e.courseCode }}</span></td>
+              <td>{{ e.courseName }}</td>
+              <td>{{ e.creditHours }}</td>
+              <td><span class="status-badge" [class]="'status-' + e.status.toLowerCase()">{{ e.status }}</span></td>
+              <td><span *ngIf="e.isRetake" class="retake-badge">Retake</span><span *ngIf="!e.isRetake">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="d.currentEnrollments.length === 0">
+      <div class="empty-icon">📚</div>
+      <h3>No courses enrolled this semester</h3>
+      <p>Go to <a routerLink="../courses">Course Registration</a> to enroll.</p>
+    </div>
+  </ng-container>
+</div>
