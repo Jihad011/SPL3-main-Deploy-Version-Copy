@@ -21,21 +21,21 @@
   --blur-lg:        blur(12px);
   --blur-xl:        blur(16px);
 
-  /* The Iconic Figma Design System Accents */
-  --cyan:           #1BC47D; /* Figma Green */
-  --cyan-dark:      #149c63; 
-  --purple:         #7B61FF; /* Figma Purple */
-  --purple-dark:    #5c48bf; 
-  --pink:           #F24822; /* Figma Red/Orange */
-  --blue:           #18A0FB; /* Figma Blue */
+  /* The Figma "Navy & Coral" Combination */
+  --cyan:           #F97316; /* Coral / Orange */
+  --cyan-dark:      #EA580C; /* Dark Coral */
+  --purple:         #0F172A; /* Deep Navy / Midnight */
+  --purple-dark:    #020617; /* Darker Navy */
+  --pink:           #FF6B6B; /* Soft Coral */
+  --blue:           #3B82F6; /* UI Blue */
 
-  /* Semantic Accents (Figma Palette) */
-  --accent-primary:   #18A0FB; /* Figma Blue */
-  --accent-secondary: #7B61FF; /* Figma Purple */
-  --accent-green:     #1BC47D; /* Figma Green */
-  --accent-red:       #F24822; /* Figma Red */
-  --accent-orange:    #FFCD29; /* Figma Yellow */
-  --accent-yellow:    #FFCD29; /* Figma Yellow */
+  /* Semantic Accents */
+  --accent-primary:   #0F172A; /* Midnight Navy */
+  --accent-secondary: #F97316; /* Coral / Vibrant Orange */
+  --accent-green:     #10B981; /* Emerald 500 */
+  --accent-red:       #EF4444; /* Red 500 */
+  --accent-orange:    #F97316; /* Orange 500 */
+  --accent-yellow:    #FBBF24; /* Amber 400 */
 
   /* Typography / Text */
   --text-primary:   #0F172A; /* Slate 900 - High contrast */
@@ -65,14 +65,14 @@
   --radius-sm:      8px;
   --radius-xs:      4px;
 
-  /* Figma Gradients */
-  --grad-primary:   linear-gradient(135deg, #18A0FB, #7B61FF); /* Blue to Purple */
-  --grad-cyan:      linear-gradient(135deg, #1BC47D, #18A0FB); 
-  --grad-purple:    linear-gradient(135deg, #7B61FF, #F24822);
-  --grad-green:     linear-gradient(135deg, #1BC47D, #149c63);
-  --grad-red:       linear-gradient(135deg, #F24822, #c2391b);
-  --grad-orange:    linear-gradient(135deg, #FFCD29, #F24822);
-  --grad-dark:      linear-gradient(135deg, rgba(24,160,251,0.08), rgba(123,97,255,0.08));
+  /* Navy & Coral Gradients */
+  --grad-primary:   linear-gradient(135deg, #0F172A, #1E293B); /* Deep Navy */
+  --grad-cyan:      linear-gradient(135deg, #F97316, #EA580C); /* Coral / Orange */
+  --grad-purple:    linear-gradient(135deg, #0F172A, #F97316); /* Navy to Coral */
+  --grad-green:     linear-gradient(135deg, #10B981, #059669);
+  --grad-red:       linear-gradient(135deg, #EF4444, #DC2626);
+  --grad-orange:    linear-gradient(135deg, #F97316, #EA580C);
+  --grad-dark:      linear-gradient(135deg, rgba(15,23,42,0.08), rgba(249,115,22,0.08));
 }
 
 html[data-theme='dark'] {

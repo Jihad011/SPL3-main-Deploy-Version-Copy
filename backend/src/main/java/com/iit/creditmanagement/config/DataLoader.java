@@ -35,7 +35,7 @@ public class DataLoader implements CommandLineRunner {
             String encodedPassword = passwordEncoder.encode("Admin@123");
             
             User admin = User.builder()
-                    .name("System Admin")
+                    .name("Admin")
                     .email("admin@iit.du.ac.bd")
                     .passwordHash(encodedPassword)
                     .role(Role.ADMIN)
@@ -44,7 +44,7 @@ public class DataLoader implements CommandLineRunner {
             userRepository.save(admin);
 
             User teacher = User.builder()
-                    .name("Dr. Tawhid")
+                    .name("Dr. Md. Nurul Ahad Tawhid")
                     .email("tawhid@iit.du.ac.bd")
                     .passwordHash(passwordEncoder.encode("Teacher@123"))
                     .role(Role.TEACHER)

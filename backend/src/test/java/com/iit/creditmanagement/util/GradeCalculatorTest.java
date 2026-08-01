@@ -23,23 +23,25 @@ class GradeCalculatorTest {
 
     @ParameterizedTest(name = "marks={0} → expected grade={1}")
     @CsvSource({
-        "100.0, A",
-        "80.0,  A",
-        "79.9,  A_MINUS",
-        "75.0,  A_MINUS",
-        "74.9,  B_PLUS",
-        "70.0,  B_PLUS",
-        "69.9,  B",
-        "65.0,  B",
-        "64.9,  B_MINUS",
-        "60.0,  B_MINUS",
-        "59.9,  C_PLUS",
-        "55.0,  C_PLUS",
-        "54.9,  C",
-        "50.0,  C",
-        "49.9,  D",
-        "45.0,  D",
-        "44.9,  F",
+        "100.0, A_PLUS",
+        "80.0,  A_PLUS",
+        "79.9,  A",
+        "75.0,  A",
+        "74.9,  A_MINUS",
+        "70.0,  A_MINUS",
+        "69.9,  B_PLUS",
+        "65.0,  B_PLUS",
+        "64.9,  B",
+        "60.0,  B",
+        "59.9,  B_MINUS",
+        "55.0,  B_MINUS",
+        "54.9,  C_PLUS",
+        "50.0,  C_PLUS",
+        "49.9,  C",
+        "45.0,  C",
+        "44.9,  D",
+        "40.0,  D",
+        "39.9,  F",
         "0.0,   F"
     })
     @DisplayName("Grade letter is correctly computed for mark boundaries")
@@ -81,25 +83,25 @@ class GradeCalculatorTest {
     // ── Validation Tests ─────────────────────────────────────
 
     @Test
-    @DisplayName("Midterm marks above 40 throws exception")
-    void midtermAbove40Throws() {
-        assertThatThrownBy(() -> calculator.validateMidtermMarks(40.1))
+    @DisplayName("Midterm marks above 100 throws exception")
+    void midtermAbove100Throws() {
+        assertThatThrownBy(() -> calculator.validateMidtermMarks(100.1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("40");
+                .hasMessageContaining("100");
     }
 
     @Test
-    @DisplayName("Final marks above 60 throws exception")
-    void finalAbove60Throws() {
-        assertThatThrownBy(() -> calculator.validateFinalMarks(60.1))
+    @DisplayName("Final marks above 100 throws exception")
+    void finalAbove100Throws() {
+        assertThatThrownBy(() -> calculator.validateFinalMarks(100.1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("60");
+                .hasMessageContaining("100");
     }
 
     @Test
-    @DisplayName("Passing threshold is at 45 marks")
-    void passingAt45() {
-        assertThat(calculator.isPassing(45.0)).isTrue();
-        assertThat(calculator.isPassing(44.9)).isFalse();
+    @DisplayName("Passing threshold is at 40 marks")
+    void passingAt40() {
+        assertThat(calculator.isPassing(40.0)).isTrue();
+        assertThat(calculator.isPassing(39.9)).isFalse();
     }
 }
