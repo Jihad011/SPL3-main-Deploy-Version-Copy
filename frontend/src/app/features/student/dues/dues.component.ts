@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { FeeResponse } from '../../../core/models/models';
 import { IconComponent, IconName } from '../../../shared/components/icon/icon.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { PaymentGatewayModalComponent } from '../../../shared/components/payment-gateway-modal/payment-gateway-modal.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { ViewChild } from '@angular/core';
 
@@ -17,7 +18,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
 @Component({
   selector: 'app-dues',
   standalone: true,
-  imports: [CommonModule, IconComponent, ConfirmModalComponent],
+  imports: [CommonModule, IconComponent, ConfirmModalComponent, PaymentGatewayModalComponent],
   template: `
 <div class="page">
   <div class="page-header">
@@ -40,6 +41,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
 
   <app-confirm-modal #confirmModal (confirm)="confirmPayment()" />
+  <app-payment-gateway-modal #gatewayModal (paymentComplete)="onGatewayPaymentComplete($event)" />
 
   <!-- Summary stat cards -->
   <div class="stats-grid" *ngIf="!loading() && fees().length > 0">
@@ -134,7 +136,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
             <option value="BANK_TRANSFER">Bank Transfer</option>
           </select>
           <button class="pay-btn magnetic" [class.paying]="payingId() === f.id"
-                  [disabled]="payingId() === f.id || !pmSelect.value" (click)="payFee(f.id, pmSelect.value)">
+                  [disabled]="payingId() === f.id || !pmSelect.value" (click)="payFee(f.id, f.amount, pmSelect.value)">
             <svg *ngIf="payingId() !== f.id" width="15" height="15" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -316,6 +318,7 @@ export class DuesComponent implements OnInit {
   error    = signal('');
 
   @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
+  @ViewChild('gatewayModal') gatewayModal!: PaymentGatewayModalComponent;
   pendingFeeId = signal<number | null>(null);
   pendingPaymentMethod = signal<string>('CASH');
 
@@ -339,15 +342,24 @@ export class DuesComponent implements OnInit {
     });
   }
 
-  payFee(feeId: number, method: string): void {
-    this.pendingFeeId.set(feeId);
-    this.pendingPaymentMethod.set(method);
-    this.confirmModal.title = 'Confirm Payment';
-    this.confirmModal.message = `Are you sure you want to proceed with this payment via ${method.replace('_', ' ')}?`;
-    this.confirmModal.iconName = 'credit-card';
-    this.confirmModal.type = 'info';
-    this.confirmModal.confirmText = 'Pay Now';
-    this.confirmModal.open();
+  payFee(feeId: number, amount: number, method: string): void {
+    // Open the realistic payment gateway modal
+    this.gatewayModal.open(feeId, amount, method);
+  }
+
+  onGatewayPaymentComplete(event: { feeId: number, method: string }): void {
+    this.payingId.set(event.feeId);
+    this.api.payMyFee(event.feeId, event.method).subscribe({
+      next: () => {
+        this.payingId.set(null);
+        this.toast.success('Payment completed successfully! 🎉');
+        this.loadFees();
+      },
+      error: () => {
+        this.toast.error('Payment failed. Please try again.');
+        this.payingId.set(null);
+      }
+    });
   }
 
   confirmPayment(): void {
