@@ -126,6 +126,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
       <div class="invoice-footer" *ngIf="f.status === 'UNPAID'">
         <div class="payment-options">
           <select #pmSelect class="pm-select">
+            <option value="" disabled selected>Select Payment Method</option>
             <option value="BKASH">bKash</option>
             <option value="NAGAD">Nagad</option>
             <option value="ROCKET">Rocket</option>
@@ -133,7 +134,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
             <option value="BANK_TRANSFER">Bank Transfer</option>
           </select>
           <button class="pay-btn magnetic" [class.paying]="payingId() === f.id"
-                  [disabled]="payingId() === f.id" (click)="payFee(f.id, pmSelect.value)">
+                  [disabled]="payingId() === f.id || !pmSelect.value" (click)="payFee(f.id, pmSelect.value)">
             <svg *ngIf="payingId() !== f.id" width="15" height="15" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2">
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
