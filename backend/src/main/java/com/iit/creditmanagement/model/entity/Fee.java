@@ -2,6 +2,7 @@ package com.iit.creditmanagement.model.entity;
 
 import com.iit.creditmanagement.model.enums.FeeStatus;
 import com.iit.creditmanagement.model.enums.FeeType;
+import com.iit.creditmanagement.model.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,6 +60,10 @@ public class Fee {
 
     @Column(name = "paid_at")
     private OffsetDateTime paidAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")

@@ -8,6 +8,7 @@ import com.iit.creditmanagement.model.entity.Fee;
 import com.iit.creditmanagement.model.entity.Semester;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.model.enums.FeeStatus;
+import com.iit.creditmanagement.model.enums.PaymentMethod;
 import com.iit.creditmanagement.repository.FeeRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
 import com.iit.creditmanagement.repository.UserRepository;
@@ -96,7 +97,7 @@ public class FeeServiceImpl implements FeeService {
 
     @Override
     @Transactional
-    public FeeResponse markAsPaid(Long feeId, Long adminId) {
+    public FeeResponse markAsPaid(Long feeId, Long adminId, PaymentMethod paymentMethod) {
         Fee fee = feeRepository.findById(feeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fee", feeId));
 
@@ -106,6 +107,11 @@ public class FeeServiceImpl implements FeeService {
 
         fee.setStatus(FeeStatus.PAID);
         fee.setPaidAt(OffsetDateTime.now());
+        if (paymentMethod != null) {
+            fee.setPaymentMethod(paymentMethod);
+        } else {
+            fee.setPaymentMethod(PaymentMethod.CASH);
+        }
         fee = feeRepository.save(fee);
         
         notificationService.sendNotification(
@@ -121,7 +127,7 @@ public class FeeServiceImpl implements FeeService {
 
     @Override
     @Transactional
-    public FeeResponse payFeeStudent(Long feeId, Long studentId) {
+    public FeeResponse payFeeStudent(Long feeId, Long studentId, PaymentMethod paymentMethod) {
         Fee fee = feeRepository.findById(feeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fee", feeId));
 
@@ -135,6 +141,7 @@ public class FeeServiceImpl implements FeeService {
 
         fee.setStatus(FeeStatus.PAID);
         fee.setPaidAt(OffsetDateTime.now());
+        fee.setPaymentMethod(paymentMethod);
         fee = feeRepository.save(fee);
         
         notificationService.sendNotification(

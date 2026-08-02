@@ -6,7 +6,7 @@ import {
   CourseResponse, CourseRequest,
   EnrollmentResponse, EnrollRequest,
   GradeResponse, GradeEntryRequest,
-  FeeResponse, FeeCreateRequest,
+  FeeResponse, FeeCreateRequest, PaymentRequest,
   StudentDashboardResponse, UserResponse,
   SemesterResponse, ApiResponse, Page
 } from '../models/models';
@@ -122,8 +122,9 @@ export class ApiService {
   getMyTotalDues(): Observable<{ totalDues: number }> {
     return this.http.get<{ totalDues: number }>(`${this.api}/fees/my/total-dues`);
   }
-  payMyFee(feeId: number): Observable<FeeResponse> {
-    return this.http.patch<FeeResponse>(`${this.api}/fees/my/${feeId}/pay`, {});
+  payMyFee(feeId: number, method: string = 'CASH'): Observable<FeeResponse> {
+    const req: PaymentRequest = { paymentMethod: method as any };
+    return this.http.patch<FeeResponse>(`${this.api}/fees/my/${feeId}/pay`, req);
   }
 
   // ── Admin ─────────────────────────────────────────────────
@@ -155,8 +156,9 @@ export class ApiService {
   createFee(req: FeeCreateRequest): Observable<FeeResponse> {
     return this.http.post<FeeResponse>(`${this.api}/admin/fees`, req);
   }
-  markFeeAsPaid(feeId: number): Observable<FeeResponse> {
-    return this.http.patch<FeeResponse>(`${this.api}/admin/fees/${feeId}/pay`, {});
+  markFeeAsPaid(feeId: number, method: string = 'CASH'): Observable<FeeResponse> {
+    const req: PaymentRequest = { paymentMethod: method as any };
+    return this.http.patch<FeeResponse>(`${this.api}/fees/${feeId}/pay`, req);
   }
   getStudentFees(studentId: number): Observable<FeeResponse[]> {
     return this.http.get<FeeResponse[]>(`${this.api}/fees/student/${studentId}`);

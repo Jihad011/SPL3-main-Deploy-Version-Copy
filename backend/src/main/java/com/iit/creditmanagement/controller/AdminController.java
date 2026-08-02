@@ -117,8 +117,9 @@ public class AdminController {
     @Operation(summary = "Mark a fee as paid")
     public ResponseEntity<FeeResponse> markAsPaid(
             @AuthenticationPrincipal User admin,
-            @PathVariable Long feeId) {
-        return ResponseEntity.ok(feeService.markAsPaid(feeId, admin.getId()));
+            @PathVariable Long feeId,
+            @Valid @RequestBody(required = false) com.iit.creditmanagement.model.dto.request.PaymentRequest request) {
+        return ResponseEntity.ok(feeService.markAsPaid(feeId, admin.getId(), request != null ? request.getPaymentMethod() : null));
     }
 
     // ── System Stats ──────────────────────────────────────────

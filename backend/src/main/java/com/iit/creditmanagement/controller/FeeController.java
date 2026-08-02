@@ -1,6 +1,7 @@
 package com.iit.creditmanagement.controller;
 
 import com.iit.creditmanagement.model.dto.request.FeeCreateRequest;
+import com.iit.creditmanagement.model.dto.request.PaymentRequest;
 import com.iit.creditmanagement.model.dto.response.FeeResponse;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.service.FeeService;
@@ -55,8 +56,9 @@ public class FeeController {
     @Operation(summary = "Pay a fee (student)")
     public ResponseEntity<FeeResponse> payFeeStudent(
             @AuthenticationPrincipal User student,
-            @PathVariable Long feeId) {
-        return ResponseEntity.ok(feeService.payFeeStudent(feeId, student.getId()));
+            @PathVariable Long feeId,
+            @Valid @RequestBody PaymentRequest request) {
+        return ResponseEntity.ok(feeService.payFeeStudent(feeId, student.getId(), request.getPaymentMethod()));
     }
 
     @PostMapping
@@ -74,8 +76,9 @@ public class FeeController {
     @Operation(summary = "Mark a fee as paid (admin only)")
     public ResponseEntity<FeeResponse> markAsPaid(
             @AuthenticationPrincipal User admin,
-            @PathVariable Long feeId) {
-        return ResponseEntity.ok(feeService.markAsPaid(feeId, admin.getId()));
+            @PathVariable Long feeId,
+            @Valid @RequestBody(required = false) PaymentRequest request) {
+        return ResponseEntity.ok(feeService.markAsPaid(feeId, admin.getId(), request != null ? request.getPaymentMethod() : null));
     }
 
     @GetMapping("/student/{studentId}")

@@ -4,6 +4,8 @@ import com.iit.creditmanagement.model.entity.Fee;
 import com.iit.creditmanagement.model.enums.FeeStatus;
 import com.iit.creditmanagement.model.enums.FeeType;
 
+import com.iit.creditmanagement.model.enums.PaymentMethod;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -19,6 +21,7 @@ public record FeeResponse(
         String       description,
         String       semesterLabel,
         FeeStatus    status,
+        PaymentMethod paymentMethod,
         LocalDate    dueDate,
         OffsetDateTime paidAt,
         OffsetDateTime createdAt
@@ -35,6 +38,7 @@ public record FeeResponse(
                 f.getDescription(),
                 f.getSemester() != null ? f.getSemester().getLabel() : null,
                 f.getStatus(),
+                f.getPaymentMethod(),
                 f.getDueDate(),
                 f.getPaidAt(),
                 f.getCreatedAt()

@@ -116,20 +116,33 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
           <span class="date-label">Paid on</span>
           <span>{{ f.paidAt | date:'dd MMM yyyy' }}</span>
         </div>
+        <div class="invoice-date-item" *ngIf="f.paymentMethod">
+          <span class="date-label">Via</span>
+          <span class="pm-badge">{{ f.paymentMethod }}</span>
+        </div>
       </div>
 
       <!-- Pay action -->
       <div class="invoice-footer" *ngIf="f.status === 'UNPAID'">
-        <button class="pay-btn magnetic" [class.paying]="payingId() === f.id"
-                [disabled]="payingId() === f.id" (click)="payFee(f.id)">
-          <svg *ngIf="payingId() !== f.id" width="15" height="15" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-            <line x1="1" y1="10" x2="23" y2="10"/>
-          </svg>
-          <span class="paying-spinner" *ngIf="payingId() === f.id"></span>
-          {{ payingId() === f.id ? 'Processing...' : 'Pay Now' }}
-        </button>
+        <div class="payment-options">
+          <select #pmSelect class="pm-select">
+            <option value="BKASH">bKash</option>
+            <option value="NAGAD">Nagad</option>
+            <option value="ROCKET">Rocket</option>
+            <option value="CREDIT_CARD">Credit Card</option>
+            <option value="BANK_TRANSFER">Bank Transfer</option>
+          </select>
+          <button class="pay-btn magnetic" [class.paying]="payingId() === f.id"
+                  [disabled]="payingId() === f.id" (click)="payFee(f.id, pmSelect.value)">
+            <svg *ngIf="payingId() !== f.id" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            <span class="paying-spinner" *ngIf="payingId() === f.id"></span>
+            {{ payingId() === f.id ? 'Processing...' : 'Pay' }}
+          </button>
+        </div>
       </div>
       <div class="invoice-paid-confirm" *ngIf="f.status === 'PAID'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -270,6 +283,20 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .payment-options {
+      display: flex; gap: 0.5rem; width: 100%;
+    }
+    .pm-select {
+      flex: 1; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-elevated); color: var(--text-primary);
+      font-size: 0.85rem; outline: none; font-family: inherit; font-weight: 500;
+    }
+    .pm-select:focus { border-color: var(--accent-primary); }
+    .pm-badge {
+      background: var(--bg-elevated); padding: 0.1rem 0.4rem; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 600; color: var(--text-primary);
+    }
+
     .invoice-paid-confirm {
       display: flex; align-items: center; gap: 0.4rem;
       font-size: 0.82rem; color: var(--accent-green); font-weight: 500;
@@ -289,6 +316,7 @@ export class DuesComponent implements OnInit {
 
   @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
   pendingFeeId = signal<number | null>(null);
+  pendingPaymentMethod = signal<string>('CASH');
 
   totalDues   = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
   unpaidCount = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
@@ -310,10 +338,11 @@ export class DuesComponent implements OnInit {
     });
   }
 
-  payFee(feeId: number): void {
+  payFee(feeId: number, method: string): void {
     this.pendingFeeId.set(feeId);
+    this.pendingPaymentMethod.set(method);
     this.confirmModal.title = 'Confirm Payment';
-    this.confirmModal.message = 'Are you sure you want to proceed with this payment?';
+    this.confirmModal.message = `Are you sure you want to proceed with this payment via ${method.replace('_', ' ')}?`;
     this.confirmModal.iconName = 'credit-card';
     this.confirmModal.type = 'info';
     this.confirmModal.confirmText = 'Pay Now';
@@ -322,10 +351,11 @@ export class DuesComponent implements OnInit {
 
   confirmPayment(): void {
     const feeId = this.pendingFeeId();
+    const method = this.pendingPaymentMethod();
     if (!feeId) return;
 
     this.payingId.set(feeId);
-    this.api.payMyFee(feeId).subscribe({
+    this.api.payMyFee(feeId, method).subscribe({
       next: () => {
         this.payingId.set(null);
         this.toast.success('Payment completed successfully! 🎉');

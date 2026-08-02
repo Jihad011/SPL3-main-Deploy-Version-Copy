@@ -21,6 +21,7 @@ export type EnrollmentStatus = 'ACTIVE' | 'DROPPED' | 'COMPLETED' | 'FAILED';
 export type GradeLetter = 'A_PLUS' | 'A' | 'A_MINUS' | 'B_PLUS' | 'B' | 'B_MINUS' | 'C_PLUS' | 'C' | 'D' | 'F';
 export type FeeType = 'RETAKE' | 'SEMESTER_GAP' | 'REGISTRATION' | 'OTHER';
 export type FeeStatus = 'UNPAID' | 'PAID' | 'WAIVED';
+export type PaymentMethod = 'CREDIT_CARD' | 'BKASH' | 'NAGAD' | 'ROCKET' | 'BANK_TRANSFER' | 'CASH';
 export type SemesterName = 'SPRING' | 'SUMMER' | 'FALL';
 
 // ── Auth ────────────────────────────────────────────────────
@@ -155,9 +156,14 @@ export interface FeeResponse {
   description: string | null;
   semesterLabel: string | null;
   status: FeeStatus;
+  paymentMethod?: PaymentMethod;
   dueDate: string | null;
   paidAt: string | null;
   createdAt: string;
+}
+
+export interface PaymentRequest {
+  paymentMethod: PaymentMethod;
 }
 
 export interface FeeCreateRequest {
