@@ -19,12 +19,12 @@ import { ViewChild } from '@angular/core';
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic enrollment workspace</div>
-      <h1 class="page-title">Course Registration</h1>
+      <h1 class="page-title">Course Enrollment</h1>
       <p class="page-subtitle" *ngIf="activeSemester()">
-        <app-icon name="calendar" [size]="15" /> {{ activeSemester()!.label }} — Select courses for this term
+        <app-icon name="calendar" [size]="15" /> {{ activeSemester()!.label }} — Select and enroll in courses for this term
       </p>
       <p class="page-subtitle" *ngIf="!activeSemester() && !loading()">
-        No active semester found for course registration.
+        No active semester found for course enrollment.
       </p>
     </div>
     <div class="header-actions">
@@ -369,9 +369,13 @@ export class CourseRegistrationComponent implements OnInit {
   }
 
   loadEnrolledCredits(): void {
-    this.api.getMyCourses().subscribe({
-      next: (courses) => {
-        const total = (courses || []).reduce((acc, c) => acc + (c.creditHours || 0), 0);
+    this.api.getMyEnrollments().subscribe({
+      next: (enrollments) => {
+        const activeSemId = this.activeSemId();
+        const active = (enrollments || []).filter(e =>
+          e.status === 'ACTIVE' && (!activeSemId || e.semesterId === activeSemId)
+        );
+        const total = active.reduce((acc, e) => acc + (e.creditHours || 0), 0);
         this.currentEnrolledCredits.set(total);
       },
       error: () => {}

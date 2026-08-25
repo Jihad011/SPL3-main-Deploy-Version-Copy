@@ -26,7 +26,7 @@ import { ToastService } from '../../../core/services/toast.service';
         {{ activeCount() }} active course(s) · {{ totalCredits() }} credit(s)
       </div>
       <a routerLink="../courses" class="btn btn-primary">
-        <app-icon name="book-open" [size]="15" /> Course Registration
+        <app-icon name="book-open" [size]="15" /> Course Enrollment
       </a>
     </div>
   </div>
@@ -174,10 +174,10 @@ import { ToastService } from '../../../core/services/toast.service';
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!loading() && enrollments().length === 0">
     <div class="empty-icon"><app-icon name="book-open" [size]="42" /></div>
-    <h3>No courses registered yet</h3>
-    <p>You haven't enrolled in any courses. Head over to Course Registration to view available courses.</p>
+    <h3>No courses enrolled yet</h3>
+    <p>You haven't enrolled in any courses. Head over to Course Enrollment to view available offerings.</p>
     <a routerLink="../courses" class="btn btn-primary btn-neon" style="margin-top: 1rem">
-      Go to Course Registration
+      Go to Course Enrollment
     </a>
   </div>
 

@@ -48,7 +48,7 @@ import { ChartData, ChartOptions } from 'chart.js';
         Pay Fees <span class="header-due-badge" *ngIf="d.unpaidFeeCount > 0">৳{{ d.totalDues | number:'1.0-0' }}</span>
       </a>
       <a routerLink="../courses" class="btn btn-primary">
-        <app-icon name="plus" [size]="15" /> Register Courses
+        <app-icon name="plus" [size]="15" /> Enroll in Courses
       </a>
       <a routerLink="../history" class="btn btn-secondary" title="View Academic History">
         <app-icon name="history" [size]="15" /> Records
@@ -287,7 +287,63 @@ import { ChartData, ChartOptions } from 'chart.js';
           </div>
         </div>
 
+        <!-- 2. Degree Milestone & Academic Standing Card -->
+        <div class="card bento-card degree-milestone-card" appCardGlow>
+          <div class="card-header">
+            <div class="card-header-titles">
+              <h2 class="card-title">Degree Milestone & Standing</h2>
+              <div class="card-sub">Master in Information Technology (MIT)</div>
+            </div>
+            <div class="degree-completion-badge">
+              <span class="pct-val font-mono">{{ ((d.totalCreditsEarned / 36) * 100) | number:'1.0-0' }}%</span>
+              <span class="pct-lbl">Done</span>
+            </div>
+          </div>
 
+          <div class="milestone-content">
+            <!-- Progress Bar -->
+            <div class="milestone-progress-box">
+              <div class="milestone-labels">
+                <span class="m-label">Program Credits Earned</span>
+                <span class="m-val font-mono"><strong>{{ d.totalCreditsEarned }}</strong> / 36 Credits</span>
+              </div>
+              <div class="milestone-track">
+                <div class="milestone-fill" [style.width.%]="Math.min(100, (d.totalCreditsEarned / 36) * 100)"></div>
+              </div>
+              <div class="milestone-ticks">
+                <span [class.tick-reached]="d.totalCreditsEarned >= 12">12 cr (Foundation)</span>
+                <span [class.tick-reached]="d.totalCreditsEarned >= 24">24 cr (Advanced)</span>
+                <span [class.tick-reached]="d.totalCreditsEarned >= 36">36 cr (Degree)</span>
+              </div>
+            </div>
+
+            <!-- Standing & Status Card -->
+            <div class="standing-banner" [style.border-color]="cgpaColor(d.cgpa) + '40'" [style.background]="cgpaColor(d.cgpa) + '0D'">
+              <div class="standing-banner-icon" [style.color]="cgpaColor(d.cgpa)" [style.background]="cgpaColor(d.cgpa) + '20'">
+                <app-icon name="graduation-cap" [size]="18" />
+              </div>
+              <div class="standing-banner-info">
+                <div class="standing-banner-title">
+                  {{ standingTitle(d.cgpa) }}
+                </div>
+                <div class="standing-banner-desc">
+                  Cumulative CGPA: <strong class="font-mono" [style.color]="cgpaColor(d.cgpa)">{{ d.cgpa | number:'1.2-2' }}</strong> · {{ d.totalCoursesCompleted }} Course(s) Completed
+                </div>
+              </div>
+            </div>
+
+            <!-- Term Load Strip -->
+            <div class="term-load-strip">
+              <div class="term-load-item">
+                <span class="tl-k">Current Term Load</span>
+                <span class="tl-v font-mono">{{ d.currentSemesterCredits }} Credits ({{ d.currentEnrollments.length }} Courses)</span>
+              </div>
+              <a routerLink="../history" class="btn-history-link">
+                View Dossier <app-icon name="arrow-right" [size]="12" />
+              </a>
+            </div>
+          </div>
+        </div>
 
         <!-- 3. Quick Academic Shortcuts -->
         <div class="card bento-card shortcuts-card">
@@ -298,8 +354,8 @@ import { ChartData, ChartOptions } from 'chart.js';
             <a routerLink="../courses" class="shortcut-item">
               <div class="shortcut-icon icon-blue"><app-icon name="plus" [size]="18" /></div>
               <div class="shortcut-info">
-                <div class="shortcut-title">Course Registration</div>
-                <div class="shortcut-desc">Enroll in upcoming term courses</div>
+                <div class="shortcut-title">Course Enrollment</div>
+                <div class="shortcut-desc">Browse and enroll in term offerings</div>
               </div>
             </a>
             <a routerLink="../history" class="shortcut-item">
@@ -746,9 +802,156 @@ import { ChartData, ChartOptions } from 'chart.js';
       color: var(--text-primary);
     }
 
-    .shortcut-desc {
+    /* ── Degree Milestone Card Styles ─────────────────────────── */
+    .degree-milestone-card {
+      .milestone-content {
+        padding: 0 1.25rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+    }
+
+    .degree-completion-badge {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1D4ED8;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+
+      .pct-val { font-weight: 800; font-size: 0.9rem; }
+      .pct-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; }
+    }
+
+    .milestone-progress-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .milestone-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+
+      strong { color: var(--text-primary); font-weight: 700; }
+    }
+
+    .milestone-track {
+      width: 100%;
+      height: 8px;
+      background: #F1F5F9;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .milestone-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3B82F6 0%, #10B981 100%);
+      border-radius: 9999px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .milestone-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: #94A3B8;
+      font-weight: 500;
+
+      .tick-reached {
+        color: #059669;
+        font-weight: 700;
+      }
+    }
+
+    .standing-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border);
+    }
+
+    .standing-banner-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .standing-banner-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .standing-banner-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .standing-banner-desc {
       font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin-top: 0.1rem;
+    }
+
+    .term-load-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-elevated);
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border-light);
+    }
+
+    .term-load-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .tl-k {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.04em;
       color: var(--text-muted);
+    }
+
+    .tl-v {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn-history-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #2563EB;
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-xs);
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: #EFF6FF;
+      }
     }
   `]
 })
@@ -912,4 +1115,15 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   gpColor(gp: number): string { return this.cgpaColor(gp); }
+
+  readonly Math = Math;
+
+  standingTitle(cgpa: number): string {
+    if (cgpa >= 3.75) return 'Distinction & Honors Track';
+    if (cgpa >= 3.50) return 'Dean’s Honor List Standing';
+    if (cgpa >= 3.00) return 'Good Academic Standing';
+    if (cgpa >= 2.50) return 'Satisfactory Academic Standing';
+    if (cgpa >= 2.00) return 'Academic Warning Risk';
+    return 'Academic Review Required';
+  }
 }

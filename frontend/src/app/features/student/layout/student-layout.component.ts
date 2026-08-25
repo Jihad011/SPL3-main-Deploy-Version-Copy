@@ -22,7 +22,7 @@ import {
 export class StudentLayoutComponent {
   readonly navItems: PortalNavItem[] = [
     { label: 'Dashboard', link: 'dashboard', icon: 'layout-dashboard' },
-    { label: 'Course Registration', link: 'courses', icon: 'book-open' },
+    { label: 'Course Enrollment', link: 'courses', icon: 'book-open' },
     { label: 'My Course(s)', link: 'my-courses', icon: 'list-check' },
     { label: 'My Results', link: 'results', icon: 'chart' },
     { label: 'Academic History', link: 'history', icon: 'history' },
