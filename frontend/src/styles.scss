@@ -6,9 +6,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
-/* ✨ CSS Variables — Masterpiece Themes ✨ */
-
-/* ✨ CSS Variables — Enterprise Institutional Design Tokens ✨ */
+/* ✨ CSS Variables — Masterpiece 6-Theme Suite ✨ */
 
 /* 1. Theme 1: Royal Oxford (Executive Navy & Pure White) — Default */
 :root, html[data-theme='royal-blue'], html[data-theme='light'] {
@@ -162,6 +160,145 @@ html[data-theme='amethyst-white'], html[data-theme='amethyst'] {
   --grad-red:       linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
   --grad-orange:    linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
   --grad-dark:      #F8FAFC;
+}
+
+/* 4. Theme 4: Midnight Obsidian (Deep Cosmic Dark Mode & Glassmorphism) */
+html[data-theme='midnight-obsidian'], html[data-theme='dark'] {
+  --bg-base:        #090D16; /* Deep Obsidian */
+  --bg-surface:     #0F172A; /* Slate 900 */
+  --bg-elevated:    #1E293B; /* Slate 800 */
+  --bg-card:        #0F172A;
+  --bg-card-hover:  #1A243B;
+  --bg-glass:       rgba(15, 23, 42, 0.85);
+
+  --cyan:           #06B6D4; /* Cyan 500 */
+  --cyan-dark:      #0891B2; /* Cyan 600 */
+  --purple:         #818CF8; /* Indigo 400 */
+  --purple-dark:    #6366F1; /* Indigo 500 */
+  --pink:           #EC4899;
+  --blue:           #38BDF8;
+
+  --accent-primary:   #F8FAFC; /* Slate 50 */
+  --accent-secondary: #06B6D4; /* Neon Cyan */
+  --accent-green:     #10B981; /* Emerald 500 */
+  --accent-red:       #F43F5E; /* Rose 500 */
+  --accent-orange:    #F59E0B; /* Amber 500 */
+  --accent-yellow:    #FBBF24;
+
+  --text-primary:   #F8FAFC; /* High contrast bright */
+  --text-secondary: #CBD5E1; /* Slate 300 */
+  --text-muted:     #94A3B8; /* Slate 400 */
+  --text-shadow:    0 0 12px rgba(6, 182, 212, 0.15);
+
+  --border:         #1E293B; /* Slate 800 */
+  --border-light:   #162032;
+  --border-glow:    rgba(6, 182, 212, 0.35);
+  --glow-cyan:      0 0 15px rgba(6, 182, 212, 0.35);
+  --glow-purple:    0 0 15px rgba(129, 140, 248, 0.35);
+
+  --shadow-sm:      0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md:      0 4px 6px -1px rgba(0, 0, 0, 0.6);
+  --shadow-lg:      0 10px 15px -3px rgba(0, 0, 0, 0.7);
+  --shadow-xl:      0 20px 25px -5px rgba(0, 0, 0, 0.8);
+  --shadow-card:    0 4px 20px 0 rgba(0, 0, 0, 0.45);
+
+  --grad-primary:   linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  --grad-cyan:      linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+  --grad-purple:    linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+  --grad-green:     linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --grad-red:       linear-gradient(135deg, #E11D48 0%, #F43F5E 100%);
+  --grad-orange:    linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+  --grad-dark:      #0B0F19;
+}
+
+/* 5. Theme 5: Nordic Frost (Minimalist Arctic Slate & Ice Blue) */
+html[data-theme='nordic-frost'], html[data-theme='nordic'] {
+  --bg-base:        #F0F4F8; /* Arctic ice tint */
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #E2E8F0;
+  --bg-card:        #FFFFFF;
+  --bg-card-hover:  #F8FAFC;
+  --bg-glass:       rgba(255, 255, 255, 0.95);
+
+  --cyan:           #0284C7; /* Sky Blue */
+  --cyan-dark:      #0369A1;
+  --purple:         #475569;
+  --purple-dark:    #334155;
+  --pink:           #0EA5E9;
+  --blue:           #0284C7;
+
+  --accent-primary:   #0F172A;
+  --accent-secondary: #0284C7;
+  --accent-green:     #059669;
+  --accent-red:       #DC2626;
+  --accent-orange:    #D97706;
+  --accent-yellow:    #CA8A04;
+
+  --text-primary:   #0F172A;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+  --text-shadow:    none;
+
+  --border:         #CBD5E1; /* Slate 300 */
+  --border-light:   #E2E8F0;
+  --border-glow:    transparent;
+  --glow-cyan:      none;
+  --glow-purple:    none;
+
+  --shadow-card:    0 1px 3px 0 rgba(15, 23, 42, 0.05);
+
+  --grad-primary:   linear-gradient(135deg, #0F172A 0%, #334155 100%);
+  --grad-cyan:      linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  --grad-purple:    linear-gradient(135deg, #334155 0%, #64748B 100%);
+  --grad-green:     linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --grad-red:       linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  --grad-orange:    linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+  --grad-dark:      #F0F4F8;
+}
+
+/* 6. Theme 6: Sunset Terracotta (Warm Luxury Autumn Amber & Gold) */
+html[data-theme='sunset-terracotta'], html[data-theme='sunset'] {
+  --bg-base:        #FAF5F0; /* Warm almond/parchment */
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #FDF2E9; /* Warm peach tint */
+  --bg-card:        #FFFFFF;
+  --bg-card-hover:  #FDFBF7;
+  --bg-glass:       rgba(255, 255, 255, 0.96);
+
+  --cyan:           #EA580C; /* Terracotta / Burnt Orange */
+  --cyan-dark:      #C2410C;
+  --purple:         #7C2D12; /* Warm mahogany */
+  --purple-dark:    #431407;
+  --pink:           #F97316;
+  --blue:           #EA580C;
+
+  --accent-primary:   #431407; /* Deep Espresso */
+  --accent-secondary: #EA580C; /* Sunset Orange */
+  --accent-green:     #059669;
+  --accent-red:       #DC2626;
+  --accent-orange:    #D97706;
+  --accent-yellow:    #D97706;
+
+  --text-primary:   #431407; /* Rich Dark Brown */
+  --text-secondary: #7C2D12; /* Warm Rust */
+  --text-muted:     #9A3412;
+  --text-shadow:    none;
+
+  --border:         #FED7AA; /* Warm peach border */
+  --border-light:   #FFEDD5;
+  --border-glow:    transparent;
+  --glow-cyan:      none;
+  --glow-purple:    none;
+
+  --shadow-card:    0 1px 4px 0 rgba(67, 20, 7, 0.05);
+
+  --grad-primary:   linear-gradient(135deg, #431407 0%, #7C2D12 100%);
+  --grad-cyan:      linear-gradient(135deg, #EA580C 0%, #F97316 100%);
+  --grad-purple:    linear-gradient(135deg, #7C2D12 0%, #B45309 100%);
+  --grad-green:     linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --grad-red:       linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  --grad-orange:    linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+  --grad-dark:      #FAF5F0;
 }
 
 /* ✨ Base Reset & Typography ✨ */
@@ -486,6 +623,155 @@ a:hover { opacity: 0.85; }
   flex-shrink: 0;
 }
 
+/* ✨ Interactive Theme Palette Popover ✨ */
+.theme-picker-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.theme-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--shadow-xl), 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  padding: 0.75rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.theme-popover-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.theme-option-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-light);
+}
+
+.theme-option-btn.active {
+  background: var(--bg-elevated);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.theme-swatch-cluster {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.theme-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.theme-tag-mode {
+  font-size: 0.68rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-base);
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* Dark Mode Deep Integrations */
+html[data-theme='midnight-obsidian'] .sidebar,
+html[data-theme='dark'] .sidebar {
+  background: #0B0F19;
+  border-color: #1E293B;
+}
+html[data-theme='midnight-obsidian'] .nav-item.active,
+html[data-theme='dark'] .nav-item.active {
+  background: #1E293B;
+  color: #06B6D4;
+}
+html[data-theme='midnight-obsidian'] .nav-item.active .nav-icon,
+html[data-theme='dark'] .nav-item.active .nav-icon {
+  color: #06B6D4;
+}
+html[data-theme='midnight-obsidian'] .user-card,
+html[data-theme='dark'] .user-card {
+  background: #111827;
+  border-color: #1E293B;
+}
+html[data-theme='midnight-obsidian'] .theme-toggle,
+html[data-theme='dark'] .theme-toggle {
+  background: #111827;
+  border-color: #1E293B;
+  color: #F8FAFC;
+}
+html[data-theme='midnight-obsidian'] .data-table th,
+html[data-theme='dark'] .data-table th {
+  background: #111827;
+  color: #94A3B8;
+  border-color: #1E293B;
+}
+html[data-theme='midnight-obsidian'] .data-table tr:hover td,
+html[data-theme='dark'] .data-table tr:hover td {
+  background: rgba(30, 41, 59, 0.5);
+}
+html[data-theme='midnight-obsidian'] .card,
+html[data-theme='dark'] .card {
+  background: #0F172A;
+  border-color: #1E293B;
+}
+html[data-theme='midnight-obsidian'] .search-input,
+html[data-theme='dark'] .search-input {
+  background: #111827;
+  border-color: #1E293B;
+  color: #F8FAFC;
+}
+html[data-theme='midnight-obsidian'] .search-input:focus,
+html[data-theme='dark'] .search-input:focus {
+  background: #1E293B;
+}
+
 /* ── Auth Pages ──────────────────────────────────────────────── */
 .auth-container {
   min-height: 100vh;
@@ -757,7 +1043,7 @@ a:hover { opacity: 0.85; }
   border-bottom: 1px solid var(--border-light);
   flex-wrap: wrap;
   gap: 0.75rem;
-  background: #FFFFFF;
+  background: var(--bg-card);
 }
 .card-title {
   font-family: 'Inter', -apple-system, sans-serif;
@@ -783,12 +1069,13 @@ a:hover { opacity: 0.85; }
   position: relative;
   background: var(--bg-card);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: default;
 }
 .stat-card:hover {
-  border-color: #CBD5E1;
+  border-color: var(--border-glow, #CBD5E1);
   box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .stat-icon {
@@ -908,7 +1195,7 @@ a:hover { opacity: 0.85; }
 .data-table tbody tr {
   transition: background-color 0.15s ease;
   cursor: default;
-  background: #FFFFFF;
+  background: var(--bg-card);
 }
 .data-table tbody tr:hover { 
   background: var(--bg-card-hover); 
@@ -919,7 +1206,7 @@ a:hover { opacity: 0.85; }
 .mark-input {
   width: 84px;
   padding: 0.55rem 0.75rem;
-  background: #FFFFFF;
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -946,19 +1233,20 @@ a:hover { opacity: 0.85; }
   gap: 1.25rem;
 }
 .course-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem 1.75rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   box-shadow: var(--shadow-sm);
 }
 .course-card:hover {
-  border-color: #CBD5E1;
+  border-color: var(--border-glow, #CBD5E1);
   box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 .course-card--full { opacity: 0.65; }
 
