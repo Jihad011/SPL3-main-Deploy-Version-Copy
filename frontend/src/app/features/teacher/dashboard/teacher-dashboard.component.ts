@@ -151,7 +151,7 @@ import { ChartData, ChartOptions } from 'chart.js';
             </td>
             <td>
               <a [routerLink]="['/teacher/grade-entry']" [queryParams]="{ courseId: c.id }"
-                 class="btn btn-primary btn-neon" style="white-space:nowrap;font-size:0.82rem;padding:0.4rem 0.875rem">
+                 class="btn btn-primary btn-neon" style="white-space:nowrap;font-size:0.86rem;padding:0.55rem 1.1rem;border-radius:var(--radius-sm)">
                 Enter Grades
               </a>
             </td>

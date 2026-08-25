@@ -276,17 +276,17 @@ function computeGradeLetter(total: number): string {
     .distribution-summary-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius, 12px);
-      padding: 0.85rem 1.25rem;
-      margin-bottom: 1.25rem;
+      border-radius: var(--radius-lg, 14px);
+      padding: 1.15rem 1.65rem;
+      margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
       flex-wrap: wrap;
       box-shadow: var(--shadow-sm);
     }
     .dist-label {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -294,13 +294,13 @@ function computeGradeLetter(total: number): string {
     }
     .dist-chips {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.65rem;
       flex-wrap: wrap;
     }
     .dist-chip {
-      padding: 0.25rem 0.65rem;
+      padding: 0.35rem 0.8rem;
       border-radius: 9999px;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
     }
     .dist-pending {
@@ -310,8 +310,8 @@ function computeGradeLetter(total: number): string {
     }
 
     .grading-progress-bar {
-      height: 4px; background: var(--border); border-radius: 4px;
-      overflow: hidden; margin-bottom: 1rem;
+      height: 5px; background: var(--border); border-radius: 4px;
+      overflow: hidden; margin-bottom: 1.25rem;
     }
     .grading-fill {
       height: 100%; background: var(--grad-green);
@@ -319,17 +319,17 @@ function computeGradeLetter(total: number): string {
     }
     .btn-save {
       background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border);
-      border-radius: var(--radius-xs); padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 500;
+      border-radius: var(--radius-sm); padding: 0.45rem 0.85rem; font-size: 0.85rem; font-weight: 600;
       display: inline-flex; align-items: center; justify-content: center; min-width: 80px;
       cursor: pointer; transition: all 0.2s;
     }
     .row-actions {
-      display: flex; gap: 0.5rem; align-items: center;
+      display: flex; gap: 0.5rem; align-items: center; min-width: 130px;
     }
     .btn-action {
-      background: transparent; border: 1px solid var(--border); border-radius: var(--radius-xs);
-      padding: 0.4rem 0.6rem; font-size: 0.8rem; font-weight: 500; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 0.3rem; transition: all 0.2s;
+      background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.45rem 0.75rem; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s;
       color: var(--text-secondary);
     }
     .btn-action:hover {

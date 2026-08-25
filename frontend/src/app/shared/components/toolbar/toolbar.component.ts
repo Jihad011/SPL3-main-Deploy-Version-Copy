@@ -121,22 +121,24 @@ export interface FilterOption { label: string; value: string; group?: string; }
     .toolbar {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      padding: 0.875rem 0;
+      gap: 0.85rem;
+      padding: 1rem 0;
       flex-wrap: wrap;
     }
-    .toolbar-search { flex: 1; min-width: 200px; max-width: 440px; }
+    .toolbar-search { flex: 1; min-width: 220px; max-width: 480px; }
     .search-wrapper {
       position: relative; display: flex; align-items: center;
     }
     .search-icon {
-      position: absolute; left: 0.875rem; color: var(--text-muted);
+      position: absolute; left: 1.15rem; color: var(--text-muted);
       pointer-events: none;
+      display: flex;
+      align-items: center;
     }
     .search-input {
-      width: 100%; padding: 0.6rem 2.5rem 0.6rem 2.5rem;
+      width: 100%; padding: 0.75rem 2.85rem 0.75rem 3.1rem;
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text-primary); font-size: 0.875rem;
+      border-radius: var(--radius-sm, 10px); color: var(--text-primary); font-size: 0.92rem;
       transition: border-color .2s, box-shadow .2s;
       font-family: inherit;
     }
@@ -145,24 +147,24 @@ export interface FilterOption { label: string; value: string; group?: string; }
       box-shadow: 0 0 0 3px rgba(34,211,238,0.12);
     }
     .search-clear {
-      position: absolute; right: 0.875rem; background: none; border: none;
-      color: var(--text-muted); cursor: pointer; padding: 0.25rem;
+      position: absolute; right: 1rem; background: none; border: none;
+      color: var(--text-muted); cursor: pointer; padding: 0.3rem;
       border-radius: 4px; display: flex; align-items: center; transition: color .2s;
     }
     .search-clear:hover { color: var(--text-primary); }
     .search-shortcut {
-      position: absolute; right: 0.75rem;
-      font-size: 0.7rem; color: var(--text-muted);
+      position: absolute; right: 0.85rem;
+      font-size: 0.72rem; color: var(--text-muted);
       background: var(--bg-elevated); border: 1px solid var(--border);
-      border-radius: 4px; padding: 0.1rem 0.35rem; font-family: monospace;
+      border-radius: 4px; padding: 0.15rem 0.45rem; font-family: monospace;
     }
     .toolbar-dropdown { position: relative; }
     .toolbar-btn {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.575rem 0.875rem;
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 1.15rem;
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text-secondary); font-size: 0.825rem;
-      cursor: pointer; transition: all .2s; font-family: inherit; font-weight: 500;
+      border-radius: var(--radius-sm, 10px); color: var(--text-secondary); font-size: 0.86rem;
+      cursor: pointer; transition: all .2s; font-family: inherit; font-weight: 600;
       white-space: nowrap;
     }
     .toolbar-btn:hover, .toolbar-btn.active {
