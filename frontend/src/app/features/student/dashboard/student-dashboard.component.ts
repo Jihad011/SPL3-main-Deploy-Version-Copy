@@ -1,9 +1,8 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { StudentDashboardResponse, EnrollmentResponse, FeeResponse } from '../../../core/models/models';
+import { StudentDashboardResponse, FeeResponse } from '../../../core/models/models';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthStateService } from '../../../core/services/auth-state.service';
@@ -12,29 +11,11 @@ import { listAnimation } from '../../../shared/animations';
 import { CardGlowDirective } from '../../../shared/directives/card-glow.directive';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
-interface SimulatorCourse {
-  enrollment: EnrollmentResponse;
-  selectedGrade: string;
-  gradePoint: number;
-}
-
-const GRADE_OPTIONS = [
-  { label: 'A+ (4.00)', value: 'A_PLUS',  point: 4.00 },
-  { label: 'A  (3.75)', value: 'A',       point: 3.75 },
-  { label: 'A- (3.50)', value: 'A_MINUS', point: 3.50 },
-  { label: 'B+ (3.25)', value: 'B_PLUS',  point: 3.25 },
-  { label: 'B  (3.00)', value: 'B',       point: 3.00 },
-  { label: 'B- (2.75)', value: 'B_MINUS', point: 2.75 },
-  { label: 'C+ (2.50)', value: 'C_PLUS',  point: 2.50 },
-  { label: 'C  (2.25)', value: 'C',       point: 2.25 },
-  { label: 'D  (2.00)', value: 'D',       point: 2.00 },
-  { label: 'F  (0.00)', value: 'F',       point: 0.00 },
-];
 
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe, DatePipe, SkeletonComponent, IconComponent, FormsModule, BaseChartDirective, CardGlowDirective],
+  imports: [CommonModule, RouterLink, DecimalPipe, DatePipe, SkeletonComponent, IconComponent, BaseChartDirective, CardGlowDirective],
   animations: [listAnimation],
   template: `
 <div class="page student-dashboard-page">
@@ -306,64 +287,7 @@ const GRADE_OPTIONS = [
           </div>
         </div>
 
-        <!-- 2. Re-engineered Goal Planner & CGPA Simulator -->
-        <div class="card bento-card" *ngIf="d.currentEnrollments.length > 0">
-          <div class="card-header">
-            <div class="card-header-titles">
-              <h2 class="card-title">🎯 Goal Planner & Simulator</h2>
-              <div class="card-sub">Simulate term grades to project cumulative CGPA</div>
-            </div>
-            <div class="projected-cgpa-pill" [style.color]="cgpaColor(projectedCgpa())" [style.background]="cgpaColor(projectedCgpa()) + '18'">
-              Proj: <strong class="font-mono">{{ projectedCgpa() | number:'1.2-2' }}</strong>
-            </div>
-          </div>
 
-          <!-- Target Selector Strip -->
-          <div class="target-planner-box">
-            <div class="target-row-label">Select Target Cumulative GPA:</div>
-            <div class="target-buttons-strip">
-              <button class="target-btn" [class.active]="targetCgpa === 3.50" (click)="setTarget(3.50)">3.50 (Honors)</button>
-              <button class="target-btn" [class.active]="targetCgpa === 3.75" (click)="setTarget(3.75)">3.75 (Distinction)</button>
-              <button class="target-btn" [class.active]="targetCgpa === 4.00" (click)="setTarget(4.00)">4.00 (Max)</button>
-            </div>
-            <div class="target-feasibility-card" [class.feasible]="targetRequirement().achievable" [class.unfeasible]="!targetRequirement().achievable">
-              <div class="feasibility-headline">
-                <app-icon [name]="targetRequirement().achievable ? 'check-circle' : 'alert-triangle'" [size]="15" />
-                <span>{{ targetRequirement().headline }}</span>
-              </div>
-              <p class="feasibility-desc">{{ targetRequirement().description }}</p>
-            </div>
-          </div>
-
-          <!-- Interactive Course Simulator Pickers -->
-          <div class="simulator-courses-list">
-            <div class="sim-row" *ngFor="let sim of simulatorCourses()">
-              <div class="sim-course-meta">
-                <span class="code-badge">{{ sim.enrollment.courseCode }}</span>
-                <span class="sim-name" [title]="sim.enrollment.courseName">{{ sim.enrollment.courseName }}</span>
-                <span class="sim-cr font-mono">{{ sim.enrollment.creditHours }}cr</span>
-              </div>
-              <div class="sim-picker-wrapper">
-                <select class="sim-select" [(ngModel)]="sim.selectedGrade" (ngModelChange)="onSimGradeChange(sim, $event)">
-                  <option *ngFor="let g of gradeOptions" [value]="g.value">{{ g.label }}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Live Projected Summary Bar -->
-          <div class="simulator-summary-bar">
-            <div class="sim-summary-text">
-              <span>Based on {{ d.totalCreditsEarned }} earned credits</span>
-            </div>
-            <div class="sim-projected-result">
-              <span class="proj-label">Projected CGPA</span>
-              <span class="proj-val font-mono" [style.color]="cgpaColor(projectedCgpa())">
-                {{ projectedCgpa() | number:'1.2-2' }}
-              </span>
-            </div>
-          </div>
-        </div>
 
         <!-- 3. Quick Academic Shortcuts -->
         <div class="card bento-card shortcuts-card">
@@ -768,207 +692,7 @@ const GRADE_OPTIONS = [
       }
     }
 
-    /* ── Goal Planner & Simulator Styles ──────────────────────── */
-    .projected-cgpa-pill {
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.2rem 0.55rem;
-      border-radius: var(--radius-xs);
-    }
 
-    .target-planner-box {
-      padding: 1rem 1.25rem;
-      background: var(--bg-elevated);
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .target-row-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
-    }
-
-    .target-buttons-strip {
-      display: flex;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
-    }
-
-    .target-btn {
-      padding: 0.28rem 0.65rem;
-      border-radius: var(--radius-xs);
-      border: 1px solid var(--border);
-      background: #FFFFFF;
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-
-      &:hover {
-        border-color: #94A3B8;
-        color: var(--text-primary);
-      }
-
-      &.active {
-        background: #0F172A;
-        border-color: #0F172A;
-        color: #FFFFFF;
-      }
-    }
-
-    .target-feasibility-card {
-      padding: 0.65rem 0.85rem;
-      border-radius: var(--radius-xs);
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-
-      &.feasible {
-        background: #ECFDF5;
-        border: 1px solid #A7F3D0;
-        color: #065F46;
-
-        .feasibility-headline {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          font-size: 0.78rem;
-          font-weight: 700;
-          color: #059669;
-        }
-        .feasibility-desc {
-          font-size: 0.72rem;
-          color: #047857;
-          margin: 0;
-          line-height: 1.35;
-        }
-      }
-
-      &.unfeasible {
-        background: #FFFBEB;
-        border: 1px solid #FDE68A;
-        color: #92400E;
-
-        .feasibility-headline {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          font-size: 0.78rem;
-          font-weight: 700;
-          color: #D97706;
-        }
-        .feasibility-desc {
-          font-size: 0.72rem;
-          color: #B45309;
-          margin: 0;
-          line-height: 1.35;
-        }
-      }
-    }
-
-    .simulator-courses-list {
-      padding: 0.75rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .sim-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid var(--border-light);
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .sim-course-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .sim-name {
-      font-size: 0.78rem;
-      color: var(--text-primary);
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-    }
-
-    .sim-cr {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .sim-picker-wrapper {
-      min-width: 120px;
-    }
-
-    .sim-select {
-      width: 100%;
-      padding: 0.25rem 0.5rem;
-      background: #FFFFFF;
-      border: 1px solid #CBD5E1;
-      border-radius: var(--radius-xs);
-      color: var(--text-primary);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-
-      &:focus {
-        outline: none;
-        border-color: #2563EB;
-      }
-    }
-
-    .simulator-summary-bar {
-      padding: 0.75rem 1.25rem;
-      border-top: 1px solid var(--border-light);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-elevated);
-    }
-
-    .sim-summary-text {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    .sim-projected-result {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-
-    .proj-label {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.04em;
-    }
-
-    .proj-val {
-      font-size: 1.35rem;
-      font-weight: 800;
-      line-height: 1.1;
-    }
 
     /* ── Quick Shortcuts ──────────────────────────────────────── */
     .shortcuts-card {
@@ -1035,8 +759,6 @@ export class StudentDashboardComponent implements OnInit {
   payingFeeId = signal<number | null>(null);
   error       = signal('');
   creditPercent = 0;
-  simulatorCourses = signal<SimulatorCourse[]>([]);
-  readonly gradeOptions = GRADE_OPTIONS;
 
   // Chart configuration
   cgpaTrendChartOptions: ChartOptions = {
@@ -1119,11 +841,6 @@ export class StudentDashboardComponent implements OnInit {
         this.dashboard.set(d);
         this.creditPercent = d.maxCreditsPerSemester > 0
           ? (d.currentSemesterCredits / d.maxCreditsPerSemester) * 100 : 0;
-        this.simulatorCourses.set(d.currentEnrollments.map(e => ({
-          enrollment: e,
-          selectedGrade: 'B',
-          gradePoint: 3.25
-        })));
 
         // Mock trend data leading up to current CGPA for visualization
         const currentCgpa = d.cgpa || 0;
@@ -1195,76 +912,4 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   gpColor(gp: number): string { return this.cgpaColor(gp); }
-
-  onSimGradeChange(sim: SimulatorCourse, gradeValue: string): void {
-    const found = GRADE_OPTIONS.find(g => g.value === gradeValue);
-    sim.gradePoint = found?.point ?? 0;
-    this.simulatorCourses.update(list => [...list]);
-  }
-
-  targetCgpa: number = 3.75;
-
-  setTarget(val: number): void {
-    this.targetCgpa = val;
-  }
-
-  targetRequirement = computed(() => {
-    const d = this.dashboard();
-    if (!d) return { achievable: true, headline: 'Calculating...', description: '' };
-    const earnedCredits = d.totalCreditsEarned || 0;
-    const currentCgpa = d.cgpa || 0;
-    const simCourses = this.simulatorCourses();
-    const termCredits = simCourses.reduce((sum, c) => sum + (c.enrollment.creditHours || 0), 0);
-    const target = this.targetCgpa;
-
-    if (termCredits === 0) {
-      return {
-        achievable: true,
-        headline: `Current CGPA: ${currentCgpa.toFixed(2)}`,
-        description: 'Enroll in courses for this semester to project your target CGPA requirement.'
-      };
-    }
-
-    // Required Term GPA formula:
-    // (target * (earnedCredits + termCredits) - currentCgpa * earnedCredits) / termCredits
-    const totalCreditsAfter = earnedCredits + termCredits;
-    const neededTermGpa = (target * totalCreditsAfter - currentCgpa * earnedCredits) / termCredits;
-
-    if (neededTermGpa <= 0) {
-      return {
-        achievable: true,
-        headline: `Target CGPA of ${target.toFixed(2)} is already secured! 🎉`,
-        description: `Even with passing grades, your cumulative GPA will remain above ${target.toFixed(2)}.`
-      };
-    }
-
-    if (neededTermGpa <= 4.00) {
-      const neededLetter = this.cgpaGradeLabel(neededTermGpa);
-      return {
-        achievable: true,
-        headline: `Need ~${neededTermGpa.toFixed(2)} Term GPA (${neededLetter} avg)`,
-        description: `Score an average of ${neededTermGpa.toFixed(2)} across your ${termCredits} enrolled credits to reach ${target.toFixed(2)} CGPA.`
-      };
-    }
-
-    // Unattainable in single term
-    const maxPossibleCgpa = (currentCgpa * earnedCredits + 4.00 * termCredits) / totalCreditsAfter;
-    return {
-      achievable: false,
-      headline: `Requires >4.00 Term GPA (${neededTermGpa.toFixed(2)})`,
-      description: `Target ${target.toFixed(2)} cannot be reached in this single semester alone. Max attainable CGPA with straight A+ (4.00) is ${maxPossibleCgpa.toFixed(2)}.`
-    };
-  });
-
-  projectedCgpa = computed(() => {
-    const d = this.dashboard();
-    if (!d) return 0;
-    const simCourses = this.simulatorCourses();
-    if (!simCourses.length) return d.cgpa;
-    const existingWeighted = d.cgpa * d.totalCreditsEarned;
-    const simWeighted = simCourses.reduce((s, c) => s + c.gradePoint * c.enrollment.creditHours, 0);
-    const simCredits  = simCourses.reduce((s, c) => s + c.enrollment.creditHours, 0);
-    const totalCredits = d.totalCreditsEarned + simCredits;
-    return totalCredits > 0 ? (existingWeighted + simWeighted) / totalCredits : 0;
-  });
 }
