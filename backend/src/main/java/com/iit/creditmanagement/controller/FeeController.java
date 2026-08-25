@@ -94,4 +94,11 @@ public class FeeController {
     public ResponseEntity<List<FeeResponse>> getAllFees() {
         return ResponseEntity.ok(feeService.getAllFees());
     }
+
+    @PostMapping("/audit-gap-fines")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Audit and auto-generate semester gap fines for all students (admin only)")
+    public ResponseEntity<List<FeeResponse>> auditGapFines(@AuthenticationPrincipal User admin) {
+        return ResponseEntity.ok(feeService.auditAndGenerateGapFines(admin.getId()));
+    }
 }

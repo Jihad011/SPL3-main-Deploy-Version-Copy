@@ -1,0 +1,278 @@
+<div class="page history-dossier-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-eyebrow">
+        <app-icon name="history" [size]="14"></app-icon>
+        <span>Academic Portfolio & Records</span>
+      </div>
+      <h1 class="page-title">My Academic History</h1>
+      <p class="page-subtitle">
+        Official semester-by-semester grades, dynamic semester roll progression, credits, and transcript records.
+      </p>
+    </div>
+
+    <div *ngIf="history() as student" class="page-header-actions">
+      <button
+        type="button"
+        (click)="downloadTranscript()"
+        [disabled]="downloadingPdf()"
+        class="btn btn-primary btn-transcript-top">
+        <app-icon *ngIf="!downloadingPdf()" name="download" [size]="15"></app-icon>
+        <span *ngIf="downloadingPdf()" class="spinner-sm"></span>
+        <span>{{ downloadingPdf() ? 'Generating PDF...' : 'Download Official Transcript' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="errorMessage()" class="alert alert-error">
+    <app-icon name="alert-triangle" [size]="18"></app-icon>
+    <span>{{ errorMessage() }}</span>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div *ngIf="loading()" class="skeleton-wrapper">
+    <app-skeleton height="200px" borderRadius="16px"></app-skeleton>
+    <div class="skeleton-grid mt-4">
+      <app-skeleton height="110px" borderRadius="16px"></app-skeleton>
+      <app-skeleton height="110px" borderRadius="16px"></app-skeleton>
+      <app-skeleton height="110px" borderRadius="16px"></app-skeleton>
+      <app-skeleton height="110px" borderRadius="16px"></app-skeleton>
+    </div>
+  </div>
+
+  <!-- Student Dossier Hero & Timeline -->
+  <ng-container *ngIf="history() as student">
+    <!-- Hero Profile Card -->
+    <div class="dossier-hero-card card" appCardGlow>
+      <div class="hero-top-bar">
+        <div class="student-profile-left">
+          <div class="avatar-squircle">
+            {{ student.studentName.charAt(0) }}
+          </div>
+          <div class="profile-details">
+            <div class="name-status-line">
+              <h2 class="student-title">{{ student.studentName }}</h2>
+              <span
+                class="status-badge"
+                [ngClass]="{
+                  'status-active': student.status === 'ACTIVE',
+                  'status-gap': student.status === 'ON_GAP',
+                  'status-grad': student.status === 'GRADUATED'
+                }">
+                <span class="status-pulse-dot"></span>
+                {{ student.status }}
+              </span>
+            </div>
+            <div class="email-subtext">{{ student.email }}</div>
+
+            <!-- Dynamic Roll & Metadata Badges -->
+            <div class="meta-badges-cluster">
+              <div class="dynamic-roll-container">
+                <span class="roll-callout-label">Active Semester Roll:</span>
+                <span class="roll-callout-value font-mono">{{ student.currentSemesterRollId }}</span>
+              </div>
+              <div class="meta-tag">
+                <span class="tag-k">Base Roll:</span>
+                <span class="tag-v font-mono">{{ student.baseRollNumber }}</span>
+              </div>
+              <div class="meta-tag">
+                <span class="tag-k">Reg No:</span>
+                <span class="tag-v font-mono">{{ student.registrationNumber || 'N/A' }}</span>
+              </div>
+              <div class="meta-tag">
+                <span class="tag-k">Batch:</span>
+                <span class="tag-v">{{ student.batch }}</span>
+              </div>
+              <div class="meta-tag">
+                <span class="tag-k">Class Roll:</span>
+                <span class="tag-v font-mono">{{ student.classRoll }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Statistics Grid -->
+      <div class="kpi-stats-grid">
+        <div class="kpi-stat-card">
+          <div class="kpi-icon-wrap icon-purple">
+            <app-icon name="chart" [size]="22"></app-icon>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-label">Cumulative GPA (CGPA)</div>
+            <div class="kpi-number font-mono" [ngClass]="getCgpaBadgeClass(student.cgpa)">
+              {{ student.cgpa | number:'1.2-2' }}
+            </div>
+            <div class="kpi-subtext">Scale 4.00 (Standard)</div>
+          </div>
+        </div>
+
+        <div class="kpi-stat-card">
+          <div class="kpi-icon-wrap icon-green">
+            <app-icon name="book-open" [size]="22"></app-icon>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-label">Credits Earned</div>
+            <div class="kpi-number font-mono">
+              {{ student.totalCreditsCompleted }} <span class="kpi-total">/ 36</span>
+            </div>
+            <div class="kpi-subtext">{{ student.totalCreditsAttempted }} Credits Attempted</div>
+          </div>
+        </div>
+
+        <div class="kpi-stat-card">
+          <div class="kpi-icon-wrap icon-orange">
+            <app-icon name="alert-triangle" [size]="22"></app-icon>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-label">Semester Gaps</div>
+            <div class="kpi-number font-mono" [class.text-amber]="student.totalGapSemesters > 0">
+              {{ student.totalGapSemesters }} <span class="kpi-total">Term(s)</span>
+            </div>
+            <div class="kpi-subtext" [class.text-amber]="student.totalGapSemesters > 0">
+              ৳{{ student.totalGapFines | number:'1.0-0' }} Gap Fines
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-stat-card">
+          <div class="kpi-icon-wrap" [ngClass]="student.totalDues > 0 ? 'icon-red' : 'icon-slate'">
+            <app-icon name="credit-card" [size]="22"></app-icon>
+          </div>
+          <div class="kpi-info">
+            <div class="kpi-label">Outstanding Dues</div>
+            <div class="kpi-number font-mono" [class.text-red]="student.totalDues > 0">
+              ৳{{ student.totalDues | number:'1.0-0' }}
+            </div>
+            <div class="kpi-subtext">৳{{ student.totalPaidFees | number:'1.0-0' }} Paid</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semester Timeline Section -->
+    <div class="progression-timeline-section">
+      <div class="timeline-header-bar">
+        <div class="header-left-title">
+          <app-icon name="calendar" [size]="20" class="text-indigo-500"></app-icon>
+          <h2 class="section-title">Semester-by-Semester Performance</h2>
+        </div>
+        <div class="timeline-header-actions">
+          <button type="button" class="btn-toggle-all" (click)="toggleAllSemesters()">
+            <app-icon [name]="collapsedSemesters().size > 0 ? 'plus' : 'minus'" [size]="14"></app-icon>
+            <span>{{ collapsedSemesters().size > 0 ? 'Expand All' : 'Collapse All' }}</span>
+          </button>
+          <span class="count-pill">
+            {{ student.semesters.length }} Total Semesters
+          </span>
+        </div>
+      </div>
+
+      <div class="timeline-cards-stack">
+        <ng-container *ngFor="let sem of student.semesters">
+          <!-- Gap Semester Card -->
+          <div *ngIf="sem.isGap" class="card gap-term-card">
+            <div class="gap-term-body">
+              <div class="gap-icon-circle">
+                <app-icon name="alert-triangle" [size]="24"></app-icon>
+              </div>
+              <div class="gap-content">
+                <div class="gap-term-title-row">
+                  <h3 class="gap-term-name">{{ sem.semesterLabel }}</h3>
+                  <span class="gap-term-roll font-mono">Term Roll: {{ sem.semesterRollId }}</span>
+                </div>
+                <p class="gap-term-desc">
+                  ⚠️ <strong>Gap Semester</strong> — You were not enrolled during this academic term.
+                </p>
+              </div>
+            </div>
+            <div class="gap-penalty-pill">
+              Gap Fine: ৳{{ sem.gapFineAmount | number:'1.0-0' }}
+            </div>
+          </div>
+
+          <!-- Enrolled Semester Card -->
+          <div *ngIf="!sem.isGap" class="card enrolled-semester-card" appCardGlow>
+            <div class="enrolled-header-row clickable-accordion-header" (click)="toggleSemester(sem.semesterId)">
+              <div class="enrolled-left">
+                <div class="semester-year-avatar font-mono">
+                  {{ sem.year % 100 }}
+                </div>
+                <div class="semester-name-group">
+                  <h3 class="semester-heading">{{ sem.semesterLabel }}</h3>
+                  <div class="semester-roll-badge">
+                    <span class="badge-k">Semester Roll:</span>
+                    <span class="badge-v font-mono">{{ sem.semesterRollId }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="enrolled-right-metrics">
+                <div class="metric-pill">
+                  <span class="pill-k">Credits:</span>
+                  <span class="pill-v font-mono">{{ sem.totalCredits }}</span>
+                </div>
+                <div class="metric-pill sgpa-metric-pill">
+                  <span class="pill-k">Term SGPA:</span>
+                  <span class="pill-v font-mono">{{ sem.sgpa | number:'1.2-2' }}</span>
+                </div>
+                <button type="button" class="accordion-caret" [class.rotated]="isCollapsed(sem.semesterId)">
+                  <app-icon name="arrow-right" [size]="14"></app-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Course Table -->
+            <div class="table-responsive-wrapper" *ngIf="!isCollapsed(sem.semesterId)">
+              <table class="academic-table">
+                <thead>
+                  <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th class="text-center">Credits</th>
+                    <th>Teacher</th>
+                    <th class="text-center">Midterm (40)</th>
+                    <th class="text-center">Final (60)</th>
+                    <th class="text-center">Total (100)</th>
+                    <th class="text-center">Grade</th>
+                    <th class="text-center">GP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let c of sem.courses">
+                    <td class="col-code">
+                      <span class="code-text font-mono">{{ c.courseCode }}</span>
+                      <span *ngIf="c.isRetake" class="tag-retake">Retake</span>
+                    </td>
+                    <td class="col-title">{{ c.courseName }}</td>
+                    <td class="col-center font-mono">{{ c.creditHours }}</td>
+                    <td class="col-teacher">{{ c.teacherName }}</td>
+                    <td class="col-center font-mono text-muted-val">
+                      {{ c.midtermMarks != null ? (c.midtermMarks | number:'1.1-1') : '—' }}
+                    </td>
+                    <td class="col-center font-mono text-muted-val">
+                      {{ c.finalMarks != null ? (c.finalMarks | number:'1.1-1') : '—' }}
+                    </td>
+                    <td class="col-center font-mono font-bold text-total">
+                      {{ c.totalMarks != null ? (c.totalMarks | number:'1.1-1') : '—' }}
+                    </td>
+                    <td class="col-center">
+                      <span class="grade-pill" [ngClass]="getGradeBadgeClass(c.gradeLetter)">
+                        {{ c.gradeLetter }}
+                      </span>
+                    </td>
+                    <td class="col-center font-mono font-bold col-gp">
+                      {{ c.gradePoint != null ? (c.gradePoint | number:'1.2-2') : '—' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+</div>

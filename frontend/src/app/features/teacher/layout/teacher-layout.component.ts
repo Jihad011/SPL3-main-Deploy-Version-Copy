@@ -21,6 +21,7 @@ import {
 export class TeacherLayoutComponent {
   readonly navItems: PortalNavItem[] = [
     { label: 'Dashboard', link: 'dashboard', icon: 'layout-dashboard' },
-    { label: 'Enter Grades', link: 'grade-entry', icon: 'list-check' }
+    { label: 'Enter Grades', link: 'grade-entry', icon: 'list-check' },
+    { label: 'Student History', link: 'student-history', icon: 'history' }
   ];
 }

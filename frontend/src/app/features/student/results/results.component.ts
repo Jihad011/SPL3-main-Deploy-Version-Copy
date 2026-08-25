@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
+import { PdfService } from '../../../core/services/pdf.service';
 import { GradeResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
@@ -13,13 +14,13 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic performance</div>
-      <h1 class="page-title text-gradient-flow">Academic Results</h1>
+      <h1 class="page-title">Academic Results</h1>
       <p class="page-subtitle">Your full academic transcript by semester</p>
     </div>
     
     <div class="header-actions" style="display:flex; align-items:center; gap: 1rem;">
-      <button class="btn btn-primary magnetic btn-neon" (click)="downloadTranscript()" [disabled]="downloading()" *ngIf="!loading() && grades().length > 0">
-        <app-icon name="download" [size]="16" *ngIf="!downloading()"></app-icon>
+      <button class="btn btn-primary" (click)="downloadTranscript()" [disabled]="downloading()" *ngIf="!loading() && grades().length > 0">
+        <app-icon name="download" [size]="15" *ngIf="!downloading()"></app-icon>
         <span class="spinner-sm" *ngIf="downloading()"></span>
         {{ downloading() ? 'Generating PDF...' : 'Download Transcript' }}
       </button>
@@ -27,7 +28,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
       <!-- CGPA Ring in header -->
       <div class="header-cgpa-ring" *ngIf="!loading() && grades().length > 0">
       <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
-        <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+        <circle cx="40" cy="40" r="32" fill="none" stroke="#F1F5F9" stroke-width="7"/>
         <circle cx="40" cy="40" r="32" fill="none"
           [attr.stroke]="cgpaColor(cgpa())"
           stroke-width="7" stroke-linecap="round"
@@ -45,17 +46,11 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
   <div class="alert alert-error" *ngIf="error()">
-    <app-icon name="alert-triangle" [size]="18"></app-icon>{{ error() }}
+    <app-icon name="alert-triangle" [size]="16"></app-icon>{{ error() }}
   </div>
 
-  <!-- Summary stats -->
+  <!-- Stats Grid -->
   <div class="stats-grid" *ngIf="!loading() && grades().length > 0">
-    <div class="stat-card stat-card--blue">
-      <div class="stat-icon"><app-icon name="star" [size]="22"></app-icon></div>
-      <div class="stat-value" [style.color]="cgpaColor(cgpa())">{{ cgpa() | number:'1.2-2' }}</div>
-      <div class="stat-label">Cumulative GPA</div>
-      <div class="stat-sub" [style.color]="cgpaColor(cgpa())">{{ cgpaGradeLabel(cgpa()) }} Standing</div>
-    </div>
     <div class="stat-card stat-card--green">
       <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
       <div class="stat-value">{{ completedCourses() }}</div>
@@ -75,7 +70,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 
   <!-- Semester accordion -->
   <ng-container *ngFor="let sem of semesters(); let idx = index">
-    <div class="accordion-card card-glow-border" [class.accordion-open]="isOpen(sem)">
+    <div class="accordion-card" [class.accordion-open]="isOpen(sem)">
       <button class="accordion-header" (click)="toggle(sem)">
         <div class="accordion-left">
           <div class="accordion-semester-dot" [style.background]="semColor(idx)"></div>
@@ -213,7 +208,10 @@ export class ResultsComponent implements OnInit {
     this.grades().filter(g => g.gradePoint !== null).reduce((sum, g) => sum + g.creditHours, 0)
   );
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private pdfService: PdfService
+  ) {}
 
   ngOnInit(): void {
     this.api.getMyGrades().subscribe({
@@ -239,21 +237,19 @@ export class ResultsComponent implements OnInit {
 
   downloadTranscript(): void {
     this.downloading.set(true);
-    this.api.downloadTranscript().subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Official_Transcript.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+    this.api.getMyAcademicHistory().subscribe({
+      next: (history) => {
         this.downloading.set(false);
+        try {
+          this.pdfService.generateTranscriptPdf(history);
+        } catch (e) {
+          console.error('Failed to generate transcript PDF', e);
+          this.error.set('Failed to generate PDF. Please try again.');
+        }
       },
       error: () => {
-        this.error.set('Failed to download transcript. Please try again.');
         this.downloading.set(false);
+        this.error.set('Failed to fetch academic history for transcript. Please try again.');
       }
     });
   }

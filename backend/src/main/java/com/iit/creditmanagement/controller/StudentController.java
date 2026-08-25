@@ -3,6 +3,7 @@ package com.iit.creditmanagement.controller;
 import com.iit.creditmanagement.constants.AppConstants;
 import com.iit.creditmanagement.exception.BusinessRuleException;
 import com.iit.creditmanagement.model.dto.response.EnrollmentResponse;
+import com.iit.creditmanagement.model.dto.response.GradeResponse;
 import com.iit.creditmanagement.model.dto.response.StudentDashboardResponse;
 import com.iit.creditmanagement.model.dto.response.UserResponse;
 import com.iit.creditmanagement.model.entity.User;
@@ -26,11 +27,14 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.iit.creditmanagement.model.dto.response.StudentHistoryResponse;
+import com.iit.creditmanagement.service.StudentHistoryService;
+
 @RestController
 @RequestMapping("/student")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer Authentication")
-@Tag(name = "Student", description = "Student dashboard and profile endpoints")
+@Tag(name = "Student", description = "Student dashboard, profile, and academic history endpoints")
 public class StudentController {
 
     private final SemesterRepository   semesterRepository;
@@ -39,6 +43,7 @@ public class StudentController {
     private final GradeService         gradeService;
     private final FeeService           feeService;
     private final TranscriptService    transcriptService;
+    private final StudentHistoryService studentHistoryService;
 
     /**
      * Aggregated dashboard endpoint — returns everything the student dashboard needs
@@ -112,13 +117,18 @@ public class StudentController {
     @Operation(summary = "Download Official Academic Transcript as PDF")
     public ResponseEntity<byte[]> downloadTranscript(@AuthenticationPrincipal User student) {
         byte[] pdfBytes = transcriptService.generateTranscriptPdf(student.getId());
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "Official_Transcript.pdf");
+        String roll = (student.getRollNumber() != null) ? student.getRollNumber() : String.valueOf(student.getId());
         
         return ResponseEntity.ok()
-                .headers(headers)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Official_Transcript_" + roll + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
+    }
+
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Get student's full historical academic dossier")
+    public ResponseEntity<StudentHistoryResponse> getAcademicHistory(@AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(studentHistoryService.getStudentHistoryById(student.getId()));
     }
 }

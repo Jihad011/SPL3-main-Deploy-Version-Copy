@@ -208,6 +208,57 @@ export interface UserResponse {
   isActive: boolean;
 }
 
+// ── Student Academic History Dossier ───────────────────────────
+export interface CourseGradeRecordDTO {
+  courseId: number;
+  courseCode: string;
+  courseName: string;
+  creditHours: number;
+  teacherName: string;
+  midtermMarks: number | null;
+  finalMarks: number | null;
+  totalMarks: number | null;
+  gradeLetter: string;
+  gradePoint: number | null;
+  isRetake: boolean;
+  enrollmentStatus: string;
+}
+
+export interface SemesterHistoryDTO {
+  semesterId: number;
+  semesterName: string;
+  year: number;
+  semesterLabel: string;
+  semesterRollId: string;
+  isActive: boolean;
+  isGap: boolean;
+  totalCredits: number;
+  sgpa: number;
+  gapFineAmount: number;
+  courses: CourseGradeRecordDTO[];
+}
+
+export interface StudentHistoryResponse {
+  studentId: number;
+  studentName: string;
+  email: string;
+  baseRollNumber: string;
+  currentSemesterRollId: string;
+  registrationNumber: string;
+  batch: number;
+  classRoll: number;
+  phone: string | null;
+  status: string;
+  totalCreditsCompleted: number;
+  totalCreditsAttempted: number;
+  cgpa: number;
+  totalDues: number;
+  totalPaidFees: number;
+  totalGapSemesters: number;
+  totalGapFines: number;
+  semesters: SemesterHistoryDTO[];
+}
+
 // ── Generic ───────────────────────────────────────────────────
 export interface ApiResponse {
   success: boolean;
@@ -220,3 +271,4 @@ export interface ApiError {
   timestamp: string;
   fieldErrors?: Record<string, string>;
 }
+

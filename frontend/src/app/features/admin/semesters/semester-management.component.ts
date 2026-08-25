@@ -13,55 +13,73 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
-      <h1 class="page-title text-gradient-flow">Semester Management</h1>
+      <div class="page-eyebrow">Term Administration</div>
+      <h1 class="page-title">Semester Management</h1>
       <p class="page-subtitle">Control which semester is open for student enrollment</p>
     </div>
-    <button class="btn btn-primary btn-neon" (click)="showModal.set(true)">
-      <app-icon name="calendar" [size]="17"></app-icon>Add Semester
+    <button class="btn btn-primary" (click)="showModal.set(true)">
+      <app-icon name="calendar" [size]="15"></app-icon>Add Semester
     </button>
   </div>
 
-  <div class="alert alert-success" *ngIf="success()">✅ {{ success() }}</div>
-  <div class="alert alert-error"   *ngIf="error()">⚠️ {{ error() }}</div>
+  <div class="alert alert-success" *ngIf="success()">
+    <app-icon name="check-circle" [size]="16"></app-icon> {{ success() }}
+  </div>
+  <div class="alert alert-error" *ngIf="error()">
+    <app-icon name="alert-triangle" [size]="16"></app-icon> {{ error() }}
+  </div>
 
   <!-- Semester List (Main View) -->
-  <div class="card card-glow-border">
-    <div class="card-header card-glow-border">
-      <div class="card-title card-glow-border">All Semesters</div>
-      <div class="card-sub card-glow-border">{{ semesters().length }} semesters total</div>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">All Academic Semesters</div>
+        <div class="card-sub">{{ semesters().length }} semester terms configured</div>
+      </div>
     </div>
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Semester</th>
-            <th>Period</th>
-            <th>Status</th>
+            <th>Semester Term</th>
+            <th>Academic Period</th>
+            <th>Enrollment Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let s of semesters()">
-            <td><strong>{{ s.label }}</strong></td>
-            <td style="font-size:0.8rem;color:var(--text-secondary)">
-              {{ s.startDate | date:'dd MMM' }} – {{ s.endDate | date:'dd MMM yyyy' }}
+            <td>
+              <div style="display:flex;align-items:center;gap:0.6rem">
+                <span class="code-badge font-mono">{{ s.name.substring(0, 2) }}{{ s.year % 100 }}</span>
+                <strong>{{ s.label }}</strong>
+              </div>
+            </td>
+            <td style="font-size:0.85rem;color:var(--text-secondary)">
+              {{ s.startDate | date:'dd MMM yyyy' }} – {{ s.endDate | date:'dd MMM yyyy' }}
             </td>
             <td>
               <span class="status-badge" [class.status-active]="s.isActive" [class.status-inactive]="!s.isActive">
-                {{ s.isActive ? '● Active' : 'Inactive' }}
+                <span class="badge-dot" *ngIf="s.isActive"></span>
+                {{ s.isActive ? 'Enrollment & Term Active' : 'Concluded / Inactive' }}
               </span>
             </td>
             <td>
-              <button class="btn-primary btn-sm btn-neon" *ngIf="!s.isActive" (click)="activate(s)">Activate</button>
-              <span *ngIf="s.isActive" class="text-muted">Current</span>
+              <button class="btn btn-primary btn-sm btn-neon" *ngIf="!s.isActive" (click)="activate(s)">
+                <app-icon name="check-circle" [size]="14"></app-icon> Activate Term
+              </button>
+              <span *ngIf="s.isActive" class="status-badge status-active" style="border:none">
+                <app-icon name="check-circle" [size]="14"></app-icon> Current Session
+              </span>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="empty-state" *ngIf="semesters().length === 0">
-      <div class="empty-icon">📅</div>
-      <h3>No semesters yet</h3>
+      <div class="empty-icon"><app-icon name="calendar" [size]="32"></app-icon></div>
+      <h3>No semesters configured yet</h3>
+      <p>Click 'Add Semester' above to open an academic session.</p>
     </div>
   </div>
 </div>

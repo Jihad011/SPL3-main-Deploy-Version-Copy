@@ -26,6 +26,7 @@ export class AuthStateService {
   isLoggedIn(): boolean { return !!this._user(); }
   getRole(): Role | null { return this._user()?.role ?? null; }
   getUserId(): number | null { return this._user()?.userId ?? null; }
+  getToken(): string | null { return this._user()?.token ?? null; }
 
   logout(): void {
     this.clearSession();

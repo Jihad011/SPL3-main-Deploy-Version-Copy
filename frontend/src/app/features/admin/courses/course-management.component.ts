@@ -1,39 +1,40 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { CourseResponse, CourseRequest, UserResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-course-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IconComponent, ConfirmModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IconComponent, ToolbarComponent, ConfirmModalComponent],
   template: `
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic catalog</div>
-      <h1 class="page-title text-gradient-flow">Course Management</h1>
+      <h1 class="page-title">Course Management</h1>
       <p class="page-subtitle">Create and manage course offerings</p>
     </div>
-    <button class="btn btn-primary btn-neon" (click)="showForm.set(!showForm())">
-      <app-icon [name]="showForm() ? 'x' : 'book-open'" [size]="17"></app-icon>
+    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
+      <app-icon [name]="showForm() ? 'x' : 'book-open'" [size]="15"></app-icon>
       {{ showForm() ? 'Cancel' : 'Add Course' }}
     </button>
   </div>
 
   <!-- Create Course Panel -->
-  <div class="card form-panel card-glow-border" *ngIf="showForm()">
-    <div class="card-header card-glow-border">
-      <div class="card-title card-glow-border">Create New Course</div>
-      <div class="card-sub card-glow-border">Fill in all required fields</div>
+  <div class="card form-panel" *ngIf="showForm()">
+    <div class="card-header">
+      <div class="card-title">Create New Course</div>
+      <div class="card-sub">Fill in all required fields</div>
     </div>
-    <div class="form-card card-glow-border">
+    <div class="form-card">
       <div class="alert alert-error" *ngIf="formError()">
-        <app-icon name="alert-triangle" [size]="18"></app-icon>{{ formError() }}
+        <app-icon name="alert-triangle" [size]="16"></app-icon>{{ formError() }}
       </div>
       <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
         <div class="form-group">
@@ -84,12 +85,21 @@ import { ViewChild } from '@angular/core';
 
   <app-confirm-modal #confirmModal (confirm)="confirmDeactivate()" />
 
+  <!-- Universal Toolbar -->
+  <app-toolbar
+    *ngIf="!loading() && courses().length > 0"
+    searchPlaceholder="Search by course code, name, or faculty..."
+    [showViewToggle]="false"
+    [resultCount]="filteredCourses().length"
+    (searchChange)="query.set($event)"
+  />
+
   <!-- Courses Table -->
   <div class="card card-glow-border" *ngIf="!loading()">
     <div class="card-header card-glow-border">
       <div>
-        <div class="card-title card-glow-border">All Courses</div>
-        <div class="card-sub card-glow-border">{{ courses().length }} courses found</div>
+        <div class="card-title card-glow-border">All Academic Courses</div>
+        <div class="card-sub card-glow-border">{{ filteredCourses().length }} of {{ courses().length }} courses found</div>
       </div>
     </div>
     <div class="table-wrapper">
@@ -101,25 +111,26 @@ import { ViewChild } from '@angular/core';
             <th>Credits</th>
             <th>Type</th>
             <th>Enrollment</th>
-            <th>Teacher</th>
+            <th>Assigned Faculty</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let c of courses()">
+          <tr *ngFor="let c of filteredCourses()">
             <td><span class="code-badge">{{ c.code }}</span></td>
             <td><strong>{{ c.name }}</strong></td>
-            <td>{{ c.creditHours }}</td>
+            <td>{{ c.creditHours }} Cr</td>
             <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
             <td>
               <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'">
-                {{ c.currentEnrollment }}/{{ c.maxSeats }}
+                {{ c.currentEnrollment }} / {{ c.maxSeats }}
               </span>
             </td>
             <td>{{ c.teacherName ?? '—' }}</td>
             <td>
               <span class="status-badge" [class.status-active]="c.isActive" [class.status-inactive]="!c.isActive">
+                <span class="badge-dot" *ngIf="c.isActive"></span>
                 {{ c.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
@@ -130,10 +141,10 @@ import { ViewChild } from '@angular/core';
         </tbody>
       </table>
     </div>
-    <div class="empty-state" *ngIf="courses().length === 0">
+    <div class="empty-state" *ngIf="filteredCourses().length === 0">
       <div class="empty-icon"><app-icon name="book-open" [size]="28"></app-icon></div>
-      <h3>No courses yet</h3>
-      <p>Click "+ Add Course" to create the first course.</p>
+      <h3>No courses found</h3>
+      <p>Try adjusting your search query or click '+ Add Course' to create a new offering.</p>
     </div>
   </div>
 </div>
@@ -146,7 +157,18 @@ export class CourseManagementComponent implements OnInit {
   showForm  = signal(false);
   saving    = signal(false);
   formError = signal('');
+  query     = signal('');
   form: FormGroup;
+
+  filteredCourses = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    return !q ? this.courses() : this.courses().filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      (c.teacherName || '').toLowerCase().includes(q) ||
+      c.courseType.toLowerCase().includes(q)
+    );
+  });
 
   @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
   pendingCourse = signal<CourseResponse | null>(null);

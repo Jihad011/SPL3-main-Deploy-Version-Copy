@@ -4,40 +4,50 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { UserResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-teacher-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent],
   template: `
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Directory administration</div>
-      <h1 class="page-title text-gradient-flow">Faculty Management</h1>
+      <h1 class="page-title">Faculty Management</h1>
       <p class="page-subtitle">View and add faculty accounts</p>
     </div>
-    <button class="btn btn-primary btn-neon" (click)="showAddModal.set(true)">
-      <app-icon name="user" [size]="17"></app-icon>Add Faculty
+    <button class="btn btn-primary" (click)="showAddModal.set(true)">
+      <app-icon name="user" [size]="15"></app-icon>Add Faculty
     </button>
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+
+  <!-- Universal Toolbar -->
+  <app-toolbar
+    *ngIf="!loading() && teachers().length > 0"
+    searchPlaceholder="Search faculty by name or email..."
+    [showViewToggle]="false"
+    [resultCount]="filteredTeachers().length"
+    (searchChange)="query.set($event)"
+  />
 
   <div class="card" *ngIf="!loading()">
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Faculty Name</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Status</th>
+            <th>Account Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let t of teachers()">
+          <tr *ngFor="let t of filteredTeachers()">
             <td>
               <div class="table-cell-user">
                 <div class="user-avatar" [style.background]="avatarGradient(t.name)">
@@ -50,12 +60,13 @@ import { ToastService } from '../../../core/services/toast.service';
             <td><span class="badge badge-teacher">FACULTY</span></td>
             <td>
               <span class="status-badge" [class.status-active]="t.isActive" [class.status-inactive]="!t.isActive">
+                <span class="badge-dot" *ngIf="t.isActive"></span>
                 {{ t.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
           </tr>
-          <tr *ngIf="teachers().length === 0">
-            <td colspan="4" class="text-center text-muted py-8">No faculty members found.</td>
+          <tr *ngIf="filteredTeachers().length === 0">
+            <td colspan="4" class="text-center text-muted py-8">No matching faculty members found.</td>
           </tr>
         </tbody>
       </table>
@@ -127,12 +138,21 @@ import { ToastService } from '../../../core/services/toast.service';
 export class TeacherManagementComponent implements OnInit {
   teachers = signal<UserResponse[]>([]);
   loading = signal(true);
+  query = signal('');
   
   showAddModal = signal(false);
   saving = signal(false);
   error = signal('');
   
   newTeacher = { name: '', email: '', password: '', role: 'TEACHER' };
+
+  filteredTeachers = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    return !q ? this.teachers() : this.teachers().filter(t =>
+      t.name.toLowerCase().includes(q) ||
+      t.email.toLowerCase().includes(q)
+    );
+  });
 
   constructor(private api: ApiService, private toast: ToastService) {}
 

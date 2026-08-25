@@ -24,18 +24,26 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import com.iit.creditmanagement.model.dto.response.StudentHistoryResponse;
+import com.iit.creditmanagement.service.StudentHistoryService;
+import com.iit.creditmanagement.service.TranscriptService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 @RestController
 @RequestMapping("/teacher")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
 @SecurityRequirement(name = "Bearer Authentication")
-@Tag(name = "Teacher", description = "Teacher dashboard and grade-entry endpoints")
+@Tag(name = "Teacher", description = "Teacher dashboard, grade-entry, and student history endpoints")
 public class TeacherController {
 
-    private final CourseService      courseService;
-    private final EnrollmentService  enrollmentService;
-    private final GradeService       gradeService;
-    private final SemesterRepository semesterRepository;
+    private final CourseService         courseService;
+    private final EnrollmentService     enrollmentService;
+    private final GradeService          gradeService;
+    private final SemesterRepository    semesterRepository;
+    private final StudentHistoryService studentHistoryService;
+    private final TranscriptService     transcriptService;
 
     /**
      * Teacher profile — returns the logged-in teacher's own data.
@@ -110,5 +118,37 @@ public class TeacherController {
             @AuthenticationPrincipal User teacher) {
         
         return ResponseEntity.ok(gradeService.uploadGradesCsv(teacher.getId(), courseId, file));
+    }
+
+    /**
+     * Look up student full academic dossier by roll number, dynamic roll (e.g. 26S0204), or ID.
+     */
+    @GetMapping("/students/{query}/history")
+    @Operation(summary = "Get full student academic history by roll ID, registration, or name")
+    public ResponseEntity<StudentHistoryResponse> getStudentHistory(@PathVariable String query) {
+        return ResponseEntity.ok(studentHistoryService.getStudentHistoryByQuery(query));
+    }
+
+    /**
+     * Search students by query for autocomplete.
+     */
+    @GetMapping("/students/search")
+    @Operation(summary = "Search students by roll, name, or registration for autocomplete")
+    public ResponseEntity<List<UserResponse>> searchStudents(
+            @RequestParam(required = false, defaultValue = "") String q) {
+        return ResponseEntity.ok(studentHistoryService.searchStudents(q));
+    }
+
+    /**
+     * Download official PDF transcript for a student directly from teacher view.
+     */
+    @GetMapping("/students/{studentId}/transcript")
+    @Operation(summary = "Download official student PDF transcript")
+    public ResponseEntity<byte[]> getStudentTranscript(@PathVariable Long studentId) {
+        byte[] pdfBytes = transcriptService.generateTranscriptPdf(studentId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=transcript_" + studentId + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 }

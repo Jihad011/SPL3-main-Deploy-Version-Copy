@@ -25,11 +25,30 @@ public interface FeeRepository extends JpaRepository<Fee, Long> {
     """)
     BigDecimal totalUnpaidByStudent(@Param("studentId") Long studentId);
 
+    @Query("""
+        SELECT COALESCE(SUM(f.amount), 0)
+        FROM Fee f
+        WHERE f.student.id = :studentId AND f.status = 'PAID'
+    """)
+    BigDecimal totalPaidByStudent(@Param("studentId") Long studentId);
+
+    @Query("""
+        SELECT COALESCE(SUM(f.amount), 0)
+        FROM Fee f
+        WHERE f.student.id = :studentId AND f.feeType = 'SEMESTER_GAP'
+    """)
+    BigDecimal totalGapFinesByStudent(@Param("studentId") Long studentId);
+
     /**
      * Idempotency guard: checks if a fee already exists for a specific enrollment.
      * Used by the BillingEnrollmentEventListener to prevent duplicate invoice creation.
      */
     boolean existsByStudentIdAndEnrollmentId(Long studentId, Long enrollmentId);
+
+    /**
+     * Checks if a fee of a specific type already exists for a student in a semester.
+     */
+    boolean existsByStudentIdAndSemesterIdAndFeeType(Long studentId, Long semesterId, FeeType feeType);
 
     /**
      * Checks if a fee of a specific type already exists for an enrollment.

@@ -17,16 +17,16 @@ import { ToastService } from '../../../core/services/toast.service';
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic Enrollment</div>
-      <h1 class="page-title text-gradient-flow">My Course(s)</h1>
+      <h1 class="page-title">My Course(s)</h1>
       <p class="page-subtitle">View and manage your registered courses for all semesters</p>
     </div>
     <div class="header-actions">
       <div class="metric-chip metric-chip--green" *ngIf="!loading()">
-        <app-icon name="book-open" [size]="16"></app-icon>
+        <app-icon name="book-open" [size]="15"></app-icon>
         {{ activeCount() }} active course(s) · {{ totalCredits() }} credit(s)
       </div>
-      <a routerLink="../courses" class="btn btn-primary btn-neon">
-        <app-icon name="book-open" [size]="16" /> Course Registration
+      <a routerLink="../courses" class="btn btn-primary">
+        <app-icon name="book-open" [size]="15" /> Course Registration
       </a>
     </div>
   </div>
@@ -86,10 +86,9 @@ import { ToastService } from '../../../core/services/toast.service';
 
   <!-- Grid View -->
   <div class="courses-grid" *ngIf="!loading() && view() === 'grid' && filteredEnrollments().length > 0">
-    <div class="course-card my-course-card fade-in-up card-glow-border" *ngFor="let e of filteredEnrollments(); let i = index"
-         [style.animation-delay.ms]="i * 50"
+    <div class="course-card my-course-card" *ngFor="let e of filteredEnrollments(); let i = index"
          [class.card-dropped]="e.status === 'DROPPED'">
-      <div class="course-card-header card-glow-border">
+      <div class="course-card-header">
         <span class="code-badge">{{ e.courseCode }}</span>
         <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
           {{ e.status }}
@@ -102,6 +101,13 @@ import { ToastService } from '../../../core/services/toast.service';
         <span class="meta-item"><app-icon name="clock" [size]="14"></app-icon>{{ e.creditHours }} credit(s)</span>
         <span class="meta-item"><app-icon name="calendar" [size]="14"></app-icon>{{ e.semesterLabel }}</span>
         <span class="retake-badge" *ngIf="e.isRetake">Retake</span>
+      </div>
+
+      <!-- Schedule pill -->
+      <div class="schedule-pill-row">
+        <span class="schedule-pill">
+          <app-icon name="clock" [size]="12"></app-icon> Mon & Wed · 10:00 AM - 11:30 AM
+        </span>
       </div>
 
       <div class="enrolled-date-row">
@@ -119,7 +125,7 @@ import { ToastService } from '../../../core/services/toast.service';
   </div>
 
   <!-- List View -->
-  <div class="card card-glow-border" *ngIf="!loading() && view() === 'list' && filteredEnrollments().length > 0">
+  <div class="card" *ngIf="!loading() && view() === 'list' && filteredEnrollments().length > 0">
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
@@ -245,6 +251,21 @@ import { ToastService } from '../../../core/services/toast.service';
       background: rgba(239, 68, 68, 0.05); border: 1px dashed rgba(239, 68, 68, 0.3);
       color: #ef4444; font-size: 0.8rem; font-weight: 600;
       cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif;
+    }
+    .schedule-pill-row {
+      margin-top: 0.25rem;
+    }
+    .schedule-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      border-radius: var(--radius-xs);
+      font-weight: 600;
     }
     .btn-drop-sm:hover:not(:disabled) { 
       background: rgba(239, 68, 68, 0.15); 

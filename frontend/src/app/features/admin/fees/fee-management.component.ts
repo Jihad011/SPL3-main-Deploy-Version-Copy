@@ -25,12 +25,19 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Financial administration</div>
-      <h1 class="page-title text-gradient-flow">Fee Management</h1>
-      <p class="page-subtitle">Track, issue, and manage all student fee records and invoices</p>
+      <h1 class="page-title">Fee Management</h1>
+      <p class="page-subtitle">Track, issue, and audit all student fee records and semester gap penalties</p>
     </div>
-    <button class="btn btn-primary btn-neon" (click)="openCreateModal()">
-      <app-icon name="plus" [size]="17"></app-icon> Issue New Fee
-    </button>
+    <div class="header-actions">
+      <button class="btn btn-secondary" [disabled]="auditingGapFines()" (click)="auditSemesterGapFines()" title="Audit all student cohorts and auto-assess 10,000 BDT fines for skipped semesters">
+        <app-icon name="calendar" [size]="15"></app-icon>
+        <span *ngIf="!auditingGapFines()">Audit Gap Fines</span>
+        <span *ngIf="auditingGapFines()" class="spinner-sm"></span>
+      </button>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <app-icon name="plus" [size]="15"></app-icon> Issue New Fee
+      </button>
+    </div>
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
@@ -41,32 +48,59 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
     <!-- ── Stats Overview ──────────────────────────────────── -->
     <div class="stats-grid">
       <div class="stat-card stat-card--blue">
-        <div class="stat-icon"><app-icon name="wallet" [size]="22"></app-icon></div>
-        <div class="stat-value">৳{{ totalInvoiced() | number:'1.0-0' }}</div>
-        <div class="stat-label">Total Invoiced</div>
-        <div class="stat-sub">{{ fees().length }} total invoice(s)</div>
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="wallet" [size]="22"></app-icon></div>
+          <div class="stat-content">
+            <div class="stat-value">৳{{ totalInvoiced() | number:'1.0-0' }}</div>
+            <div class="stat-label">Total Invoiced</div>
+            <div class="stat-sub">{{ fees().length }} total invoice(s)</div>
+          </div>
+        </div>
       </div>
 
       <div class="stat-card stat-card--green">
-        <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
-        <div class="stat-value">৳{{ totalCollected() | number:'1.0-0' }}</div>
-        <div class="stat-label">Total Collected</div>
-        <div class="stat-sub">{{ paidCount() }} paid invoice(s)</div>
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
+          <div class="stat-content">
+            <div class="stat-value">৳{{ totalCollected() | number:'1.0-0' }}</div>
+            <div class="stat-label">Total Collected</div>
+            <div class="stat-sub">{{ paidCount() }} paid invoice(s)</div>
+          </div>
+        </div>
       </div>
 
       <div class="stat-card stat-card--red">
-        <div class="stat-icon"><app-icon name="alert-triangle" [size]="22"></app-icon></div>
-        <div class="stat-value">৳{{ totalOutstanding() | number:'1.0-0' }}</div>
-        <div class="stat-label">Outstanding Dues</div>
-        <div class="stat-sub">{{ unpaidCount() }} pending payment(s)</div>
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="alert-triangle" [size]="22"></app-icon></div>
+          <div class="stat-content">
+            <div class="stat-value">৳{{ totalOutstanding() | number:'1.0-0' }}</div>
+            <div class="stat-label">Outstanding Dues</div>
+            <div class="stat-sub">{{ unpaidCount() }} pending payment(s)</div>
+          </div>
+        </div>
       </div>
 
       <div class="stat-card stat-card--purple">
-        <div class="stat-icon"><app-icon name="star" [size]="22"></app-icon></div>
-        <div class="stat-value">{{ collectionRate() }}%</div>
-        <div class="stat-label">Collection Rate</div>
-        <div class="progress-bar" style="margin-top:0.5rem">
-          <div class="progress-fill" [style.width.%]="collectionRate()"></div>
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="calendar" [size]="22"></app-icon></div>
+          <div class="stat-content">
+            <div class="stat-value">৳{{ totalGapFines() | number:'1.0-0' }}</div>
+            <div class="stat-label">Gap Penalties</div>
+            <div class="stat-sub">{{ gapFineCount() }} fine(s) assessed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--blue">
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="star" [size]="22"></app-icon></div>
+          <div class="stat-content">
+            <div class="stat-value">{{ collectionRate() }}%</div>
+            <div class="stat-label">Collection Rate</div>
+            <div class="progress-bar" style="margin-top:0.5rem">
+              <div class="progress-fill" [style.width.%]="collectionRate()"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -455,6 +489,7 @@ export class FeeManagementComponent implements OnInit {
   loading = signal(true);
   creating = signal(false);
   paying = signal(false);
+  auditingGapFines = signal(false);
   filter = signal<'ALL' | 'UNPAID' | 'PAID'>('ALL');
   searchQuery = '';
 
@@ -480,6 +515,8 @@ export class FeeManagementComponent implements OnInit {
   totalInvoiced = computed(() => this.fees().reduce((sum, f) => sum + (f.amount || 0), 0));
   totalCollected = computed(() => this.fees().filter(f => f.status === 'PAID').reduce((sum, f) => sum + (f.amount || 0), 0));
   totalOutstanding = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((sum, f) => sum + (f.amount || 0), 0));
+  totalGapFines = computed(() => this.fees().filter(f => f.feeType === 'SEMESTER_GAP').reduce((sum, f) => sum + (f.amount || 0), 0));
+  gapFineCount = computed(() => this.fees().filter(f => f.feeType === 'SEMESTER_GAP').length);
   paidCount = computed(() => this.fees().filter(f => f.status === 'PAID').length);
   unpaidCount = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
   collectionRate = computed(() => {
@@ -615,8 +652,28 @@ export class FeeManagementComponent implements OnInit {
     // If confirm modal used
   }
 
+  auditSemesterGapFines(): void {
+    this.auditingGapFines.set(true);
+    this.api.auditGapFines().subscribe({
+      next: (generated) => {
+        this.auditingGapFines.set(false);
+        if (generated && generated.length > 0) {
+          this.toast.success(`Audit Complete! Auto-generated ${generated.length} gap fine invoice(s) (10,000 BDT each). ⚡`);
+        } else {
+          this.toast.info('Audit Complete: All enrolled cohorts are up to date with zero un-assessed gap semesters.');
+        }
+        this.loadData();
+      },
+      error: (e) => {
+        this.auditingGapFines.set(false);
+        const msg = e.error?.detail || e.error?.message || 'Failed to run semester gap audit.';
+        this.toast.error(msg);
+      }
+    });
+  }
+
   downloadReceipt(fee: FeeResponse): void {
-    this.pdfService.generateReceipt(fee, fee.studentName || 'Student');
+    this.pdfService.generateReceipt(fee, fee.studentName || 'Student', fee.rollNumber || '');
     this.toast.success(`Payment receipt for #${fee.id} downloaded!`);
   }
 

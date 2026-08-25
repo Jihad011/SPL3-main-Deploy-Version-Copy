@@ -22,7 +22,7 @@ import { ChartData, ChartOptions } from 'chart.js';
   <div class="page-header">
     <div class="page-header-left">
       <p class="page-eyebrow">Administration</p>
-      <h1 class="page-title text-gradient-flow">Welcome back, {{ firstName }}</h1>
+      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
       <p class="page-subtitle">Monitor academic operations and jump into common tasks.</p>
     </div>
     <div class="semester-badge status-summary status-summary--open" *ngIf="activeSemester()">
@@ -107,10 +107,10 @@ import { ChartData, ChartOptions } from 'chart.js';
 
   <div class="dashboard-columns" *ngIf="stats()">
     <!-- Chart Column -->
-    <div class="card glass-card card-glow-border">
-      <div class="card-header card-glow-border">
-        <div class="card-title card-glow-border">System Distribution</div>
-        <div class="card-sub card-glow-border">Overview of active entities</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">System Distribution</div>
+        <div class="card-sub">Overview of active entities</div>
       </div>
       <div class="chart-container" style="position: relative; height:250px; width:100%; display: flex; justify-content: center; align-items: center; padding: 1rem;">
         <canvas baseChart
@@ -122,56 +122,56 @@ import { ChartData, ChartOptions } from 'chart.js';
     </div>
 
     <!-- Quick Actions Column -->
-    <div class="card glass-card card-glow-border">
-    <div class="card-header card-glow-border">
+    <div class="card">
+    <div class="card-header">
       <div>
-        <div class="card-title card-glow-border">Quick Actions</div>
-        <div class="card-sub card-glow-border">Jump to common administrative tasks</div>
+        <div class="card-title">Quick Actions</div>
+        <div class="card-sub">Jump to common administrative tasks</div>
       </div>
     </div>
     <div class="quick-actions-grid">
-      <a routerLink="../students" class="quick-action-card card-glow-border">
-        <span class="qa-icon qa-icon--blue"><app-icon name="users" [size]="23" /></span>
+      <a routerLink="../students" class="quick-action-card">
+        <span class="qa-icon qa-icon--blue"><app-icon name="users" [size]="20" /></span>
         <div>
           <div class="qa-title">Manage Students</div>
           <div class="qa-sub">Add, search, and view student profiles</div>
         </div>
-        <span class="qa-arrow"><app-icon name="arrow-right" [size]="16" /></span>
+        <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
       </a>
-      <a routerLink="../courses" class="quick-action-card card-glow-border">
-        <span class="qa-icon qa-icon--purple"><app-icon name="book-open" [size]="23" /></span>
+      <a routerLink="../courses" class="quick-action-card">
+        <span class="qa-icon qa-icon--purple"><app-icon name="book-open" [size]="20" /></span>
         <div>
           <div class="qa-title">Manage Courses</div>
           <div class="qa-sub">Create and edit course offerings</div>
         </div>
-        <span class="qa-arrow"><app-icon name="arrow-right" [size]="16" /></span>
+        <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
       </a>
-      <a routerLink="../fees" class="quick-action-card card-glow-border">
-        <span class="qa-icon qa-icon--green"><app-icon name="credit-card" [size]="23" /></span>
+      <a routerLink="../fees" class="quick-action-card">
+        <span class="qa-icon qa-icon--green"><app-icon name="credit-card" [size]="20" /></span>
         <div>
           <div class="qa-title">Fee Management</div>
           <div class="qa-sub">Track and process student fees</div>
         </div>
-        <span class="qa-arrow"><app-icon name="arrow-right" [size]="16" /></span>
+        <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
       </a>
-      <a routerLink="../semesters" class="quick-action-card card-glow-border">
-        <span class="qa-icon qa-icon--amber"><app-icon name="calendar" [size]="23" /></span>
+      <a routerLink="../semesters" class="quick-action-card">
+        <span class="qa-icon qa-icon--amber"><app-icon name="calendar" [size]="20" /></span>
         <div>
           <div class="qa-title">Semesters</div>
           <div class="qa-sub">Manage semester enrollment periods</div>
         </div>
-        <span class="qa-arrow"><app-icon name="arrow-right" [size]="16" /></span>
+        <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
       </a>
     </div>
     <!-- Activity Feed Column -->
-    <div class="card glass-card activity-feed-card card-glow-border">
-      <div class="card-header card-glow-border">
+    <div class="card activity-feed-card">
+      <div class="card-header">
         <div>
-          <div class="card-title card-glow-border">Activity Feed</div>
-          <div class="card-sub card-glow-border">Live system audit logs</div>
+          <div class="card-title">Activity Feed</div>
+          <div class="card-sub">Live system audit logs</div>
         </div>
         <button class="refresh-btn" [class.spinning]="refreshingLogs()" [disabled]="refreshingLogs()" (click)="loadAuditLogs()">
-          <app-icon name="clock" [size]="16" />
+          <app-icon name="clock" [size]="15" />
         </button>
       </div>
       <div class="activity-feed-list">

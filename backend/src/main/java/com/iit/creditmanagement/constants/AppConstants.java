@@ -30,6 +30,6 @@ public final class AppConstants {
 
     // ── Default Fees (BDT) ───────────────────────────────────
     public static final double DEFAULT_RETAKE_FEE       = 500.0;
-    public static final double DEFAULT_SEMESTER_GAP_FEE = 1000.0;
+    public static final double DEFAULT_SEMESTER_GAP_FEE = 10000.0;
     public static final double DEFAULT_REGISTRATION_FEE = 200.0;
 }

@@ -38,7 +38,9 @@ public class SecurityConfig {
     private final Environment env;
 
     private static final String[] PUBLIC_URLS = {
-        "/auth/**"
+        "/auth/**",
+        "/actuator/health",
+        "/actuator/info"
     };
 
     private static final String[] SWAGGER_URLS = {

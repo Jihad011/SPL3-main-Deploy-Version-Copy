@@ -17,16 +17,19 @@ export type IconName =
   | 'eye-off'
   | 'filter'
   | 'graduation-cap'
+  | 'history'
   | 'layout-dashboard'
   | 'list-check'
   | 'lock'
   | 'log-out'
   | 'menu'
+  | 'minus'
   | 'moon'
   | 'plus'
   | 'save'
   | 'search'
   | 'settings'
+  | 'sparkles'
   | 'star'
   | 'sun'
   | 'user'
@@ -110,6 +113,11 @@ export type IconName =
           <path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>
           <path d="M22 10v6"/>
         }
+        @case ('history') {
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M12 7v5l4 2"/>
+        }
         @case ('layout-dashboard') {
           <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/>
           <rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
@@ -125,6 +133,9 @@ export type IconName =
         }
         @case ('menu') {
           <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
+        }
+        @case ('minus') {
+          <line x1="5" y1="12" x2="19" y2="12"/>
         }
         @case ('moon') {
           <path d="M20.8 14.3A8.5 8.5 0 0 1 9.7 3.2 9 9 0 1 0 20.8 14.3Z"/>
@@ -142,6 +153,10 @@ export type IconName =
         @case ('settings') {
           <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 1-2 0l-.1-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.1.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.1.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.1-.1a2 2 0 0 1 2 0l.4.2a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 1 2 0l.1.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.1-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.1-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.1.1a2 2 0 0 1-2 0l-.4-.2a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/>
           <circle cx="12" cy="12" r="3"/>
+        }
+        @case ('sparkles') {
+          <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+          <path d="M19 3v4"/><path d="M21 5h-4"/>
         }
         @case ('star') {
           <path d="m12 2 3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1L6.1 20l1.1-6.4L2.5 9 9 8Z"/>

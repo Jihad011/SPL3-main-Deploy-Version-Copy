@@ -25,6 +25,7 @@ export class StudentLayoutComponent {
     { label: 'Course Registration', link: 'courses', icon: 'book-open' },
     { label: 'My Course(s)', link: 'my-courses', icon: 'list-check' },
     { label: 'My Results', link: 'results', icon: 'chart' },
+    { label: 'Academic History', link: 'history', icon: 'history' },
     { label: 'Fees & Dues', link: 'dues', icon: 'credit-card' }
   ];
 }

@@ -27,6 +27,7 @@ public class TranscriptService {
 
     private final UserRepository userRepository;
     private final GradeRepository gradeRepository;
+    private final com.iit.creditmanagement.repository.SemesterRepository semesterRepository;
 
     @Transactional(readOnly = true)
     public byte[] generateTranscriptPdf(Long studentId) {
@@ -34,6 +35,9 @@ public class TranscriptService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
 
         List<Grade> grades = gradeRepository.findAllByEnrollmentStudentId(studentId);
+        com.iit.creditmanagement.model.entity.Semester activeSem = semesterRepository.findActiveSemester().orElse(null);
+        String dynamicSemesterRoll = com.iit.creditmanagement.util.StudentRollHelper.deriveSemesterRoll(student, activeSem);
+        int batch = com.iit.creditmanagement.util.StudentRollHelper.extractBatch(student);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4);
@@ -49,7 +53,7 @@ public class TranscriptService {
             document.add(new Paragraph("\n"));
 
             Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Paragraph subtitle = new Paragraph("Academic Transcript", subtitleFont);
+            Paragraph subtitle = new Paragraph("Official Academic Transcript", subtitleFont);
             subtitle.setAlignment(Element.ALIGN_CENTER);
             document.add(subtitle);
 
@@ -57,10 +61,12 @@ public class TranscriptService {
 
             // Student Info
             Font infoFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
-            document.add(new Paragraph("Name: " + student.getName(), infoFont));
-            document.add(new Paragraph("Roll Number: " + student.getRollNumber(), infoFont));
+            Font boldInfoFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            document.add(new Paragraph("Name: " + student.getName(), boldInfoFont));
+            document.add(new Paragraph("Current Semester Roll ID: " + dynamicSemesterRoll, boldInfoFont));
+            document.add(new Paragraph("Base Roll Number: " + (student.getRollNumber() != null ? student.getRollNumber() : "N/A"), infoFont));
             document.add(new Paragraph("Registration Number: " + (student.getRegistrationNumber() != null ? student.getRegistrationNumber() : "N/A"), infoFont));
-            document.add(new Paragraph("Batch: " + student.getBatch(), infoFont));
+            document.add(new Paragraph("Batch: " + batch, infoFont));
             
             document.add(new Paragraph("\n\n"));
 

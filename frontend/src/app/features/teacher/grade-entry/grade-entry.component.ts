@@ -40,33 +40,49 @@ function computeGradeLetter(total: number): string {
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Assessment workspace</div>
-      <h1 class="page-title text-gradient-flow">Grade Entry</h1>
+      <h1 class="page-title">Grade Entry</h1>
       <p class="page-subtitle" *ngIf="semester()">
-        <app-icon name="calendar" [size]="15"></app-icon> {{ semester()!.label }}
+        <app-icon name="calendar" [size]="14"></app-icon> {{ semester()!.label }}
       </p>
     </div>
     <div class="header-actions">
       <div class="metric-chip metric-chip--green" *ngIf="!loading() && rows().length > 0">
-        <app-icon name="users" [size]="17"></app-icon>
+        <app-icon name="users" [size]="15"></app-icon>
         {{ gradedCount() }} / {{ rows().length }} graded
       </div>
+      <button class="btn btn-secondary" *ngIf="!loading() && rows().length > 0" (click)="fillBlanksWithZero()" title="Fill all unentered marks with 0">
+        <app-icon name="edit" [size]="14"></app-icon> Auto-Fill Blanks (0)
+      </button>
       <button class="btn btn-secondary" *ngIf="!loading() && rows().length > 0" (click)="exportCsv()">
-        <app-icon name="download" [size]="16"></app-icon> Export CSV
+        <app-icon name="download" [size]="14"></app-icon> Export CSV
       </button>
       <button class="btn btn-secondary" *ngIf="!loading() && rows().length > 0" (click)="triggerCsvImport()">
-        <app-icon name="upload" [size]="16"></app-icon> Upload CSV
+        <app-icon name="upload" [size]="14"></app-icon> Upload CSV
       </button>
       <input type="file" accept=".csv" #csvInput style="display: none" (change)="importCsv($event)" />
-      <button class="btn btn-primary btn-neon" *ngIf="dirtyCount() > 0" (click)="saveAll()">
-        <app-icon name="save" [size]="16"></app-icon> Save All ({{ dirtyCount() }})
+      <button class="btn btn-primary" *ngIf="dirtyCount() > 0" (click)="saveAll()">
+        <app-icon name="save" [size]="14"></app-icon> Save All ({{ dirtyCount() }})
       </button>
     </div>
   </div>
 
   <div class="alert alert-error" *ngIf="error()">
-    <app-icon name="alert-triangle" [size]="18"></app-icon>{{ error() }}
+    <app-icon name="alert-triangle" [size]="16"></app-icon>{{ error() }}
   </div>
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+
+  <!-- Grade Distribution Summary Bar -->
+  <div class="distribution-summary-card" *ngIf="!loading() && rows().length > 0">
+    <span class="dist-label">Grade Distribution:</span>
+    <div class="dist-chips">
+      <span class="dist-chip grade-a">A+ / A ({{ distCounts().a }})</span>
+      <span class="dist-chip grade-a-minus">A- ({{ distCounts().aMinus }})</span>
+      <span class="dist-chip grade-b">B+ / B ({{ distCounts().b }})</span>
+      <span class="dist-chip grade-c">C+ / C ({{ distCounts().c }})</span>
+      <span class="dist-chip grade-f">F ({{ distCounts().f }})</span>
+      <span class="dist-chip dist-pending">Pending ({{ distCounts().pending }})</span>
+    </div>
+  </div>
 
   <!-- Toolbar -->
   <app-toolbar
@@ -83,11 +99,11 @@ function computeGradeLetter(total: number): string {
   </div>
 
   <!-- Grade table card -->
-  <div class="card card-glow-border" *ngIf="!loading() && filteredRows().length > 0">
-    <div class="card-header card-glow-border">
+  <div class="card" *ngIf="!loading() && filteredRows().length > 0">
+    <div class="card-header">
       <div>
-        <div class="card-title card-glow-border">Student Mark Sheet</div>
-        <div class="card-sub card-glow-border">Midterm 0–40 · Final 0–60 · Total 100</div>
+        <div class="card-title">Student Mark Sheet</div>
+        <div class="card-sub">Midterm 0–40 · Final 0–60 · Total 100</div>
       </div>
       <div class="mark-legend">
         <span class="grade-badge grade-a">A</span>
@@ -256,6 +272,43 @@ function computeGradeLetter(total: number): string {
   `,
   styles: [`
     .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    
+    .distribution-summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius, 12px);
+      padding: 0.85rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .dist-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .dist-chips {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .dist-chip {
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .dist-pending {
+      background: rgba(100, 116, 139, 0.1);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
     .grading-progress-bar {
       height: 4px; background: var(--border); border-radius: 4px;
       overflow: hidden; margin-bottom: 1rem;
@@ -300,28 +353,45 @@ function computeGradeLetter(total: number): string {
     
     /* Modal Styles */
     .modal-title-group { display: flex; align-items: center; gap: 1.25rem; }
-    .modal-title-group h3 { margin: 0 0 0.3rem 0; font-size: 1.3rem; color: #ffffff; letter-spacing: -0.02em; }
-    .student-mini-avatar.large { width: 56px; height: 56px; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+    .modal-title-group h3 { margin: 0 0 0.3rem 0; font-size: 1.3rem; color: var(--text-primary); font-weight: 700; letter-spacing: -0.02em; }
+    .student-mini-avatar.large { width: 56px; height: 56px; font-size: 1.4rem; color: #FFFFFF; background: var(--grad-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
     
+    .btn-icon {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); color: var(--accent-red); }
+
     .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     .stat-box { 
-      background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 16px; 
-      border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.5rem;
-      transition: all 0.3s ease; position: relative; overflow: hidden;
+      background: var(--bg-surface); padding: 1.25rem; border-radius: var(--radius); 
+      border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;
+      transition: all 0.2s ease; position: relative; overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
     .stat-box:hover {
-      background: rgba(255,255,255,0.05); transform: translateY(-2px);
-      box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3);
+      border-color: var(--cyan); transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
-    .stat-box label { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-box .stat-value { font-size: 1.8rem; font-weight: 700; color: #ffffff; }
+    .stat-box label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-box .stat-value { font-size: 1.85rem; font-weight: 800; color: var(--text-primary); }
     
-    .stat-box.highlight { background: rgba(79, 70, 229, 0.08); border-color: rgba(79, 70, 229, 0.2); }
-    .stat-box.highlight:hover { background: rgba(79, 70, 229, 0.12); box-shadow: 0 8px 24px -8px rgba(79, 70, 229, 0.3); }
-    .stat-box.highlight .stat-value { color: #818cf8; text-shadow: 0 0 20px rgba(79, 70, 229, 0.4); }
+    .stat-box.highlight { background: rgba(37, 99, 235, 0.06); border-color: rgba(37, 99, 235, 0.25); }
+    .stat-box.highlight:hover { background: rgba(37, 99, 235, 0.1); box-shadow: 0 8px 24px -8px rgba(37, 99, 235, 0.25); }
+    .stat-box.highlight label { color: var(--cyan); font-weight: 800; }
+    .stat-box.highlight .stat-value { color: var(--cyan); }
     
     .modal-footer { margin-top: 2rem; display: flex; justify-content: flex-end; }
-    .modal-footer .btn-primary { border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; }
+    .modal-footer .btn-primary { border-radius: var(--radius-sm); padding: 0.75rem 1.5rem; font-weight: 700; }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -349,6 +419,50 @@ export class GradeEntryComponent implements OnInit {
     this.rows().length > 0 ? (this.gradedCount() / this.rows().length) * 100 : 0
   );
   dirtyCount = computed(() => this.rows().filter(r => r.dirty).length);
+
+  distCounts = computed(() => {
+    let a = 0, aMinus = 0, b = 0, c = 0, f = 0, pending = 0;
+    for (const r of this.rows()) {
+      const letter = r.existingGrade?.gradeLetter;
+      if (!letter) {
+        pending++;
+      } else if (letter === 'A_PLUS' || letter === 'A') {
+        a++;
+      } else if (letter === 'A_MINUS') {
+        aMinus++;
+      } else if (letter.startsWith('B')) {
+        b++;
+      } else if (letter.startsWith('C') || letter === 'D') {
+        c++;
+      } else if (letter === 'F') {
+        f++;
+      } else {
+        pending++;
+      }
+    }
+    return { a, aMinus, b, c, f, pending };
+  });
+
+  fillBlanksWithZero(): void {
+    let filled = 0;
+    this.rows.update(rows => rows.map(r => {
+      let changed = false;
+      let mid = r.midtermInput;
+      let fin = r.finalInput;
+      if (mid === null) { mid = 0; changed = true; }
+      if (fin === null) { fin = 0; changed = true; }
+      if (changed) {
+        filled++;
+        return { ...r, midtermInput: mid, finalInput: fin, dirty: true, isEditing: true };
+      }
+      return r;
+    }));
+    if (filled > 0) {
+      this.toast.info(`Filled blanks with 0 for ${filled} student(s). Click 'Save All' to commit.`);
+    } else {
+      this.toast.info('No empty mark entries found.');
+    }
+  }
 
   constructor(
     private api: ApiService,

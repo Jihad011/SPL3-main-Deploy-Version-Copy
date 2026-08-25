@@ -8,7 +8,8 @@ import {
   GradeResponse, GradeEntryRequest,
   FeeResponse, FeeCreateRequest, PaymentRequest,
   StudentDashboardResponse, UserResponse,
-  SemesterResponse, ApiResponse, Page
+  SemesterResponse, ApiResponse, Page,
+  StudentHistoryResponse
 } from '../models/models';
 
 /**
@@ -129,6 +130,9 @@ export class ApiService {
   getAllFees(): Observable<FeeResponse[]> {
     return this.http.get<FeeResponse[]>(`${this.api}/fees`);
   }
+  auditGapFines(): Observable<FeeResponse[]> {
+    return this.http.post<FeeResponse[]>(`${this.api}/fees/audit-gap-fines`, {});
+  }
 
   // ── Admin ─────────────────────────────────────────────────
   createStudent(req: any): Observable<UserResponse> {
@@ -167,8 +171,22 @@ export class ApiService {
     return this.http.get<FeeResponse[]>(`${this.api}/fees/student/${studentId}`);
   }
 
+  // ── Student Academic History ───────────────────────────────
+  getMyAcademicHistory(): Observable<StudentHistoryResponse> {
+    return this.http.get<StudentHistoryResponse>(`${this.api}/student/history`);
+  }
+
   // ── Teacher ───────────────────────────────────────────────
   getTeacherDashboard(): Observable<CourseResponse[]> {
     return this.http.get<CourseResponse[]>(`${this.api}/teacher/dashboard`);
+  }
+  getStudentHistory(query: string): Observable<StudentHistoryResponse> {
+    return this.http.get<StudentHistoryResponse>(`${this.api}/teacher/students/${encodeURIComponent(query)}/history`);
+  }
+  searchStudentsTeacher(query: string = ''): Observable<UserResponse[]> {
+    return this.http.get<UserResponse[]>(`${this.api}/teacher/students/search?q=${encodeURIComponent(query)}`);
+  }
+  downloadStudentTranscript(studentId: number): Observable<Blob> {
+    return this.http.get(`${this.api}/teacher/students/${studentId}/transcript`, { responseType: 'blob' });
   }
 }

@@ -5,8 +5,9 @@ export const TEACHER_ROUTES: Routes = [
     path: '',
     loadComponent: () => import('./layout/teacher-layout.component').then(m => m.TeacherLayoutComponent),
     children: [
-      { path: 'dashboard',   loadComponent: () => import('./dashboard/teacher-dashboard.component').then(m => m.TeacherDashboardComponent) },
-      { path: 'grade-entry', loadComponent: () => import('./grade-entry/grade-entry.component').then(m => m.GradeEntryComponent) },
+      { path: 'dashboard',       loadComponent: () => import('./dashboard/teacher-dashboard.component').then(m => m.TeacherDashboardComponent) },
+      { path: 'grade-entry',     loadComponent: () => import('./grade-entry/grade-entry.component').then(m => m.GradeEntryComponent) },
+      { path: 'student-history', loadComponent: () => import('./student-history/student-history.component').then(m => m.StudentHistoryComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }

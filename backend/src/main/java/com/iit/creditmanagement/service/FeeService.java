@@ -17,4 +17,5 @@ public interface FeeService {
     FeeResponse payFeeStudent(Long feeId, Long studentId, PaymentMethod paymentMethod);
     List<FeeResponse> getFeesByStudent(Long studentId);   // admin
     List<FeeResponse> getAllFees();                        // admin
+    List<FeeResponse> auditAndGenerateGapFines(Long adminId); // admin gap fine auditor
 }

@@ -3,14 +3,14 @@ import { Injectable, signal } from '@angular/core';
 export interface Toast {
   id: string;
   message: string;
-  type: 'success' | 'error' | 'info';
+  type: 'success' | 'error' | 'info' | 'warning';
 }
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   toasts = signal<Toast[]>([]);
 
-  show(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  show(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
     // Prevent duplicate toasts from stacking
     const currentToasts = this.toasts();
     if (currentToasts.some(t => t.message === message && t.type === type)) {
@@ -33,6 +33,10 @@ export class ToastService {
 
   info(message: string) {
     this.show(message, 'info');
+  }
+
+  warning(message: string) {
+    this.show(message, 'warning');
   }
 
   remove(id: string) {

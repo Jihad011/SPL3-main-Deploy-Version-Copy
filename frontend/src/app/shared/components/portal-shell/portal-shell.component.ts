@@ -35,8 +35,8 @@ export interface PortalNavItem {
             <small>{{ portalLabel }}</small>
           </span>
         </div>
-        <button type="button" class="icon-button" (click)="toggleTheme()" aria-label="Toggle color theme">
-          <app-icon [name]="lightTheme() ? 'moon' : 'sun'" [size]="19" />
+        <button type="button" class="icon-button" (click)="cycleTheme()" [title]="currentThemeInfo.name" aria-label="Switch color theme">
+          <span class="theme-color-dot" [style.background]="currentThemeInfo.dotColor"></span>
         </button>
       </header>
 
@@ -71,9 +71,10 @@ export interface PortalNavItem {
         </nav>
 
         <div class="sidebar-footer">
-          <button type="button" class="theme-toggle" (click)="toggleTheme()">
-            <app-icon [name]="lightTheme() ? 'moon' : 'sun'" [size]="17" />
-            <span>{{ lightTheme() ? 'Dark appearance' : 'Light appearance' }}</span>
+          <button type="button" class="theme-toggle" (click)="cycleTheme()" title="Click to cycle masterpiece themes">
+            <span class="theme-color-dot" [style.background]="currentThemeInfo.dotColor"></span>
+            <span style="flex: 1; text-align: left; font-weight: 600;">{{ currentThemeInfo.name }}</span>
+            <app-icon name="sparkles" [size]="15" style="color:var(--cyan);" />
           </button>
           <div class="user-card" style="position: relative;">
             <div class="user-avatar">{{ userInitial }}</div>
@@ -131,16 +132,30 @@ export class PortalShellComponent {
   @Input({ required: true }) role!: 'student' | 'teacher' | 'admin';
 
   readonly menuOpen = signal(false);
-  readonly lightTheme = signal(false);
+  readonly currentTheme = signal<'royal-blue' | 'emerald-mint' | 'amethyst-white'>('royal-blue');
   readonly showNotifications = signal(false);
+
+  readonly themeOptions = [
+    { id: 'royal-blue' as const, name: 'Royal Oxford', dotColor: '#2563EB' },
+    { id: 'emerald-mint' as const, name: 'Ivy Emerald', dotColor: '#059669' },
+    { id: 'amethyst-white' as const, name: 'Imperial Amethyst', dotColor: '#7C3AED' }
+  ];
+
+  get currentThemeInfo() {
+    return this.themeOptions.find(t => t.id === this.currentTheme()) ?? this.themeOptions[0];
+  }
 
   constructor(
     public auth: AuthStateService,
     public notif: NotificationService,
     @Inject(DOCUMENT) private document: Document
   ) {
-    const savedTheme = this.document.defaultView?.localStorage.getItem('mit-theme');
-    this.lightTheme.set(savedTheme === 'light');
+    const saved = this.document.defaultView?.localStorage.getItem('mit-theme');
+    if (saved === 'emerald-mint' || saved === 'amethyst-white' || saved === 'royal-blue') {
+      this.currentTheme.set(saved);
+    } else {
+      this.currentTheme.set('royal-blue');
+    }
     this.applyTheme();
   }
 
@@ -182,13 +197,16 @@ export class PortalShellComponent {
     this.menuOpen.set(false);
   }
 
-  toggleTheme(): void {
-    this.lightTheme.update(value => !value);
-    this.document.defaultView?.localStorage.setItem('mit-theme', this.lightTheme() ? 'light' : 'dark');
+  cycleTheme(): void {
+    const order: ('royal-blue' | 'emerald-mint' | 'amethyst-white')[] = ['royal-blue', 'emerald-mint', 'amethyst-white'];
+    const currentIndex = order.indexOf(this.currentTheme());
+    const nextTheme = order[(currentIndex + 1) % order.length];
+    this.currentTheme.set(nextTheme);
+    this.document.defaultView?.localStorage.setItem('mit-theme', nextTheme);
     this.applyTheme();
   }
 
   private applyTheme(): void {
-    this.document.documentElement.dataset['theme'] = this.lightTheme() ? 'light' : 'dark';
+    this.document.documentElement.dataset['theme'] = this.currentTheme();
   }
 }

@@ -19,13 +19,13 @@ import { ChartData, ChartOptions } from 'chart.js';
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
-      <p class="page-eyebrow">Teaching overview</p>
-      <h1 class="page-title text-gradient-flow">Welcome back, {{ firstName }}</h1>
-      <p class="page-subtitle">Review assigned courses and continue grading.</p>
+      <p class="page-eyebrow">Faculty Workspace</p>
+      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
+      <p class="page-subtitle">Review assigned courses and manage student assessment grades.</p>
     </div>
     <div *ngIf="!loading()" class="semester-badge">
-      <app-icon name="book-open" [size]="15" />
-      {{ courses().length }} course(s) assigned
+      <app-icon name="book-open" [size]="14" />
+      {{ courses().length }} Course(s) Assigned
     </div>
   </div>
 

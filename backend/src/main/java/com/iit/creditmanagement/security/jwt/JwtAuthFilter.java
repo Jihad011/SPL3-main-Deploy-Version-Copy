@@ -52,6 +52,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
+        // 3. Fallback to query parameter ?token=... (for direct download links)
+        if (jwt == null) {
+            String tokenParam = request.getParameter("token");
+            if (tokenParam != null && !tokenParam.isBlank()) {
+                jwt = tokenParam;
+            }
+        }
+
         if (jwt == null) {
             filterChain.doFilter(request, response);
             return;

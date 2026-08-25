@@ -1,14 +1,19 @@
 package com.iit.creditmanagement.service.impl;
 
+import com.iit.creditmanagement.constants.AppConstants;
 import com.iit.creditmanagement.exception.BusinessRuleException;
 import com.iit.creditmanagement.exception.ResourceNotFoundException;
 import com.iit.creditmanagement.model.dto.request.FeeCreateRequest;
 import com.iit.creditmanagement.model.dto.response.FeeResponse;
+import com.iit.creditmanagement.model.entity.Enrollment;
 import com.iit.creditmanagement.model.entity.Fee;
 import com.iit.creditmanagement.model.entity.Semester;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.model.enums.FeeStatus;
+import com.iit.creditmanagement.model.enums.FeeType;
 import com.iit.creditmanagement.model.enums.PaymentMethod;
+import com.iit.creditmanagement.model.enums.Role;
+import com.iit.creditmanagement.repository.EnrollmentRepository;
 import com.iit.creditmanagement.repository.FeeRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
 import com.iit.creditmanagement.repository.UserRepository;
@@ -16,22 +21,24 @@ import com.iit.creditmanagement.service.FeeService;
 import com.iit.creditmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FeeServiceImpl implements FeeService {
 
-    private final FeeRepository      feeRepository;
-    private final UserRepository     userRepository;
-    private final SemesterRepository semesterRepository;
-    private final NotificationService notificationService;
+    private final FeeRepository        feeRepository;
+    private final UserRepository       userRepository;
+    private final SemesterRepository   semesterRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final NotificationService  notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -163,7 +170,95 @@ public class FeeServiceImpl implements FeeService {
     @Override
     @Transactional(readOnly = true)
     public List<FeeResponse> getAllFees() {
-        return feeRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))
+        return feeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream().map(FeeResponse::from).toList();
+    }
+
+    @Override
+    @Transactional
+    public List<FeeResponse> auditAndGenerateGapFines(Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin", adminId));
+
+        List<Semester> allSemesters = semesterRepository.findAll(Sort.by(Sort.Direction.ASC, "startDate", "id"));
+        Semester activeSemester = semesterRepository.findActiveSemester().orElse(null);
+        if (allSemesters.isEmpty() || activeSemester == null) {
+            log.info("No active semester or semesters configured for gap fine audit.");
+            return Collections.emptyList();
+        }
+
+        int activeIndex = -1;
+        for (int i = 0; i < allSemesters.size(); i++) {
+            if (allSemesters.get(i).getId().equals(activeSemester.getId())) {
+                activeIndex = i;
+                break;
+            }
+        }
+
+        List<User> students = userRepository.findAllByRole(Role.STUDENT);
+        List<Fee> generatedFees = new ArrayList<>();
+        BigDecimal defaultGapFine = BigDecimal.valueOf(AppConstants.DEFAULT_SEMESTER_GAP_FEE);
+
+        for (User student : students) {
+            List<Enrollment> enrollments = enrollmentRepository.findAllByStudentId(student.getId());
+            if (enrollments.isEmpty()) continue; // Hasn't started taking courses yet
+
+            Set<Long> enrolledSemesterIds = new HashSet<>();
+            int firstEnrolledIndex = -1;
+            for (Enrollment e : enrollments) {
+                enrolledSemesterIds.add(e.getSemester().getId());
+            }
+
+            for (int i = 0; i < allSemesters.size(); i++) {
+                if (enrolledSemesterIds.contains(allSemesters.get(i).getId())) {
+                    firstEnrolledIndex = i;
+                    break;
+                }
+            }
+
+            if (firstEnrolledIndex == -1 || firstEnrolledIndex >= activeIndex) continue;
+
+            List<Fee> studentExistingFees = feeRepository.findAllByStudentId(student.getId());
+
+            // Scan intermediate semesters between first enrolled and active semester
+            for (int i = firstEnrolledIndex + 1; i <= activeIndex; i++) {
+                Semester sem = allSemesters.get(i);
+                boolean isEnrolled = enrolledSemesterIds.contains(sem.getId());
+                if (!isEnrolled) {
+                    // Check if gap fine already exists for this student & semester
+                    boolean alreadyFined = studentExistingFees.stream().anyMatch(f ->
+                            f.getFeeType() == FeeType.SEMESTER_GAP &&
+                            f.getSemester() != null &&
+                            f.getSemester().getId().equals(sem.getId())
+                    );
+
+                    if (!alreadyFined) {
+                        Fee gapFee = Fee.builder()
+                                .student(student)
+                                .feeType(FeeType.SEMESTER_GAP)
+                                .amount(defaultGapFine)
+                                .description(String.format("Semester Gap Penalty for missing %s (Batch: %s)", sem.getLabel(), student.getBatch() != null ? student.getBatch() : "N/A"))
+                                .semester(sem)
+                                .dueDate(sem.getEndDate() != null ? sem.getEndDate().plusDays(30) : java.time.LocalDate.now().plusDays(30))
+                                .createdBy(admin)
+                                .status(FeeStatus.UNPAID)
+                                .build();
+
+                        gapFee = feeRepository.save(gapFee);
+                        generatedFees.add(gapFee);
+
+                        notificationService.sendNotification(
+                                student,
+                                "Semester Gap Fine Generated",
+                                String.format("A penalty fee of ৳%s has been assessed for un-enrolled semester (%s).", defaultGapFine, sem.getLabel()),
+                                "SEMESTER_GAP_FINE"
+                        );
+                        log.info("Generated gap fine of {} BDT for student {} for semester {}", defaultGapFine, student.getId(), sem.getLabel());
+                    }
+                }
+            }
+        }
+
+        return generatedFees.stream().map(FeeResponse::from).toList();
     }
 }

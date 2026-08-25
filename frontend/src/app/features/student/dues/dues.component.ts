@@ -25,7 +25,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Student finance</div>
-      <h1 class="page-title text-gradient-flow">Fees & Dues</h1>
+      <h1 class="page-title">Fees & Dues</h1>
       <p class="page-subtitle">Your complete fee history and outstanding payments</p>
     </div>
     <div *ngIf="!loading()">
@@ -48,13 +48,23 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
   <div class="stats-grid" *ngIf="!loading() && fees().length > 0">
     <div class="stat-card stat-card--red">
       <div class="stat-icon"><app-icon name="alert-triangle" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ unpaidCount() }}</div>
-      <div class="stat-label">Unpaid Fees</div>
+      <div class="stat-value">৳{{ totalDues() | number:'1.0-0' }}</div>
+      <div class="stat-label">Outstanding Dues</div>
+      <div class="stat-sub" *ngIf="gapFineTotal() > 0">
+        Incl. ৳{{ gapFineTotal() | number:'1.0-0' }} Gap Fines
+      </div>
+    </div>
+    <div class="stat-card stat-card--blue" *ngIf="gapFineTotal() > 0">
+      <div class="stat-icon"><app-icon name="calendar" [size]="22"></app-icon></div>
+      <div class="stat-value">৳{{ gapFineTotal() | number:'1.0-0' }}</div>
+      <div class="stat-label">Semester Gap Fines</div>
+      <div class="stat-sub">10,000 BDT per missed term</div>
     </div>
     <div class="stat-card stat-card--green">
       <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
       <div class="stat-value">{{ paidCount() }}</div>
-      <div class="stat-label">Paid Fees</div>
+      <div class="stat-label">Paid Invoices</div>
+      <div class="stat-sub">৳{{ paidTotal() | number:'1.0-0' }} cleared</div>
     </div>
     <div class="stat-card stat-card--purple">
       <div class="stat-icon"><app-icon name="wallet" [size]="22"></app-icon></div>
@@ -78,7 +88,7 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
 
   <!-- Invoice Cards -->
   <div class="invoice-grid" *ngIf="!loading()">
-    <div class="invoice-card fade-in-up card-glow-border" *ngFor="let f of filteredFees(); let i = index"
+    <div class="invoice-card" *ngFor="let f of filteredFees(); let i = index"
          [style.animation-delay.ms]="i * 50"
          [class.invoice-unpaid]="f.status === 'UNPAID'"
          [class.invoice-paid]="f.status === 'PAID'"
@@ -336,9 +346,11 @@ export class DuesComponent implements OnInit {
   private toast = inject(ToastService);
   private auth = inject(AuthStateService);
 
-  totalDues   = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
-  unpaidCount = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
-  paidCount   = computed(() => this.fees().filter(f => f.status === 'PAID').length);
+  totalDues    = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
+  gapFineTotal = computed(() => this.fees().filter(f => f.feeType === 'SEMESTER_GAP' && f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
+  paidTotal    = computed(() => this.fees().filter(f => f.status === 'PAID').reduce((s, f) => s + f.amount, 0));
+  unpaidCount  = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
+  paidCount    = computed(() => this.fees().filter(f => f.status === 'PAID').length);
   filteredFees = computed(() => {
     const status = this.filter();
     return status === 'ALL' ? this.fees() : this.fees().filter(f => f.status === status);
@@ -396,8 +408,10 @@ export class DuesComponent implements OnInit {
   }
 
   downloadReceipt(fee: FeeResponse): void {
-    const userName = this.auth.user()?.name || 'Student';
-    this.pdfService.generateReceipt(fee, userName);
+    const user = this.auth.user();
+    const userName = user?.name || 'Student';
+    const userRoll = user?.rollNumber || '';
+    this.pdfService.generateReceipt(fee, userName, userRoll);
     this.toast.success('Receipt downloaded successfully!');
   }
 

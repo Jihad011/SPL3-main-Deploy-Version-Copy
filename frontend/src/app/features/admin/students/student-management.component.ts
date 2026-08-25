@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { UserResponse, EnrollmentResponse, FeeResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ToolbarComponent, SortOption } from '../../../shared/components/toolbar/toolbar.component';
+import { ToolbarComponent, SortOption, FilterOption } from '../../../shared/components/toolbar/toolbar.component';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
@@ -17,12 +17,17 @@ import { ToastService } from '../../../core/services/toast.service';
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Directory administration</div>
-      <h1 class="page-title text-gradient-flow">Student Management</h1>
+      <h1 class="page-title">Student Management</h1>
       <p class="page-subtitle">View, search, and add student accounts</p>
     </div>
-    <button class="btn btn-primary btn-neon" (click)="openAddModal()">
-      <app-icon name="user" [size]="17"></app-icon>Add Student
-    </button>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="exportDirectoryCsv()" title="Export all students to CSV spreadsheet">
+        <app-icon name="download" [size]="15"></app-icon> Export Directory (CSV)
+      </button>
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <app-icon name="user" [size]="15"></app-icon> Add Student
+      </button>
+    </div>
   </div>
 
   <!-- Toolbar -->
@@ -30,11 +35,13 @@ import { ToastService } from '../../../core/services/toast.service';
     searchPlaceholder="Search by name, roll, or registration…"
     [showViewToggle]="true"
     [sortOptions]="sortOptions"
+    [filterOptions]="batchFilterOptions()"
     [resultCount]="displayed().length"
     [defaultView]="'list'"
     (searchChange)="onSearch($event)"
     (viewChange)="view.set($event)"
     (sortChange)="onSort($event)"
+    (filterChange)="onBatchFilterChange($event)"
   />
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
@@ -410,6 +417,25 @@ export class StudentManagementComponent implements OnInit {
     { label: 'Batch (Oldest)', value: 'batchAsc' },
   ];
 
+  selectedBatch = signal<string>('ALL');
+
+  batchFilterOptions = computed<FilterOption[]>(() => {
+    const batches = Array.from(new Set(this.all().map(s => s.batch).filter((b): b is number => b !== null && b !== undefined))).sort((a, b) => b - a);
+    return batches.map(b => ({ label: `Batch ${b}`, value: String(b) }));
+  });
+
+  onBatchFilterChange(types: string[]): void {
+    if (types.length === 0) {
+      this.selectedBatch.set('ALL');
+      this.displayed.set(this.all());
+    } else {
+      const selected = types[0];
+      this.selectedBatch.set(selected);
+      const batchNum = parseInt(selected, 10);
+      this.displayed.set(this.all().filter(s => s.batch === batchNum));
+    }
+  }
+
   form = {
     name: '', email: '', password: '', rollNumber: '',
     batch: null as number | null, registrationNumber: '', phone: '', role: 'STUDENT'
@@ -512,5 +538,33 @@ export class StudentManagementComponent implements OnInit {
         this.toast.error(msg);
       }
     });
+  }
+
+  exportDirectoryCsv(): void {
+    const list = this.displayed();
+    if (!list.length) {
+      this.toast.info('No student records to export.');
+      return;
+    }
+    const headers = ['#', 'Roll Number', 'Student Name', 'Email', 'Batch', 'Registration Number', 'Phone', 'Status'];
+    const lines = list.map((s, i) => [
+      i + 1,
+      s.rollNumber ?? '',
+      `"${s.name}"`,
+      s.email ?? '',
+      s.batch ?? '',
+      s.registrationNumber ?? '',
+      s.phone ?? '',
+      s.isActive ? 'Active' : 'Inactive'
+    ].join(','));
+    const csv = [headers.join(','), ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Student_Directory_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    this.toast.success(`Exported ${list.length} student records to CSV! 📊`);
   }
 }
