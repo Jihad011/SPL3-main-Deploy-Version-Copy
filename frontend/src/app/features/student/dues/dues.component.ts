@@ -1,12 +1,13 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { FeeResponse } from '../../../core/models/models';
 import { IconComponent, IconName } from '../../../shared/components/icon/icon.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PaymentGatewayModalComponent } from '../../../shared/components/payment-gateway-modal/payment-gateway-modal.component';
+import { PdfService } from '../../../core/services/pdf.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { ViewChild } from '@angular/core';
+import { AuthStateService } from '../../../core/services/auth-state.service';
 
 const FEE_TYPE_ICONS: Record<string, IconName> = {
   RETAKE: 'list-check',
@@ -118,10 +119,16 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
           <span class="date-label">Paid on</span>
           <span>{{ f.paidAt | date:'dd MMM yyyy' }}</span>
         </div>
-        <div class="invoice-date-item" *ngIf="f.paymentMethod">
-          <span class="date-label">Via</span>
-          <span class="pm-badge">{{ f.paymentMethod }}</span>
+        
+      </div>
+      <div class="invoice-paid-confirm" *ngIf="f.status === 'PAID'">
+        <div class="paid-content">
+          <app-icon name="check-circle" [size]="20" class="paid-icon"></app-icon>
+          <span>Payment confirmed via {{ f.paymentMethod ? f.paymentMethod.replace('_', ' ') : 'N/A' }}</span>
         </div>
+        <button class="download-receipt-btn magnetic" (click)="downloadReceipt(f)">
+          <app-icon name="download" [size]="16"></app-icon> Download Receipt
+        </button>
       </div>
 
       <!-- Pay action -->
@@ -146,12 +153,6 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
             {{ payingId() === f.id ? 'Processing...' : 'Pay' }}
           </button>
         </div>
-      </div>
-      <div class="invoice-paid-confirm" *ngIf="f.status === 'PAID'">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        Payment confirmed
       </div>
     </div>
   </div>
@@ -301,9 +302,18 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
     }
 
     .invoice-paid-confirm {
-      display: flex; align-items: center; gap: 0.4rem;
-      font-size: 0.82rem; color: var(--accent-green); font-weight: 500;
+      padding: 1.5rem; border-top: 1px solid var(--border);
+      background: rgba(16, 185, 129, 0.05); color: var(--accent-green);
+      font-weight: 500; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
     }
+    .paid-content { display: flex; align-items: center; gap: 0.8rem; }
+    .download-receipt-btn {
+      background: transparent; border: 1px solid var(--accent-green); color: var(--accent-green);
+      padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; font-weight: 600; transition: all 0.2s;
+    }
+    .download-receipt-btn:hover { background: var(--accent-green); color: white; }
+    .paid-icon { flex-shrink: 0; }
 
     @media (max-width: 640px) {
       .invoice-grid { grid-template-columns: 1fr; }
@@ -322,6 +332,10 @@ export class DuesComponent implements OnInit {
   pendingFeeId = signal<number | null>(null);
   pendingPaymentMethod = signal<string>('CASH');
 
+  private pdfService = inject(PdfService);
+  private toast = inject(ToastService);
+  private auth = inject(AuthStateService);
+
   totalDues   = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
   unpaidCount = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
   paidCount   = computed(() => this.fees().filter(f => f.status === 'PAID').length);
@@ -330,7 +344,7 @@ export class DuesComponent implements OnInit {
     return status === 'ALL' ? this.fees() : this.fees().filter(f => f.status === status);
   });
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  constructor(private api: ApiService) {}
 
   ngOnInit(): void { this.loadFees(); }
 
@@ -379,6 +393,12 @@ export class DuesComponent implements OnInit {
         this.payingId.set(null);
       }
     });
+  }
+
+  downloadReceipt(fee: FeeResponse): void {
+    const userName = this.auth.user()?.name || 'Student';
+    this.pdfService.generateReceipt(fee, userName);
+    this.toast.success('Receipt downloaded successfully!');
   }
 
   feeTypeIcon(type: string): IconName {

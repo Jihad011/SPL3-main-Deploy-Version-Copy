@@ -1,6 +1,5 @@
 package com.iit.creditmanagement.service;
 
-import com.iit.creditmanagement.model.entity.AuditLog;
 import com.iit.creditmanagement.model.dto.response.AuditLogResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

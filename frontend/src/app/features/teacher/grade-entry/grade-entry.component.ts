@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -542,9 +542,15 @@ export class GradeEntryComponent implements OnInit {
     this.toast.success('CSV exported successfully!');
   }
 
+  @ViewChild('csvInput') csvInput!: ElementRef<HTMLInputElement>;
+
   triggerCsvImport(): void {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) fileInput.click();
+    if (this.csvInput) {
+      this.csvInput.nativeElement.click();
+    } else {
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.click();
+    }
   }
 
   importCsv(event: Event): void {
@@ -557,17 +563,18 @@ export class GradeEntryComponent implements OnInit {
     this.api.uploadGradesCsv(this.courseId, file).subscribe({
       next: (responses) => {
         this.loading.set(false);
-        this.toast.success(`Successfully processed ${responses.length} grades from CSV`);
+        this.toast.success(`Successfully processed ${responses.length} grades from CSV! 🎉`);
         this.loadData();
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Failed to upload CSV grades');
-        this.toast.error('CSV Upload failed');
+        const msg = err.error?.detail || err.error?.message || 'Failed to upload CSV grades';
+        this.error.set(msg);
+        this.toast.error(msg);
       }
     });
     
-    // reset input
+    // reset input so the same file can be re-selected if edited
     input.value = '';
   }
 }

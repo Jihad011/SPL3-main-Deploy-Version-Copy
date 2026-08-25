@@ -1,7 +1,6 @@
 package com.iit.creditmanagement.controller;
 
 import com.iit.creditmanagement.model.dto.request.EnrollRequest;
-import com.iit.creditmanagement.model.dto.response.ApiResponse;
 import com.iit.creditmanagement.model.dto.response.EnrollmentResponse;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.service.EnrollmentService;

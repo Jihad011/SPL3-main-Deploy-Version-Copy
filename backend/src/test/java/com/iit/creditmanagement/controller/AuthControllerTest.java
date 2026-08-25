@@ -5,7 +5,6 @@ import com.iit.creditmanagement.model.dto.request.PublicRegisterRequest;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.model.enums.Role;
 import com.iit.creditmanagement.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

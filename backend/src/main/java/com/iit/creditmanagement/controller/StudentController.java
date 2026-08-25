@@ -6,10 +6,8 @@ import com.iit.creditmanagement.model.dto.response.EnrollmentResponse;
 import com.iit.creditmanagement.model.dto.response.StudentDashboardResponse;
 import com.iit.creditmanagement.model.dto.response.UserResponse;
 import com.iit.creditmanagement.model.entity.User;
-import com.iit.creditmanagement.model.enums.Role;
 import com.iit.creditmanagement.repository.EnrollmentRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
-import com.iit.creditmanagement.repository.UserRepository;
 import com.iit.creditmanagement.service.FeeService;
 import com.iit.creditmanagement.service.GradeService;
 import com.iit.creditmanagement.service.EnrollmentService;
@@ -40,7 +38,6 @@ public class StudentController {
     private final EnrollmentService    enrollmentService;
     private final GradeService         gradeService;
     private final FeeService           feeService;
-    private final UserRepository       userRepository;
     private final TranscriptService    transcriptService;
 
     /**
@@ -54,26 +51,33 @@ public class StudentController {
             @AuthenticationPrincipal User student) {
 
         var activeSemester = semesterRepository.findActiveSemester()
-                .orElseThrow(() -> new BusinessRuleException("No active semester"));
+                .orElse(null);
 
-        int currentCredits = enrollmentRepository
-                .sumCreditsByStudentAndSemester(student.getId(), activeSemester.getId());
+        Long activeSemesterId = activeSemester != null ? activeSemester.getId() : null;
+        String semesterLabel = activeSemester != null ? activeSemester.getLabel() : "Active Term";
 
-        List<EnrollmentResponse> currentEnrollments = enrollmentService
-                .getEnrollmentsForSemester(student.getId(), activeSemester.getId());
+        Integer sumCredits = activeSemesterId != null
+                ? enrollmentRepository.sumCreditsByStudentAndSemester(student.getId(), activeSemesterId)
+                : 0;
+        int currentCredits = sumCredits != null ? sumCredits : 0;
+
+        List<EnrollmentResponse> currentEnrollments = activeSemesterId != null
+                ? enrollmentService.getEnrollmentsForSemester(student.getId(), activeSemesterId)
+                : enrollmentRepository.findAllByStudentId(student.getId()).stream().map(EnrollmentResponse::from).toList();
 
         BigDecimal cgpa      = gradeService.getStudentCgpa(student.getId());
         BigDecimal totalDues = feeService.getTotalDues(student.getId());
         int unpaidCount      = feeService.getUnpaidFees(student.getId()).size();
 
-        // Count completed courses for total credits earned
-        long completedCourses = gradeService.getMyGrades(student.getId())
-                .stream().filter(g -> g.gradePoint() != null && g.gradePoint().compareTo(BigDecimal.ZERO) > 0)
-                .count();
-        int totalCreditsEarned = gradeService.getMyGrades(student.getId())
-                .stream()
+        // Count completed courses and total credits earned
+        List<GradeResponse> myGrades = gradeService.getMyGrades(student.getId());
+        List<GradeResponse> passedGrades = myGrades.stream()
                 .filter(g -> g.gradePoint() != null && g.gradePoint().compareTo(BigDecimal.ZERO) > 0)
-                .mapToInt(g -> g.creditHours())
+                .toList();
+
+        long completedCourses = passedGrades.size();
+        int totalCreditsEarned = passedGrades.stream()
+                .mapToInt(g -> g.creditHours() != null ? g.creditHours() : 0)
                 .sum();
 
         StudentDashboardResponse dashboard = new StudentDashboardResponse(
@@ -81,16 +85,16 @@ public class StudentController {
                 student.getName(),
                 student.getRollNumber(),
                 student.getRegistrationNumber(),
-                activeSemester.getLabel(),
+                semesterLabel,
                 currentCredits,
                 AppConstants.MAX_CREDITS_PER_SEMESTER,
-                AppConstants.MAX_CREDITS_PER_SEMESTER - currentCredits,
-                cgpa,
+                Math.max(0, AppConstants.MAX_CREDITS_PER_SEMESTER - currentCredits),
+                cgpa != null ? cgpa : BigDecimal.ZERO,
                 totalCreditsEarned,
                 (int) completedCourses,
-                totalDues,
+                totalDues != null ? totalDues : BigDecimal.ZERO,
                 unpaidCount,
-                currentEnrollments
+                currentEnrollments != null ? currentEnrollments : List.of()
         );
 
         return ResponseEntity.ok(dashboard);

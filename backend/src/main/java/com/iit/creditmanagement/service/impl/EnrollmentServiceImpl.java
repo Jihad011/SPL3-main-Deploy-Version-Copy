@@ -28,7 +28,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseRepository      courseRepository;
     private final UserRepository        userRepository;
     private final SemesterRepository    semesterRepository;
-    private final FeeRepository         feeRepository;
     private final CreditValidator       creditValidator;
     /** Publishes domain events to decouple enrollment from billing/notification */
     private final ApplicationEventPublisher eventPublisher;
@@ -152,9 +151,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     @Transactional(readOnly = true)
     public List<EnrollmentResponse> getEnrollmentsByCourse(Long courseId, Long semesterId) {
-        return enrollmentRepository
-                .findEnrollmentsForGradeEntry(courseId, semesterId)
-                .stream()
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsForGradeEntry(courseId, semesterId);
+        if (enrollments.isEmpty()) {
+            enrollments = enrollmentRepository.findEnrollmentsForGradeEntry(courseId, null);
+        }
+        return enrollments.stream()
                 .map(EnrollmentResponse::from)
                 .toList();
     }

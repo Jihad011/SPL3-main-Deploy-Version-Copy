@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -117,7 +118,7 @@ public class GradeServiceImpl implements GradeService {
             enrollment.setStatus(EnrollmentStatus.ACTIVE);
         }
         
-        Grade savedGrade = gradeRepository.save(grade);
+        grade = gradeRepository.save(grade);
         auditService.logAction(teacherId, "GRADE_UPDATED", "Grade", "Updated grade for enrollment ID: " + enrollment.getId() + ", Letter: " + grade.getGradeLetter());
         
         if (isFullyGraded) {
@@ -150,26 +151,91 @@ public class GradeServiceImpl implements GradeService {
     @CacheEvict(value = "cgpa", allEntries = true)
     public List<GradeResponse> uploadGradesCsv(Long teacherId, Long courseId, MultipartFile file) {
         List<GradeEntryRequest> requests = new ArrayList<>();
+        List<String> skippedRolls = new ArrayList<>();
+
+        CSVFormat csvFormat = CSVFormat.Builder.create(CSVFormat.DEFAULT)
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .setIgnoreHeaderCase(true)
+                .setTrim(true)
+                .build();
+
         try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim())) {
+             CSVParser csvParser = new CSVParser(reader, csvFormat)) {
             
             for (CSVRecord record : csvParser) {
-                String rollNumber = record.get("Roll Number");
-                String midtermStr = record.isSet("Midterm") ? record.get("Midterm") : null;
-                String finalStr = record.isSet("Final") ? record.get("Final") : null;
+                // Flexible Roll Number resolution
+                String rollNumber = null;
+                if (record.isSet("Roll Number")) rollNumber = record.get("Roll Number");
+                else if (record.isSet("Roll No.")) rollNumber = record.get("Roll No.");
+                else if (record.isSet("Roll No")) rollNumber = record.get("Roll No");
+                else if (record.isSet("Roll")) rollNumber = record.get("Roll");
+                else if (record.isSet("RollNumber")) rollNumber = record.get("RollNumber");
+                else if (record.isSet("Student Roll")) rollNumber = record.get("Student Roll");
+                else if (record.isSet("roll_number")) rollNumber = record.get("roll_number");
+                else if (record.size() >= 1) rollNumber = record.get(0);
+                
+                if (rollNumber == null || rollNumber.isBlank()) {
+                    continue;
+                }
+                rollNumber = rollNumber.trim();
+                
+                // Flexible Midterm resolution
+                String midtermStr = null;
+                if (record.isSet("Midterm")) midtermStr = record.get("Midterm");
+                else if (record.isSet("Midterm (0-40)")) midtermStr = record.get("Midterm (0-40)");
+                else if (record.isSet("Midterm Marks")) midtermStr = record.get("Midterm Marks");
+                else if (record.isSet("Mid")) midtermStr = record.get("Mid");
+                else if (record.isSet("midterm")) midtermStr = record.get("midterm");
+                
+                // Flexible Final resolution
+                String finalStr = null;
+                if (record.isSet("Final")) finalStr = record.get("Final");
+                else if (record.isSet("Final (0-60)")) finalStr = record.get("Final (0-60)");
+                else if (record.isSet("Final Marks")) finalStr = record.get("Final Marks");
+                else if (record.isSet("Finals")) finalStr = record.get("Finals");
+                else if (record.isSet("final")) finalStr = record.get("final");
                 
                 // Find enrollment by roll number and course id
-                Long enrollmentId = enrollmentRepository.findByStudentRollNumberAndCourseId(rollNumber, courseId)
-                        .map(com.iit.creditmanagement.model.entity.Enrollment::getId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Enrollment for student " + rollNumber + " in course " + courseId + " not found"));
+                Optional<com.iit.creditmanagement.model.entity.Enrollment> enrollmentOpt =
+                        enrollmentRepository.findByStudentRollNumberAndCourseId(rollNumber, courseId);
                 
-                BigDecimal midtermMarks = (midtermStr != null && !midtermStr.isBlank()) ? new BigDecimal(midtermStr) : null;
-                BigDecimal finalMarks = (finalStr != null && !finalStr.isBlank()) ? new BigDecimal(finalStr) : null;
+                if (enrollmentOpt.isEmpty()) {
+                    skippedRolls.add(rollNumber);
+                    continue;
+                }
+                
+                Long enrollmentId = enrollmentOpt.get().getId();
+                
+                BigDecimal midtermMarks = null;
+                if (midtermStr != null && !midtermStr.isBlank() && !midtermStr.equals("—") && !midtermStr.equals("-")) {
+                    try {
+                        midtermMarks = new BigDecimal(midtermStr.trim());
+                    } catch (NumberFormatException ignored) {}
+                }
+                
+                BigDecimal finalMarks = null;
+                if (finalStr != null && !finalStr.isBlank() && !finalStr.equals("—") && !finalStr.equals("-")) {
+                    try {
+                        finalMarks = new BigDecimal(finalStr.trim());
+                    } catch (NumberFormatException ignored) {}
+                }
                 
                 requests.add(new GradeEntryRequest(enrollmentId, midtermMarks, finalMarks));
             }
         } catch (Exception e) {
             throw new BusinessRuleException("Failed to parse CSV file: " + e.getMessage());
+        }
+        
+        if (requests.isEmpty()) {
+            if (!skippedRolls.isEmpty()) {
+                throw new BusinessRuleException(
+                    "None of the " + skippedRolls.size() + " student(s) in the CSV (e.g. " +
+                    String.join(", ", skippedRolls.stream().limit(5).toList()) + ") are enrolled in this course."
+                );
+            } else {
+                throw new BusinessRuleException("CSV file contains no valid student records.");
+            }
         }
         
         return bulkEnterGrades(teacherId, requests);
@@ -216,8 +282,11 @@ public class GradeServiceImpl implements GradeService {
             }
         }
 
-        return gradeRepository.findGradesByCourseAndSemester(courseId, semesterId)
-                .stream()
+        List<Grade> grades = gradeRepository.findGradesByCourseAndSemester(courseId, semesterId);
+        if (grades.isEmpty()) {
+            grades = gradeRepository.findGradesByCourseAndSemester(courseId, null);
+        }
+        return grades.stream()
                 .map(GradeResponse::from)
                 .toList();
     }

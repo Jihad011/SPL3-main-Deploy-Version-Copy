@@ -126,6 +126,9 @@ export class ApiService {
     const req: PaymentRequest = { paymentMethod: method as any };
     return this.http.patch<FeeResponse>(`${this.api}/fees/my/${feeId}/pay`, req);
   }
+  getAllFees(): Observable<FeeResponse[]> {
+    return this.http.get<FeeResponse[]>(`${this.api}/fees`);
+  }
 
   // ── Admin ─────────────────────────────────────────────────
   createStudent(req: any): Observable<UserResponse> {

@@ -5,6 +5,7 @@ import com.iit.creditmanagement.model.dto.response.CourseResponse;
 import com.iit.creditmanagement.model.dto.response.EnrollmentResponse;
 import com.iit.creditmanagement.model.dto.response.GradeResponse;
 import com.iit.creditmanagement.model.dto.response.UserResponse;
+import com.iit.creditmanagement.model.entity.Semester;
 import com.iit.creditmanagement.model.entity.User;
 import com.iit.creditmanagement.service.CourseService;
 import com.iit.creditmanagement.service.EnrollmentService;
@@ -62,10 +63,13 @@ public class TeacherController {
     @GetMapping("/courses/{courseId}/students")
     @Operation(summary = "Get students enrolled in a course for the active semester (grade entry table)")
     public ResponseEntity<List<EnrollmentResponse>> getEnrolledStudents(
-            @PathVariable Long courseId) {
-        Long semesterId = semesterRepository.findActiveSemester()
-                .orElseThrow(() -> new BusinessRuleException("No active semester"))
-                .getId();
+            @PathVariable Long courseId,
+            @RequestParam(required = false) Long semesterId) {
+        if (semesterId == null) {
+            semesterId = semesterRepository.findActiveSemester()
+                    .map(Semester::getId)
+                    .orElse(null);
+        }
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByCourse(courseId, semesterId));
     }
 
@@ -78,10 +82,13 @@ public class TeacherController {
     @Operation(summary = "Get all grade records for a course in the active semester")
     public ResponseEntity<List<GradeResponse>> getCourseGrades(
             @AuthenticationPrincipal User teacher,
-            @PathVariable Long courseId) {
-        Long semesterId = semesterRepository.findActiveSemester()
-                .orElseThrow(() -> new BusinessRuleException("No active semester"))
-                .getId();
+            @PathVariable Long courseId,
+            @RequestParam(required = false) Long semesterId) {
+        if (semesterId == null) {
+            semesterId = semesterRepository.findActiveSemester()
+                    .map(Semester::getId)
+                    .orElse(null);
+        }
         return ResponseEntity.ok(gradeService.getGradesForCourse(courseId, semesterId, teacher));
     }
 

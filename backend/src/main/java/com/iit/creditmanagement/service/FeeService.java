@@ -16,4 +16,5 @@ public interface FeeService {
     FeeResponse markAsPaid(Long feeId, Long adminId, PaymentMethod paymentMethod);
     FeeResponse payFeeStudent(Long feeId, Long studentId, PaymentMethod paymentMethod);
     List<FeeResponse> getFeesByStudent(Long studentId);   // admin
+    List<FeeResponse> getAllFees();                        // admin
 }

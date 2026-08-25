@@ -13,7 +13,6 @@ import com.iit.creditmanagement.repository.FeeRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
 import com.iit.creditmanagement.repository.UserRepository;
 import com.iit.creditmanagement.service.FeeService;
-import com.iit.creditmanagement.service.AuditService;
 import com.iit.creditmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ public class FeeServiceImpl implements FeeService {
     private final UserRepository     userRepository;
     private final SemesterRepository semesterRepository;
     private final NotificationService notificationService;
-    private final AuditService       auditService;
 
     @Override
     @Transactional(readOnly = true)
@@ -159,6 +157,13 @@ public class FeeServiceImpl implements FeeService {
     @Transactional(readOnly = true)
     public List<FeeResponse> getFeesByStudent(Long studentId) {
         return feeRepository.findAllByStudentId(studentId)
+                .stream().map(FeeResponse::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FeeResponse> getAllFees() {
+        return feeRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))
                 .stream().map(FeeResponse::from).toList();
     }
 }

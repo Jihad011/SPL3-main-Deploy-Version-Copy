@@ -2,7 +2,6 @@ package com.iit.creditmanagement.service;
 
 import com.iit.creditmanagement.model.dto.response.NotificationResponse;
 import com.iit.creditmanagement.model.entity.User;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 

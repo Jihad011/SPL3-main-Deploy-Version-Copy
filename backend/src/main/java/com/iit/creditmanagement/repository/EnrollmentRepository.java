@@ -1,7 +1,6 @@
 package com.iit.creditmanagement.repository;
 
 import com.iit.creditmanagement.model.entity.Enrollment;
-import com.iit.creditmanagement.model.enums.EnrollmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -48,7 +47,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         JOIN FETCH e.student
         JOIN FETCH e.course
         WHERE e.course.id = :courseId
-          AND e.semester.id = :semesterId
+          AND (:semesterId IS NULL OR e.semester.id = :semesterId)
           AND e.status IN ('ACTIVE', 'COMPLETED', 'FAILED')
         ORDER BY e.student.rollNumber
     """)

@@ -87,4 +87,11 @@ public class FeeController {
     public ResponseEntity<List<FeeResponse>> getFeesByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(feeService.getFeesByStudent(studentId));
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all fees across all students (admin only)")
+    public ResponseEntity<List<FeeResponse>> getAllFees() {
+        return ResponseEntity.ok(feeService.getAllFees());
+    }
 }

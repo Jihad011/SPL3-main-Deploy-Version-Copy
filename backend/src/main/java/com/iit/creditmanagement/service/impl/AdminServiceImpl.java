@@ -30,8 +30,6 @@ public class AdminServiceImpl implements AdminService {
     private final FeeService         feeService;
     private final CourseService      courseService;
     private final PasswordEncoder    passwordEncoder;
-    private final NotificationService notificationService;
-    private final AuditService       auditService;
 
     @Override
     @Transactional

@@ -36,7 +36,7 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
         JOIN FETCH g.enrollment e
         JOIN FETCH e.student
         WHERE e.course.id = :courseId
-          AND e.semester.id = :semesterId
+          AND (:semesterId IS NULL OR e.semester.id = :semesterId)
     """)
     List<Grade> findGradesByCourseAndSemester(
             @Param("courseId") Long courseId,
