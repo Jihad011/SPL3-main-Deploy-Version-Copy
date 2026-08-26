@@ -116,8 +116,9 @@ import { ToastService } from '../../../core/services/toast.service';
               </span>
             </td>
             <td>
-              <button class="icon-btn-sm" (click)="$event.stopPropagation(); openDrawer(s)" title="View profile">
-                <app-icon name="eye" [size]="15" />
+              <button class="btn-action-view" (click)="$event.stopPropagation(); openDrawer(s)" title="View student dossier & details">
+                <app-icon name="eye" [size]="14" />
+                <span>View Profile</span>
               </button>
             </td>
           </tr>
@@ -152,60 +153,99 @@ import { ToastService } from '../../../core/services/toast.service';
         <div class="drawer-student-info">
           <h2 class="drawer-name">{{ drawerStudent()?.name }}</h2>
           <div class="drawer-meta-row">
-            <span class="code-badge" *ngIf="drawerStudent()?.rollNumber">{{ drawerStudent()?.rollNumber }}</span>
-            <span class="batch-tag" *ngIf="drawerStudent()?.batch">{{ drawerStudent()?.batch }}</span>
+            <span class="code-badge" *ngIf="drawerStudent()?.rollNumber">Roll {{ drawerStudent()?.rollNumber }}</span>
+            <span class="batch-tag" *ngIf="drawerStudent()?.batch">Batch {{ drawerStudent()?.batch }}</span>
             <span class="status-badge" [class.status-active]="drawerStudent()?.isActive" [class.status-inactive]="!drawerStudent()?.isActive">
+              <span class="badge-dot" *ngIf="drawerStudent()?.isActive"></span>
               {{ drawerStudent()?.isActive ? 'Active' : 'Inactive' }}
             </span>
           </div>
         </div>
-        <button class="drawer-close-btn" (click)="closeDrawer()">
+        <button class="drawer-close-btn" (click)="closeDrawer()" title="Close drawer" aria-label="Close drawer">
           <app-icon name="x" [size]="18" />
         </button>
       </div>
 
       <div class="drawer-body">
-        <!-- Contact Info -->
-        <div class="drawer-section">
-          <div class="drawer-section-title">Contact Information</div>
-          <div class="info-row"><span class="info-label">Email</span><span>{{ drawerStudent()?.email }}</span></div>
-          <div class="info-row" *ngIf="drawerStudent()?.phone"><span class="info-label">Phone</span><span>{{ drawerStudent()?.phone }}</span></div>
-          <div class="info-row" *ngIf="drawerStudent()?.registrationNumber"><span class="info-label">Reg. No.</span><span>{{ drawerStudent()?.registrationNumber }}</span></div>
-          <div class="info-row" *ngIf="drawerStudent()?.department"><span class="info-label">Department</span><span>{{ drawerStudent()?.department }}</span></div>
-        </div>
-
-        <!-- Fee Summary -->
-        <div class="drawer-section" *ngIf="!drawerLoading()">
-          <div class="drawer-section-title">Fee Summary</div>
-          <div class="fee-summary-chips">
-            <div class="fee-chip fee-chip--unpaid">
-              <strong>{{ drawerUnpaidFees() }}</strong> Unpaid
+        <!-- Contact & Academic Info Card -->
+        <div class="drawer-card">
+          <div class="drawer-card-header">
+            <div class="drawer-card-icon">
+              <app-icon name="user" [size]="15" />
             </div>
-            <div class="fee-chip fee-chip--paid">
-              <strong>{{ drawerPaidFees() }}</strong> Paid
+            <span>Identity & Contact</span>
+          </div>
+          <div class="drawer-card-content">
+            <div class="drawer-row">
+              <span class="drawer-row-label">Email Address</span>
+              <span class="drawer-row-val">{{ drawerStudent()?.email }}</span>
+            </div>
+            <div class="drawer-row" *ngIf="drawerStudent()?.phone">
+              <span class="drawer-row-label">Phone</span>
+              <span class="drawer-row-val">{{ drawerStudent()?.phone }}</span>
+            </div>
+            <div class="drawer-row" *ngIf="drawerStudent()?.registrationNumber">
+              <span class="drawer-row-label">Registration No.</span>
+              <span class="drawer-row-val font-mono">{{ drawerStudent()?.registrationNumber }}</span>
+            </div>
+            <div class="drawer-row" *ngIf="drawerStudent()?.department">
+              <span class="drawer-row-label">Department</span>
+              <span class="drawer-row-val">{{ drawerStudent()?.department }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Enrollments -->
-        <div class="drawer-section" *ngIf="!drawerLoading()">
-          <div class="drawer-section-title">Recent Enrollments ({{ drawerEnrollments().length }})</div>
-          <div class="drawer-enrollment-list">
-            <div class="drawer-enrollment-item" *ngFor="let e of drawerEnrollments().slice(0, 5)">
-              <span class="code-badge">{{ e.courseCode }}</span>
-              <span class="enrollment-name">{{ e.courseName }}</span>
-              <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">{{ e.status }}</span>
+        <!-- Fee Summary Card -->
+        <div class="drawer-card" *ngIf="!drawerLoading()">
+          <div class="drawer-card-header">
+            <div class="drawer-card-icon">
+              <app-icon name="credit-card" [size]="15" />
             </div>
-            <div class="text-muted" *ngIf="drawerEnrollments().length === 0">No enrollments found.</div>
+            <span>Financial Accounts</span>
+          </div>
+          <div class="drawer-card-content">
+            <div class="fee-summary-chips">
+              <div class="fee-chip fee-chip--unpaid">
+                <div class="fee-chip-val">{{ drawerUnpaidFees() }}</div>
+                <div class="fee-chip-label">Unpaid Dues</div>
+              </div>
+              <div class="fee-chip fee-chip--paid">
+                <div class="fee-chip-val">{{ drawerPaidFees() }}</div>
+                <div class="fee-chip-label">Paid Invoices</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="drawer-section" *ngIf="drawerLoading()">
+        <!-- Enrollments Card -->
+        <div class="drawer-card" *ngIf="!drawerLoading()">
+          <div class="drawer-card-header">
+            <div class="drawer-card-icon">
+              <app-icon name="book-open" [size]="15" />
+            </div>
+            <span>Course Enrollments ({{ drawerEnrollments().length }})</span>
+          </div>
+          <div class="drawer-card-content">
+            <div class="drawer-enrollment-list">
+              <div class="drawer-enrollment-item" *ngFor="let e of drawerEnrollments().slice(0, 5)">
+                <span class="code-badge">{{ e.courseCode }}</span>
+                <span class="enrollment-name">{{ e.courseName }}</span>
+                <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">{{ e.status }}</span>
+              </div>
+              <div class="drawer-empty-hint" *ngIf="drawerEnrollments().length === 0">
+                No active course enrollments registered.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Skeleton -->
+        <div class="drawer-card" *ngIf="drawerLoading()">
           <div class="drawer-skeleton" *ngFor="let i of [1,2,3]"></div>
         </div>
       </div>
     </div>
-</div>
+  </div>
 
   <!-- Add Student Modal -->
   <div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
@@ -231,29 +271,30 @@ import { ToastService } from '../../../core/services/toast.service';
           </div>
           <div class="form-group">
             <label class="form-label">Password *</label>
-            <input type="password" [(ngModel)]="form.password" name="password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password" />
+            <input type="password" [(ngModel)]="form.password" name="password" required placeholder="••••••••" autocomplete="new-password" />
           </div>
           <div class="form-group">
-            <label class="form-label">Roll Number *</label>
-            <input type="text" [(ngModel)]="form.rollNumber" name="rollNumber" required placeholder="e.g. BS1413" />
+            <label class="form-label">Class Roll Number *</label>
+            <input type="text" [(ngModel)]="form.rollNumber" name="rollNumber" required placeholder="e.g. 1413" />
           </div>
           <div class="form-group">
-            <label class="form-label">Batch Year *</label>
-            <input type="number" [(ngModel)]="form.batch" name="batch" required placeholder="e.g. 2024" />
+            <label class="form-label">Batch (e.g. 14, 15) *</label>
+            <input type="number" [(ngModel)]="form.batch" name="batch" required placeholder="e.g. 14" />
           </div>
           <div class="form-group">
             <label class="form-label">Registration Number</label>
-            <input type="text" [(ngModel)]="form.registrationNumber" name="registrationNumber" placeholder="e.g. REG-2024-001" />
+            <input type="text" [(ngModel)]="form.registrationNumber" name="registrationNumber" placeholder="e.g. REG-2021-1413" />
           </div>
-          <div class="form-group form-grid-wide">
+          <div class="form-group">
             <label class="form-label">Phone Number</label>
-            <input type="text" [(ngModel)]="form.phone" name="phone" placeholder="e.g. +8801700000000" />
+            <input type="text" [(ngModel)]="form.phone" name="phone" placeholder="e.g. 01700000000" />
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-neon" [disabled]="submitting() || !studentForm.valid">
-            {{ submitting() ? 'Registering...' : 'Register Student' }}
+          <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="submitting()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="submitting() || !studentForm.form.valid">
+            <span *ngIf="!submitting()">Create Student Account</span>
+            <span *ngIf="submitting()">Creating Student...</span>
           </button>
         </div>
       </form>
@@ -264,70 +305,137 @@ import { ToastService } from '../../../core/services/toast.service';
     .sortable-th { cursor: pointer; user-select: none; }
     .sortable-th:hover { color: var(--accent-primary); }
     .clickable-row { cursor: pointer; }
-    .clickable-row:hover td { background: rgba(34,211,238,0.03); }
-    .icon-btn-sm {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 28px; height: 28px; border: 1px solid var(--border);
-      border-radius: 7px; background: var(--bg-card); color: var(--text-muted);
-      cursor: pointer; transition: all .2s;
+    .clickable-row:hover td { background: var(--bg-card-hover); }
+
+    /* ✨ High-End Action View Button ✨ */
+    .btn-action-view {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.85rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm, 8px);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
     }
-    .icon-btn-sm:hover { border-color: var(--border-glow); color: var(--accent-primary); background: rgba(34,211,238,0.06); }
+
+    .btn-action-view app-icon {
+      color: var(--cyan);
+      transition: transform 0.2s ease;
+    }
+
+    .btn-action-view:hover {
+      background: var(--bg-elevated);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn-action-view:hover app-icon {
+      transform: scale(1.15);
+    }
 
     /* Grid */
     .student-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1.25rem;
     }
     .student-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden; cursor: pointer;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 16px);
+      overflow: hidden;
+      cursor: pointer;
       transition: all .25s cubic-bezier(0.4,0,0.2,1);
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
     }
     .student-card:hover {
-      transform: translateY(-4px); border-color: var(--border-glow);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(34,211,238,0.1);
+      transform: translateY(-3px);
+      border-color: var(--border-glow, #CBD5E1);
+      box-shadow: var(--shadow-md);
     }
     .student-card-header {
       padding: 1.5rem 1.5rem 0.75rem;
-      display: flex; align-items: flex-start; justify-content: space-between;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
     }
     .student-avatar-lg {
-      width: 56px; height: 56px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1.4rem; color: #fff;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.35rem;
+      color: #fff;
       flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .student-card-body { padding: 0 1.5rem 1rem; flex: 1; }
-    .student-card-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+    .student-card-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
     .student-card-meta { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
-    .student-card-email { font-size: 0.775rem; color: var(--text-muted); }
+    .student-card-email { font-size: 0.8rem; color: var(--text-muted); }
     .batch-tag {
-      background: rgba(167,139,250,0.12); color: var(--purple);
-      border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.72rem; font-weight: 600;
+      background: rgba(167,139,250,0.12);
+      color: var(--purple, #7C3AED);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 6px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 600;
     }
     .student-card-footer {
-      padding: 0.75rem 1.5rem; border-top: 1px solid var(--border);
+      padding: 0.85rem 1.5rem;
+      border-top: 1px solid var(--border-light);
+      background: var(--bg-surface);
     }
     .card-action-btn {
-      display: flex; align-items: center; gap: 0.4rem;
-      background: none; border: none; color: var(--text-muted); font-size: 0.82rem;
-      cursor: pointer; padding: 0; transition: color .2s; font-family: inherit;
+      width: 100%;
+      justify-content: center;
     }
-    .card-action-btn:hover { color: var(--accent-primary); }
 
-    /* Drawer */
+    /* ✨ Luxury Slide-Over Dossier Drawer ✨ */
     .drawer-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px); z-index: 500;
-      animation: fadeIn .2s ease;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 500;
+      animation: fadeIn .2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .drawer-panel {
-      position: fixed; top: 0; right: 0; bottom: 0; width: 420px;
-      max-width: 100vw; background: var(--bg-elevated);
-      border-left: 1px solid var(--border); overflow-y: auto;
-      animation: slideInRight .3s cubic-bezier(0.4,0,0.2,1);
-      display: flex; flex-direction: column;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 480px;
+      max-width: 100vw;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      box-shadow: -12px 0 40px rgba(0, 0, 0, 0.25);
+      overflow-y: auto;
+      animation: slideInRight .28s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideInRight {
@@ -335,56 +443,193 @@ import { ToastService } from '../../../core/services/toast.service';
       to   { transform: translateX(0); }
     }
     .drawer-header {
-      display: flex; align-items: flex-start; gap: 1rem;
-      padding: 1.5rem; border-bottom: 1px solid var(--border);
-      background: var(--bg-glass); backdrop-filter: blur(16px);
-      position: sticky; top: 0; z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 1.15rem;
+      padding: 1.75rem 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     .drawer-avatar {
-      width: 52px; height: 52px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1.4rem; color: #fff; flex-shrink: 0;
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     }
-    .drawer-student-info { flex: 1; }
-    .drawer-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
-    .drawer-meta-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .drawer-student-info { flex: 1; min-width: 0; }
+    .drawer-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .drawer-meta-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
     .drawer-close-btn {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 10px; width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-muted); cursor: pointer; transition: all .2s; flex-shrink: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .2s;
+      flex-shrink: 0;
     }
-    .drawer-close-btn:hover { color: var(--text-primary); border-color: var(--border-glow); }
-    .drawer-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-    .drawer-section {}
-    .drawer-section-title {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.875rem;
+    .drawer-close-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--cyan);
+      background: var(--bg-elevated);
+      transform: scale(1.05);
     }
-    .info-row {
-      display: flex; gap: 1rem; padding: 0.5rem 0;
-      border-bottom: 1px solid var(--border); font-size: 0.875rem;
+
+    .drawer-body {
+      padding: 1.5rem 1.75rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
-    .info-label { color: var(--text-muted); min-width: 90px; flex-shrink: 0; }
-    .fee-summary-chips { display: flex; gap: 0.75rem; }
+
+    .drawer-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 14px);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .drawer-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.25rem;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .drawer-card-icon {
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+    }
+    .drawer-card-content {
+      padding: 1.15rem 1.25rem;
+    }
+
+    .drawer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.86rem;
+    }
+    .drawer-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .drawer-row:first-child {
+      padding-top: 0;
+    }
+    .drawer-row-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .drawer-row-val {
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .fee-summary-chips {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
     .fee-chip {
-      flex: 1; padding: 0.875rem; border-radius: 12px;
-      text-align: center; font-size: 0.82rem;
+      padding: 1rem 0.85rem;
+      border-radius: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
-    .fee-chip strong { display: block; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; }
-    .fee-chip--unpaid { background: rgba(248,113,113,0.1); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.2); }
-    .fee-chip--paid   { background: rgba(52,211,153,0.1); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.2); }
-    .drawer-enrollment-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .fee-chip-val {
+      font-size: 1.55rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .fee-chip-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .fee-chip--unpaid {
+      background: rgba(239, 68, 68, 0.08);
+      color: #DC2626;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .fee-chip--paid {
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .drawer-enrollment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
     .drawer-enrollment-item {
-      display: flex; align-items: center; gap: 0.625rem;
-      padding: 0.625rem; border-radius: 10px; background: var(--bg-card);
-      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      font-size: 0.84rem;
     }
-    .enrollment-name { flex: 1; color: var(--text-secondary); }
+    .enrollment-name {
+      flex: 1;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .drawer-empty-hint {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+
     .drawer-skeleton {
-      height: 52px; border-radius: 10px; margin-bottom: 0.5rem;
+      height: 48px;
+      border-radius: 8px;
+      margin-bottom: 0.65rem;
       background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
-      background-size: 200% 100%; animation: shimmer 1.5s infinite linear;
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
     }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
