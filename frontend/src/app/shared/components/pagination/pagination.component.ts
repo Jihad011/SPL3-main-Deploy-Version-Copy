@@ -25,7 +25,7 @@ import { IconComponent } from '../icon/icon.component';
               [value]="pageSize"
               [disabled]="disabled"
               (change)="onPageSizeChange($event)">
-              <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+              <option *ngFor="let opt of pageSizeOptions" [value]="opt" [selected]="opt === pageSize">{{ opt }}</option>
             </select>
           </div>
         </div>
