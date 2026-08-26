@@ -5,12 +5,13 @@ import { ApiService } from '../../../core/services/api.service';
 import { UserResponse, EnrollmentResponse, FeeResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent, SortOption, FilterOption } from '../../../shared/components/toolbar/toolbar.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-student-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent],
+  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent, PaginationComponent],
   template: `
 <div class="page">
   <!-- Page Header -->
@@ -123,11 +124,17 @@ import { ToastService } from '../../../core/services/toast.service';
         </tbody>
       </table>
     </div>
-    <div class="pagination-controls" *ngIf="totalPages() > 1 && !isSearching">
-      <button class="btn btn-secondary" [disabled]="currentPage() === 0" (click)="loadPage(currentPage() - 1)">Previous</button>
-      <span>Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
-      <button class="btn btn-secondary" [disabled]="currentPage() >= totalPages() - 1" (click)="loadPage(currentPage() + 1)">Next</button>
-    </div>
+    <app-pagination
+      *ngIf="!isSearching && totalElements() > 0"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [totalPages]="totalPages()"
+      [totalElements]="totalElements()"
+      [pageSizeOptions]="pageSizeOptions"
+      [disabled]="loading()"
+      (pageChange)="loadPage($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
     <div class="empty-state" *ngIf="displayed().length === 0 && !loading()">
       <div class="empty-icon"><app-icon name="users" [size]="28"></app-icon></div>
       <h3>No students found</h3>
@@ -395,10 +402,12 @@ export class StudentManagementComponent implements OnInit {
   submitting   = signal(false);
   errorMessage = signal('');
   view         = signal<'grid' | 'list'>('list');
-  currentPage  = signal(0);
-  totalPages   = signal(0);
-  pageSize     = 20;
-  isSearching  = false;
+  currentPage   = signal(0);
+  totalPages    = signal(0);
+  totalElements = signal(0);
+  pageSize      = signal(25);
+  readonly pageSizeOptions = [25, 50, 75, 100];
+  isSearching   = false;
   private currentSort = '';
 
   // Drawer
@@ -449,16 +458,22 @@ export class StudentManagementComponent implements OnInit {
     if (page < 0 || (this.totalPages() > 0 && page >= this.totalPages())) return;
     this.loading.set(true);
     this.isSearching = false;
-    this.api.getAllStudents(page, this.pageSize).subscribe({
+    this.api.getAllStudents(page, this.pageSize()).subscribe({
       next: (res) => {
         this.all.set(res.content);
         this.displayed.set(res.content);
         this.currentPage.set(res.number);
         this.totalPages.set(res.totalPages);
+        this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize.set(newSize);
+    this.loadPage(0);
   }
 
   onSearch(q: string): void {

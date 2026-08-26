@@ -2360,4 +2360,32 @@ textarea:focus-visible {
 .stagger-4 { animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; opacity: 0; }
 .stagger-5 { animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.25s; opacity: 0; }
 
+/* ✨ Generic Pagination Controls Fallback ✨ */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  padding: 1.15rem 1.5rem;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pagination-controls span {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin: 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.pagination-controls .btn {
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm, 8px);
+}
+
+
 @import 'animations';

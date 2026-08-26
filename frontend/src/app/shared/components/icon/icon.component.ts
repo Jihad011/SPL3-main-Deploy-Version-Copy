@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 
 export type IconName =
   | 'alert-triangle'
+  | 'arrow-left'
   | 'arrow-right'
   | 'bell'
   | 'book-open'
@@ -59,6 +60,9 @@ export type IconName =
         @case ('alert-triangle') {
           <path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/>
           <path d="M12 9v4"/><path d="M12 17h.01"/>
+        }
+        @case ('arrow-left') {
+          <path d="M19 12H5"/><path d="m11 18-6-6 6-6"/>
         }
         @case ('arrow-right') {
           <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>

@@ -5,12 +5,13 @@ import { ApiService } from '../../../core/services/api.service';
 import { UserResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-teacher-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent],
+  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent, PaginationComponent],
   template: `
 <div class="page">
   <div class="page-header">
@@ -71,6 +72,19 @@ import { ToastService } from '../../../core/services/toast.service';
         </tbody>
       </table>
     </div>
+
+    <!-- Masterclass Pagination -->
+    <app-pagination
+      *ngIf="!query() && totalElements() > 0"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [totalPages]="totalPages()"
+      [totalElements]="totalElements()"
+      [pageSizeOptions]="pageSizeOptions"
+      [disabled]="loading()"
+      (pageChange)="loadTeachers($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   </div>
 </div>
 
@@ -136,9 +150,14 @@ import { ToastService } from '../../../core/services/toast.service';
   `]
 })
 export class TeacherManagementComponent implements OnInit {
-  teachers = signal<UserResponse[]>([]);
-  loading = signal(true);
-  query = signal('');
+  teachers      = signal<UserResponse[]>([]);
+  loading       = signal(true);
+  query         = signal('');
+  currentPage   = signal(0);
+  totalPages    = signal(0);
+  totalElements = signal(0);
+  pageSize      = signal(25);
+  readonly pageSizeOptions = [25, 50, 75, 100];
   
   showAddModal = signal(false);
   saving = signal(false);
@@ -157,18 +176,26 @@ export class TeacherManagementComponent implements OnInit {
   constructor(private api: ApiService, private toast: ToastService) {}
 
   ngOnInit() {
-    this.loadTeachers();
+    this.loadTeachers(0);
   }
 
-  loadTeachers() {
+  loadTeachers(page: number = 0) {
     this.loading.set(true);
-    this.api.getAllTeachers(0, 100).subscribe({
+    this.api.getAllTeachers(page, this.pageSize()).subscribe({
       next: (res) => {
         this.teachers.set(res.content);
+        this.currentPage.set(res.number);
+        this.totalPages.set(res.totalPages);
+        this.totalElements.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize.set(newSize);
+    this.loadTeachers(0);
   }
 
   saveTeacher() {
