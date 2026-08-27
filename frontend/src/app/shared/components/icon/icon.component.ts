@@ -23,6 +23,7 @@ export type IconName =
   | 'list-check'
   | 'lock'
   | 'log-out'
+  | 'mail'
   | 'menu'
   | 'minus'
   | 'moon'
@@ -45,86 +46,75 @@ export type IconName =
   template: `
     <svg
       xmlns="http://www.w3.org/2000/svg"
+      [attr.width]="size"
+      [attr.height]="size"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
-      [attr.width]="size"
-      [attr.height]="size"
-      [attr.aria-hidden]="label ? null : 'true'"
-      [attr.aria-label]="label || null"
-      role="img">
+      [class]="'icon icon-' + name"
+      [attr.aria-hidden]="true"
+    >
       @switch (name) {
         @case ('alert-triangle') {
-          <path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/>
-          <path d="M12 9v4"/><path d="M12 17h.01"/>
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
         }
         @case ('arrow-left') {
-          <path d="M19 12H5"/><path d="m11 18-6-6 6-6"/>
+          <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
         }
         @case ('arrow-right') {
-          <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
         }
         @case ('bell') {
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
         }
         @case ('book-open') {
-          <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2Z"/>
-          <path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7Z"/>
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
         }
         @case ('calendar') {
-          <path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/>
-          <path d="M3 10h18"/>
+          <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
         }
         @case ('chart') {
-          <path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 4-6"/>
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
         }
         @case ('check-circle') {
-          <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/>
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
         }
         @case ('clipboard') {
-          <rect width="14" height="18" x="5" y="3" rx="2"/><path d="M9 3V1h6v2"/>
-          <path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h3"/>
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
         }
         @case ('clock') {
-          <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         }
         @case ('credit-card') {
-          <rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/>
+          <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
         }
         @case ('download') {
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         }
         @case ('edit') {
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         }
         @case ('eye') {
-          <path d="M2.1 12a10.5 10.5 0 0 1 19.8 0 10.5 10.5 0 0 1-19.8 0Z"/>
-          <circle cx="12" cy="12" r="3"/>
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
         }
         @case ('eye-off') {
-          <path d="m2 2 20 20"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
-          <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5 0 9 4 10 8a10.6 10.6 0 0 1-2 3.8"/>
-          <path d="M6.2 6.2A11.8 11.8 0 0 0 2 12c1 4 5 8 10 8 1.4 0 2.7-.3 3.8-.8"/>
+          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/>
         }
         @case ('filter') {
-          <path d="M4 5h16"/><path d="M7 12h10"/><path d="M10 19h4"/>
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
         }
         @case ('graduation-cap') {
-          <path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>
-          <path d="M22 10v6"/>
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
         }
         @case ('history') {
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M12 7v5l4 2"/>
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>
         }
         @case ('layout-dashboard') {
-          <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/>
-          <rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
+          <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>
         }
         @case ('list-check') {
           <path d="m3 7 2 2 4-4"/><path d="M11 7h10"/><path d="m3 17 2 2 4-4"/><path d="M11 17h10"/>
@@ -134,6 +124,9 @@ export type IconName =
         }
         @case ('log-out') {
           <path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+        }
+        @case ('mail') {
+          <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
         }
         @case ('menu') {
           <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>

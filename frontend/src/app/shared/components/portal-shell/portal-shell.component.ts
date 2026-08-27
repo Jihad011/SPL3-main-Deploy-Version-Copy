@@ -27,7 +27,7 @@ export interface ThemeOption {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, IconComponent, DatePipe],
   template: `
-    <div class="layout" [class.sidebar-open]="menuOpen()">
+    <div class="layout" [class.sidebar-open]="menuOpen()" [class.sidebar-collapsed]="sidebarCollapsed()">
       <header class="mobile-topbar">
         <button
           type="button"
@@ -59,23 +59,37 @@ export interface ThemeOption {
 
       <aside class="sidebar" id="portal-navigation">
         <div class="sidebar-brand">
-          <div class="brand-icon"><app-icon [name]="brandIcon" [size]="22" /></div>
-          <div>
-            <div class="brand-name">MIT Open Credit Management System</div>
-            <div class="brand-sub">{{ portalLabel }}</div>
+          <div
+            class="brand-left"
+            (click)="sidebarCollapsed() ? toggleSidebar() : null"
+            [title]="sidebarCollapsed() ? 'Click to expand sidebar' : ''">
+            <div class="brand-icon"><app-icon [name]="brandIcon" [size]="20" /></div>
+            <div class="brand-text" *ngIf="!sidebarCollapsed()">
+              <div class="brand-name">MIT Open Credit</div>
+              <div class="brand-sub">{{ portalLabel }}</div>
+            </div>
           </div>
+          <button
+            type="button"
+            class="sidebar-toggle-btn"
+            (click)="toggleSidebar()"
+            [title]="sidebarCollapsed() ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)'"
+            [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+            <app-icon [name]="sidebarCollapsed() ? 'arrow-right' : 'arrow-left'" [size]="14" />
+          </button>
         </div>
 
-        <div class="sidebar-section-label">Navigation</div>
+        <div class="sidebar-section-label" *ngIf="!sidebarCollapsed()">Navigation</div>
         <nav class="sidebar-nav" aria-label="Primary navigation">
           @for (item of navItems; track item.link) {
             <a
               [routerLink]="item.link"
               routerLinkActive="active"
               class="nav-item"
+              [attr.data-tooltip]="item.label"
               (click)="closeMenu()">
               <span class="nav-icon"><app-icon [name]="item.icon" [size]="18" /></span>
-              <span class="nav-label">{{ item.label }}</span>
+              <span class="nav-label" *ngIf="!sidebarCollapsed()">{{ item.label }}</span>
             </a>
           }
         </nav>
@@ -83,13 +97,18 @@ export interface ThemeOption {
         <div class="sidebar-footer">
           <!-- Interactive Theme Palette Popover -->
           <div class="theme-picker-wrapper" (click)="$event.stopPropagation()">
-            <button type="button" class="theme-toggle" (click)="toggleThemePicker()" title="Select color theme">
+            <button
+              type="button"
+              class="theme-toggle"
+              (click)="toggleThemePicker()"
+              [attr.data-tooltip]="currentThemeInfo.name"
+              [title]="sidebarCollapsed() ? currentThemeInfo.name : 'Select color theme'">
               <span class="theme-color-dot" [style.background]="currentThemeInfo.dotColor"></span>
-              <span style="flex: 1; text-align: left; font-weight: 600;">{{ currentThemeInfo.name }}</span>
-              <app-icon name="sparkles" [size]="15" style="color:var(--cyan);" />
+              <span style="flex: 1; text-align: left; font-weight: 600;" *ngIf="!sidebarCollapsed()">{{ currentThemeInfo.name }}</span>
+              <app-icon name="sparkles" [size]="15" style="color:var(--cyan);" *ngIf="!sidebarCollapsed()" />
             </button>
 
-            <div class="theme-popover" *ngIf="showThemePicker()">
+            <div class="theme-popover" [class.popover-collapsed]="sidebarCollapsed()" *ngIf="showThemePicker()">
               <div class="theme-popover-header">
                 <span>Color Theme</span>
                 <span style="font-size: 0.65rem; color: var(--text-muted);">6 Presets</span>
@@ -111,19 +130,23 @@ export interface ThemeOption {
             </div>
           </div>
 
-          <div class="user-card" style="position: relative;">
+          <div class="user-card" style="position: relative;" [attr.data-tooltip]="auth.user()?.name">
             <div class="user-avatar">{{ userInitial }}</div>
-            <div class="user-copy" style="flex: 1;">
+            <div class="user-copy" style="flex: 1;" *ngIf="!sidebarCollapsed()">
               <div class="user-name">{{ auth.user()?.name }}</div>
               <div class="user-role">{{ userMeta }}</div>
             </div>
-            <button class="icon-button notification-bell" (click)="toggleNotifications($event)" [class.has-unread]="notif.unreadCount() > 0">
+            <button
+              class="icon-button notification-bell"
+              (click)="toggleNotifications($event)"
+              [class.has-unread]="notif.unreadCount() > 0"
+              *ngIf="!sidebarCollapsed()">
               <app-icon name="bell" [size]="18" />
               <span class="unread-badge" *ngIf="notif.unreadCount() > 0">{{ notif.unreadCount() }}</span>
             </button>
             
             <!-- Notifications Dropdown -->
-            <div class="notifications-dropdown glass-card" *ngIf="showNotifications()" (click)="$event.stopPropagation()">
+            <div class="notifications-dropdown glass-card" [class.notif-collapsed]="sidebarCollapsed()" *ngIf="showNotifications()" (click)="$event.stopPropagation()">
               <div class="notif-header">
                 <strong>Notifications</strong>
                 <button class="mark-read-btn" (click)="notif.markAllAsRead()" *ngIf="notif.unreadCount() > 0">Mark read</button>
@@ -147,9 +170,9 @@ export interface ThemeOption {
               </div>
             </div>
           </div>
-          <button class="btn-logout" type="button" (click)="auth.logout()">
+          <button class="btn-logout" type="button" (click)="auth.logout()" [attr.data-tooltip]="'Sign out'">
             <app-icon name="log-out" [size]="17" />
-            <span>Sign out</span>
+            <span *ngIf="!sidebarCollapsed()">Sign out</span>
           </button>
         </div>
       </aside>
@@ -167,6 +190,7 @@ export class PortalShellComponent {
   @Input({ required: true }) role!: 'student' | 'teacher' | 'admin';
 
   readonly menuOpen = signal(false);
+  readonly sidebarCollapsed = signal(false);
   readonly currentTheme = signal<ThemeId>('royal-blue');
   readonly showNotifications = signal(false);
   readonly showThemePicker = signal(false);
@@ -190,18 +214,31 @@ export class PortalShellComponent {
     this.showNotifications.set(false);
   }
 
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      this.toggleSidebar();
+    }
+  }
+
   constructor(
     public auth: AuthStateService,
     public notif: NotificationService,
     @Inject(DOCUMENT) private document: Document
   ) {
-    const saved = this.document.defaultView?.localStorage.getItem('mit-theme') as ThemeId;
-    if (saved && this.themeOptions.some(t => t.id === saved)) {
-      this.currentTheme.set(saved);
+    const savedTheme = this.document.defaultView?.localStorage.getItem('mit-theme') as ThemeId;
+    if (savedTheme && this.themeOptions.some(t => t.id === savedTheme)) {
+      this.currentTheme.set(savedTheme);
     } else {
       this.currentTheme.set('royal-blue');
     }
     this.applyTheme();
+
+    const savedCollapsed = this.document.defaultView?.localStorage.getItem('mit-sidebar-collapsed');
+    if (savedCollapsed === 'true') {
+      this.sidebarCollapsed.set(true);
+    }
   }
 
   ngOnInit() {
@@ -210,6 +247,11 @@ export class PortalShellComponent {
 
   ngOnDestroy() {
     this.notif.stopPolling();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update(v => !v);
+    this.document.defaultView?.localStorage.setItem('mit-sidebar-collapsed', String(this.sidebarCollapsed()));
   }
 
   toggleThemePicker(): void {
@@ -267,4 +309,3 @@ export class PortalShellComponent {
     this.document.documentElement.dataset['theme'] = this.currentTheme();
   }
 }
-
