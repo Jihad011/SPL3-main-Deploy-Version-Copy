@@ -529,12 +529,14 @@ a:hover { opacity: 0.85; }
   .sidebar {
     width: 78px;
     padding: 1.25rem 0.65rem;
+    overflow: visible;
   }
 
   .sidebar-brand {
     justify-content: center;
     padding: 0.35rem 0 1rem;
     position: relative;
+    overflow: visible;
   }
 
   .brand-left {
@@ -543,16 +545,17 @@ a:hover { opacity: 0.85; }
 
   .sidebar-toggle-btn {
     position: absolute;
-    right: -13px;
+    right: -14px;
     top: 14px;
     z-index: 20;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     background: var(--bg-surface);
   }
 
   .sidebar-nav {
     align-items: center;
     gap: 0.5rem;
+    overflow: visible;
   }
 
   .nav-item {
@@ -560,6 +563,7 @@ a:hover { opacity: 0.85; }
     padding: 0.75rem 0;
     width: 100%;
     position: relative;
+    overflow: visible;
 
     .nav-icon {
       margin: 0;
@@ -582,13 +586,15 @@ a:hover { opacity: 0.85; }
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
+      visibility: hidden;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
+      z-index: 9999;
     }
 
     &:hover::after {
       opacity: 1;
+      visibility: visible;
       transform: translateY(-50%) scale(1);
     }
   }
@@ -598,6 +604,7 @@ a:hover { opacity: 0.85; }
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
+    overflow: visible;
   }
 
   .theme-toggle {
@@ -605,6 +612,7 @@ a:hover { opacity: 0.85; }
     padding: 0.65rem 0;
     width: 100%;
     position: relative;
+    overflow: visible;
 
     &::after {
       content: attr(data-tooltip);
@@ -621,13 +629,15 @@ a:hover { opacity: 0.85; }
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
+      visibility: hidden;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
+      z-index: 9999;
     }
 
     &:hover::after {
       opacity: 1;
+      visibility: visible;
       transform: translateY(-50%) scale(1);
     }
   }
@@ -637,6 +647,7 @@ a:hover { opacity: 0.85; }
     bottom: 0;
     top: auto;
     width: 220px;
+    z-index: 9999;
   }
 
   .notif-collapsed {
@@ -644,6 +655,7 @@ a:hover { opacity: 0.85; }
     bottom: 0;
     top: auto;
     width: 320px;
+    z-index: 9999;
   }
 
   .user-card {
@@ -651,6 +663,7 @@ a:hover { opacity: 0.85; }
     padding: 0.45rem 0;
     width: 100%;
     position: relative;
+    overflow: visible;
 
     &::after {
       content: attr(data-tooltip);
@@ -667,13 +680,15 @@ a:hover { opacity: 0.85; }
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
+      visibility: hidden;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
+      z-index: 9999;
     }
 
     &:hover::after {
       opacity: 1;
+      visibility: visible;
       transform: translateY(-50%) scale(1);
     }
   }
@@ -683,6 +698,7 @@ a:hover { opacity: 0.85; }
     padding: 0.65rem 0;
     width: 100%;
     position: relative;
+    overflow: visible;
 
     &::after {
       content: attr(data-tooltip);
@@ -699,13 +715,15 @@ a:hover { opacity: 0.85; }
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
+      visibility: hidden;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
+      z-index: 9999;
     }
 
     &:hover::after {
       opacity: 1;
+      visibility: visible;
       transform: translateY(-50%) scale(1);
     }
   }
