@@ -64,8 +64,8 @@ public class EnrollmentController {
     }
 
     @GetMapping("/course/{courseId}/semester/{semesterId}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
-    @Operation(summary = "Get all enrollments for a course (teacher/admin only) — used for grade entry")
+    @PreAuthorize("hasRole('TEACHER')")
+    @Operation(summary = "Get all enrollments for a course (teacher only) — used for grade entry")
     public ResponseEntity<List<EnrollmentResponse>> getEnrollmentsByCourse(
             @PathVariable Long courseId,
             @PathVariable Long semesterId) {

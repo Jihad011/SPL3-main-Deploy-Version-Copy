@@ -33,7 +33,7 @@ import org.springframework.http.MediaType;
 @RestController
 @RequestMapping("/teacher")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+@PreAuthorize("hasRole('TEACHER')")
 @SecurityRequirement(name = "Bearer Authentication")
 @Tag(name = "Teacher", description = "Teacher dashboard, grade-entry, and student history endpoints")
 public class TeacherController {

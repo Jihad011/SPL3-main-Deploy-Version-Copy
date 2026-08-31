@@ -27,9 +27,9 @@ public class GradeController {
 
     private final GradeService gradeService;
 
-    /** Teacher/Admin: enter or update midterm/final marks */
+    /** Teacher: enter or update midterm/final marks */
     @PostMapping("/enter")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Enter or update marks for an enrollment. Auto-computes grade and CGPA.")
     public ResponseEntity<GradeResponse> enterGrade(
             @AuthenticationPrincipal User teacher,
@@ -37,9 +37,9 @@ public class GradeController {
         return ResponseEntity.ok(gradeService.enterOrUpdateGrade(teacher.getId(), request));
     }
 
-    /** Teacher/Admin: bulk enter or update marks */
+    /** Teacher: bulk enter or update marks */
     @PostMapping("/bulk-enter")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Bulk enter or update marks for multiple enrollments. Atomic operation.")
     public ResponseEntity<List<GradeResponse>> bulkEnterGrades(
             @AuthenticationPrincipal User teacher,
@@ -47,9 +47,9 @@ public class GradeController {
         return ResponseEntity.ok(gradeService.bulkEnterGrades(teacher.getId(), requests));
     }
 
-    /** Teacher/Admin: get all grades for a course in a semester */
+    /** Teacher: get all grades for a course in a semester */
     @GetMapping("/course/{courseId}/semester/{semesterId}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Get all grades for a course in a semester (teacher grade entry table)")
     public ResponseEntity<List<GradeResponse>> getGradesForCourse(
             @AuthenticationPrincipal User currentUser,

@@ -5,14 +5,25 @@ import { ApiService } from '../../../core/services/api.service';
 import { CourseResponse, SemesterResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent, FilterOption } from '../../../shared/components/toolbar/toolbar.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastService } from '../../../core/services/toast.service';
-import { ViewChild } from '@angular/core';
+
+// CenterPoint Shared Components
+import {
+  ConfirmationDialogue,
+  GenericButton
+} from '../../../shared';
 
 @Component({
   selector: 'app-course-registration',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconComponent, ToolbarComponent, ConfirmModalComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    IconComponent,
+    ToolbarComponent,
+    ConfirmationDialogue,
+    GenericButton
+  ],
   template: `
 <div class="page">
   <!-- Page Header -->
@@ -39,7 +50,7 @@ import { ViewChild } from '@angular/core';
     <div class="meter-header">
       <div class="meter-info">
         <span class="meter-label">Term Credit Utilization</span>
-        <span class="meter-count">
+        <span class="meter-count font-mono">
           <strong>{{ currentEnrolledCredits() }}</strong> / {{ maxCredits }} Credits Enrolled
         </span>
       </div>
@@ -69,8 +80,6 @@ import { ViewChild } from '@angular/core';
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
 
-  <app-confirm-modal #confirmModal (confirm)="confirmEnrollment()" />
-
   <!-- Universal Toolbar -->
   <app-toolbar
     *ngIf="!loading() && courses().length > 0"
@@ -99,7 +108,7 @@ import { ViewChild } from '@angular/core';
   <div class="courses-grid" *ngIf="!loading() && view() === 'grid'">
     <div class="course-card" *ngFor="let c of filteredCourses(); let i = index" [class.course-card--full]="c.isFull">
       <div class="course-card-header">
-        <span class="course-code code-badge">{{ c.code }}</span>
+        <span class="course-code code-badge font-mono">{{ c.code }}</span>
         <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span>
       </div>
 
@@ -127,13 +136,13 @@ import { ViewChild } from '@angular/core';
         </div>
       </div>
 
-      <button class="btn-enroll" [disabled]="c.isFull || enrolling() === c.id || (currentEnrolledCredits() + c.creditHours > maxCredits)" (click)="enroll(c)">
-        <span *ngIf="enrolling() !== c.id" class="button-label">
-          <app-icon [name]="c.isFull ? 'lock' : 'check-circle'" [size]="15" />
-          {{ c.isFull ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now') }}
-        </span>
-        <span *ngIf="enrolling() === c.id" class="spinner-sm"></span>
-      </button>
+      <generic-button
+        [label]="c.isFull ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now')"
+        [icon]="c.isFull ? 'lock' : 'check-circle'"
+        [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+        styles="width: 100%; margin-top: 0.75rem; justify-content: center;"
+        (onClick)="enroll(c)"
+      />
     </div>
   </div>
 
@@ -154,20 +163,23 @@ import { ViewChild } from '@angular/core';
         </thead>
         <tbody>
           <tr class="fade-in-up" [style.animation-delay.ms]="i * 30" *ngFor="let c of filteredCourses(); let i = index">
-            <td><span class="code-badge">{{ c.code }}</span></td>
+            <td><span class="code-badge font-mono">{{ c.code }}</span></td>
             <td><strong>{{ c.name }}</strong></td>
             <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
             <td>{{ c.creditHours }} Cr</td>
             <td>{{ c.teacherName ?? 'TBA' }}</td>
             <td>
-              <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'">
+              <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'" class="font-mono font-semibold">
                 {{ c.isFull ? 'Full' : (c.availableSeats + ' / ' + c.maxSeats) }}
               </span>
             </td>
             <td>
-              <button class="btn btn-primary btn-sm btn-neon" [disabled]="c.isFull || enrolling() === c.id || (currentEnrolledCredits() + c.creditHours > maxCredits)" (click)="enroll(c)">
-                {{ c.isFull ? 'Full' : (enrolling() === c.id ? 'Enrolling...' : 'Enroll') }}
-              </button>
+              <generic-button
+                [label]="c.isFull ? 'Full' : 'Enroll'"
+                [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+                styles="font-size: 0.8rem; padding: 0.35rem 0.75rem;"
+                (onClick)="enroll(c)"
+              />
             </td>
           </tr>
         </tbody>
@@ -183,6 +195,16 @@ import { ViewChild } from '@angular/core';
       View My Courses
     </a>
   </div>
+
+  <!-- CenterPoint Confirmation Dialogue -->
+  <confirmation-dialogue
+    [isOpen]="showConfirmDialogue()"
+    title="Confirm Course Registration"
+    [message]="confirmMessage()"
+    variant="primary"
+    (close)="showConfirmDialogue.set(false)"
+    (buttonClick)="onConfirmModalAction($event)"
+  />
 </div>
   `,
   styles: [`
@@ -210,143 +232,198 @@ import { ViewChild } from '@angular/core';
       gap: 0.75rem;
     }
     .meter-label {
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text-muted);
     }
     .meter-count {
       font-size: 0.95rem;
       color: var(--text-primary);
-      strong { color: var(--cyan); font-weight: 800; }
     }
     .meter-status {
-      display: inline-flex;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
       align-items: center;
       gap: 0.4rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 0.2rem 0.65rem;
-      border-radius: 9999px;
     }
-    .status-ok {
-      background: rgba(5, 150, 105, 0.08);
-      color: var(--accent-green);
-      border: 1px solid rgba(5, 150, 105, 0.25);
-      .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); }
-    }
-    .status-full {
-      background: rgba(217, 119, 6, 0.08);
-      color: var(--accent-orange);
-      border: 1px solid rgba(217, 119, 6, 0.25);
-      .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-orange); }
+    .meter-status.status-ok { color: var(--accent-green, #10b981); }
+    .meter-status.status-full { color: var(--accent-red, #ef4444); }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
     }
     .meter-track {
-      width: 100%;
       height: 8px;
       background: var(--bg-elevated);
-      border-radius: 9999px;
+      border-radius: 4px;
       overflow: hidden;
     }
     .meter-fill {
       height: 100%;
-      background: var(--grad-primary);
-      border-radius: 9999px;
-      transition: width 0.4s ease;
+      background: var(--accent-primary);
+      transition: width 0.3s ease;
     }
-    .fill-warning {
-      background: linear-gradient(135deg, var(--cyan), var(--accent-orange));
-    }
-    .fill-full {
-      background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
-    }
+    .meter-fill.fill-warning { background: #f59e0b; }
+    .meter-fill.fill-full { background: #ef4444; }
 
     .filter-tabs-bar {
-      display: flex; gap: 0.5rem; margin-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border); padding-bottom: 0;
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+      margin-bottom: 1.25rem;
     }
     .filter-tab {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.6rem 1rem; border: none; background: none;
-      color: var(--text-muted); font-size: 0.875rem; cursor: pointer;
-      border-bottom: 2px solid transparent; margin-bottom: -1px;
-      transition: all .2s; font-family: inherit; font-weight: 500;
+      padding: 0.6rem 1rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      font-weight: 500;
     }
     .filter-tab:hover { color: var(--text-primary); }
-    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); font-weight: 600; }
     .filter-count {
-      background: var(--bg-elevated); border-radius: 20px;
-      padding: 0.05rem 0.5rem; font-size: 0.72rem;
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      padding: 0.05rem 0.5rem;
+      font-size: 0.72rem;
     }
-    .prereq-badge-row {
-      margin-top: 0.25rem;
+
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
     }
-    .prereq-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.2rem 0.55rem;
-      background: rgba(217, 119, 6, 0.08);
-      border: 1px solid rgba(217, 119, 6, 0.25);
-      color: var(--accent-orange);
-      font-size: 0.75rem;
-      border-radius: var(--radius-xs);
-      font-weight: 600;
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all 0.2s;
     }
-    .seat-text-row {
+    .course-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .course-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
     }
-    .seat-count-tag {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: var(--bg-elevated);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
+    .course-name {
+      font-size: 1.05rem;
       font-weight: 700;
+      margin: 0;
+      color: var(--text-primary);
     }
-    .alert-link:hover { opacity: 0.85; }
+    .course-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+    .course-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .seat-info {
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid var(--border);
+    }
+    .seat-bar {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.4rem;
+    }
+    .seat-fill { height: 100%; }
+    .seat-text-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .seat-status.full { color: #ef4444; font-weight: 600; }
+    .seat-status.low { color: #f59e0b; font-weight: 600; }
   `]
 })
 export class CourseRegistrationComponent implements OnInit {
-  courses               = signal<CourseResponse[]>([]);
-  loading               = signal(true);
-  enrolling             = signal<number | null>(null);
-  success               = signal('');
-  error                 = signal('');
-  activeSemId           = signal<number | null>(null);
-  activeSemester        = signal<SemesterResponse | null>(null);
-  query                 = signal('');
-  selectedType          = signal('ALL');
-  view                  = signal<'grid' | 'list'>('grid');
+  courses = signal<CourseResponse[]>([]);
+  activeSemId = signal<number | null>(null);
+  activeSemester = signal<SemesterResponse | null>(null);
+  loading = signal(true);
+  enrolling = signal<number | null>(null);
+  success = signal('');
+  error = signal('');
+  query = signal('');
+  view = signal<'grid' | 'list'>('grid');
+  selectedType = signal('ALL');
+
   currentEnrolledCredits = signal<number>(0);
-  readonly maxCredits   = 12;
+  readonly maxCredits = 12;
 
-  remainingCredits = computed(() => Math.max(0, this.maxCredits - this.currentEnrolledCredits()));
-
-  @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
+  showConfirmDialogue = signal(false);
   pendingEnrollCourse = signal<CourseResponse | null>(null);
   pendingRetake = signal(false);
 
-  courseTypes = computed(() => Array.from(new Set(this.courses().map(c => c.courseType))).sort());
-  filterOptions = computed<FilterOption[]>(() =>
-    this.courseTypes().map(t => ({ label: t, value: t }))
-  );
+  remainingCredits = computed(() => Math.max(0, this.maxCredits - this.currentEnrolledCredits()));
+
+  courseTypes = computed(() => {
+    const types = new Set(this.courses().map(c => c.courseType));
+    return Array.from(types);
+  });
+
+  filterOptions = computed<FilterOption[]>(() => {
+    return this.courseTypes().map(type => ({
+      label: type,
+      value: type,
+      count: this.courses().filter(c => c.courseType === type).length
+    }));
+  });
 
   filteredCourses = computed(() => {
-    const q = this.query().trim().toLowerCase();
+    let result = this.courses();
     const type = this.selectedType();
-    return this.courses().filter(course => {
-      const matchesType = type === 'ALL' || course.courseType === type;
-      const matchesQuery = !q ||
-        course.name.toLowerCase().includes(q) ||
-        course.code.toLowerCase().includes(q) ||
-        (course.teacherName ?? '').toLowerCase().includes(q);
-      return matchesType && matchesQuery;
-    });
+    if (type !== 'ALL') {
+      result = result.filter(c => c.courseType === type);
+    }
+    const q = this.query().trim().toLowerCase();
+    if (q) {
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.code.toLowerCase().includes(q) ||
+        (c.teacherName || '').toLowerCase().includes(q)
+      );
+    }
+    return result;
+  });
+
+  confirmMessage = computed(() => {
+    const course = this.pendingEnrollCourse();
+    return course ? `Are you sure you want to register for ${course.code} — ${course.name} (${course.creditHours} Credits)?` : '';
   });
 
   constructor(private api: ApiService, private toast: ToastService) {}
@@ -386,7 +463,7 @@ export class CourseRegistrationComponent implements OnInit {
     this.loading.set(true);
     this.api.getAvailableCourses().subscribe({
       next: (c) => { this.courses.set(c); this.loading.set(false); },
-      error: ()  => { this.error.set('Failed to load courses.'); this.loading.set(false); }
+      error: () => { this.error.set('Failed to load courses.'); this.loading.set(false); }
     });
   }
 
@@ -410,12 +487,12 @@ export class CourseRegistrationComponent implements OnInit {
 
     this.pendingEnrollCourse.set(course);
     this.pendingRetake.set(retake);
-    this.confirmModal.title = 'Confirm Course Enrollment';
-    this.confirmModal.message = `Are you sure you want to enroll in ${course.code} - ${course.name} (${course.creditHours} Credits)?`;
-    this.confirmModal.iconName = 'book-open';
-    this.confirmModal.type = 'info';
-    this.confirmModal.confirmText = 'Enroll Now';
-    this.confirmModal.open();
+    this.showConfirmDialogue.set(true);
+  }
+
+  onConfirmModalAction(event: any): void {
+    this.showConfirmDialogue.set(false);
+    this.confirmEnrollment();
   }
 
   confirmEnrollment(): void {
@@ -423,8 +500,10 @@ export class CourseRegistrationComponent implements OnInit {
     const semId = this.activeSemId();
     if (!course || !semId) return;
 
-    this.success.set(''); this.error.set('');
+    this.success.set('');
+    this.error.set('');
     this.enrolling.set(course.id);
+
     this.api.enroll({ courseId: course.id, semesterId: semId, retake: this.pendingRetake() }).subscribe({
       next: () => {
         this.enrolling.set(null);

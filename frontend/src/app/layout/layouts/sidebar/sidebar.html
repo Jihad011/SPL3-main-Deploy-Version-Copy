@@ -1,0 +1,130 @@
+<!-- SIDEBAR DOCK -->
+<div class="sidebar-wrapper">
+  <div class="sidebar-container" [class.expanded]="sidebarExpanded">
+
+    <!-- Fast Path Search -->
+    <div class="sidebar-search-area">
+      <app-search></app-search>
+    </div>
+
+    <!-- Navigation Items -->
+    <div class="sidebar-nav">
+
+      <!-- Menu -->
+      <div class="nav-item-group"
+           (click)="toggleDrawer('Menu'); setActiveItem('Menu')"
+           [class.active]="activeItem === 'Menu' && drawerOpen"
+           title="Menu">
+        <img [src]="getMenuIcon()" class="nav-icon" alt="Menu" />
+        <span class="nav-label" *ngIf="sidebarExpanded">Menu</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Menu</span>
+      </div>
+
+      <!-- Portals / Modules -->
+      <div class="nav-item-group"
+           (click)="toggleDrawer('Modules'); setActiveItem('Modules')"
+           [class.active]="activeItem === 'Modules' && drawerOpen"
+           title="Portals & Modules">
+        <img [src]="getApplicationIcon()" class="nav-icon" alt="Portals" />
+        <span class="nav-label" *ngIf="sidebarExpanded">Portals</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Portals</span>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="nav-item-group"
+           (click)="navigateToDashboard(); setActiveItem('Dashboard')"
+           [class.active]="activeItem === 'Dashboard'"
+           title="Dashboard">
+        <img [src]="getDashboardIcon()" class="nav-icon" alt="Dashboard" />
+        <span class="nav-label" *ngIf="sidebarExpanded">Dashboard</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Dashboard</span>
+      </div>
+
+      <!-- Reports -->
+      <div class="nav-item-group"
+           (click)="toggleDrawer('Menu'); setActiveItem('Report')"
+           [class.active]="activeItem === 'Report'"
+           title="Reports">
+        <img [src]="getReportIcon()" class="nav-icon" alt="Reports" />
+        <span class="nav-label" *ngIf="sidebarExpanded">Reports</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Reports</span>
+      </div>
+
+      <!-- Theme / Config -->
+      <div class="nav-item-group"
+           (click)="toggleDrawer('Theme'); setActiveItem('Theme')"
+           [class.active]="activeItem === 'Theme' && drawerOpen"
+           title="Themes">
+        <img [src]="getSecurityIcon()" class="nav-icon" alt="Themes" />
+        <span class="nav-label" *ngIf="sidebarExpanded">Themes</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Themes</span>
+      </div>
+
+    </div><!-- end sidebar-nav -->
+
+    <!-- Bottom Actions -->
+    <div class="sidebar-footer">
+
+      <!-- Profile -->
+      <div class="nav-item-group nav-item-white"
+           (click)="toggleDrawer('Profile'); setActiveItem('Profile')"
+           [class.active]="activeItem === 'Profile' && drawerOpen"
+           title="Profile">
+        <div class="nav-icon-badge-wrap">
+          <img [src]="getProfileIcon()" class="nav-icon" alt="Profile" />
+          <span class="badge">2</span>
+        </div>
+        <span class="nav-label nav-label-white" *ngIf="sidebarExpanded">Profile</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Profile</span>
+      </div>
+
+      <!-- Logout -->
+      <div class="nav-item-group nav-item-white nav-item-logout"
+           (click)="logout()"
+           title="Sign Out">
+        <img [src]="getLogoutIcon()" class="nav-icon" alt="Sign Out" />
+        <span class="nav-label nav-label-white" *ngIf="sidebarExpanded">Sign Out</span>
+        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Sign Out</span>
+      </div>
+
+      <!-- Collapse Toggle -->
+      <div class="sidebar-collapse-btn" (click)="toggleSidebar()">
+        <mat-icon>{{ sidebarExpanded ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      </div>
+
+    </div><!-- end sidebar-footer -->
+  </div>
+</div>
+
+<!-- Backdrop -->
+<div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+
+<!-- Slide-Out Drawer -->
+<div class="slide-drawer" [class.drawer-visible]="drawerOpen"
+     [style.left]="drawerOpen ? (sidebarExpanded ? '200px' : '88px') : '-400px'"
+     (click)="$event.stopPropagation()">
+
+  <!-- Drawer Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-title">
+      <mat-icon class="drawer-header-icon">
+        {{ drawerType === 'Menu' ? 'menu' : drawerType === 'Modules' ? 'apps' : drawerType === 'Theme' ? 'palette' : 'account_circle' }}
+      </mat-icon>
+      <span>{{ drawerType }}</span>
+    </div>
+    <button class="drawer-close-btn" (click)="closeDrawer()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Drawer Body -->
+  <div class="drawer-body">
+    <app-menu-drawer *ngIf="drawerType === 'Menu'"></app-menu-drawer>
+    <app-module-drawer *ngIf="drawerType === 'Modules'"></app-module-drawer>
+    <app-profile-drawer *ngIf="drawerType === 'Profile'"></app-profile-drawer>
+    <div *ngIf="drawerType === 'Theme'" style="padding: 1rem;">
+      <app-theme-picker></app-theme-picker>
+    </div>
+  </div>
+
+</div>

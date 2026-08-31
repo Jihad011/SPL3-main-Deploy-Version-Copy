@@ -1,0 +1,35 @@
+# SPL3 Open Credit Management System — Flagship Upgrade Scope
+
+---
+
+## 🎓 Automated Degree Audit & Graduation Clearance Tracker
+
+### 1. Overview & Objective
+Transform the Student Portal and Admin Workspace with an automated **Degree Audit & Graduation Clearance Engine** that evaluates student academic progress against the BSSE / MIT curriculum requirements in real time.
+
+---
+
+### 2. Core Capabilities
+
+#### A. Real-Time Degree Progress & Credit Breakdown
+* **Total Credits Progress Bar / Radial Ring**:
+  * Tracks total earned credits against degree requirements (e.g. `126 / 144 Credits Earned`).
+* **Category-Wise Credit Counters**:
+  * **Core Computer Science / SE Courses**: Checkbox list & percentage completion (e.g. `80 / 80 Credits — 100% Complete`).
+  * **Technical Electives / Tracks**: Track required elective credits (e.g. `18 / 24 Credits — 2 courses remaining`).
+  * **General Education / Basic Sciences**: Verification of mandatory non-CS prerequisites.
+  * **Non-Credit Capstone / Internship**: Verification of SPL project and 6-month industry internship status.
+
+#### B. Academic Standing & Clearance Verification
+* **CGPA Graduation Threshold Validator**:
+  * Verifies that the cumulative GPA satisfies the minimum university graduation threshold (e.g. minimum `2.50` required; displays current CGPA with color-coded safety margins).
+* **Failing Grades & Incomplete Audit**:
+  * Scans transcript history to ensure no active `F` (Fail) or `I` (Incomplete) grades remain unretaken.
+* **Automated Clearance Status Badge**:
+  * Dynamic status indicator:
+    * 🟡 **In Progress — Academic Career Active** (Lists remaining courses needed).
+    * 🟢 **Eligible for Degree Clearance** (All academic criteria satisfied).
+
+#### C. Student & Admin Views
+* **Student Dashboard**: An interactive audit card showing the student their exact graduation readiness and a personalized checklist of remaining requirements.
+* **Admin Verification Hub**: Department administrators can view graduating batch readiness, filter eligible candidates, and generate official graduation clearance reports with one click.

@@ -1,13 +1,19 @@
 import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { FeeResponse } from '../../../core/models/models';
 import { IconComponent, IconName } from '../../../shared/components/icon/icon.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PaymentGatewayModalComponent } from '../../../shared/components/payment-gateway-modal/payment-gateway-modal.component';
 import { PdfService } from '../../../core/services/pdf.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
+
+// CenterPoint Shared Components
+import {
+  SummaryCardStrip,
+  SummaryCardItem,
+  GenericButton
+} from '../../../shared';
 
 const FEE_TYPE_ICONS: Record<string, IconName> = {
   RETAKE: 'list-check',
@@ -19,58 +25,41 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
 @Component({
   selector: 'app-dues',
   standalone: true,
-  imports: [CommonModule, IconComponent, ConfirmModalComponent, PaymentGatewayModalComponent],
+  imports: [
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    IconComponent,
+    PaymentGatewayModalComponent,
+    SummaryCardStrip,
+    GenericButton
+  ],
   template: `
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Student finance</div>
       <h1 class="page-title">Fees & Dues</h1>
-      <p class="page-subtitle">Your complete fee history and outstanding payments</p>
+      <p class="page-subtitle">Your complete fee history and online payment portal</p>
     </div>
     <div *ngIf="!loading()">
       <div class="outstanding-amount" *ngIf="totalDues() > 0">
         <div class="outstanding-label">Outstanding Balance</div>
-        <div class="outstanding-value">৳{{ totalDues() | number:'1.0-0' }}</div>
+        <div class="outstanding-value font-mono">৳{{ totalDues() | number:'1.0-0' }}</div>
       </div>
       <div class="metric-chip metric-chip--green" *ngIf="totalDues() === 0">
-        <app-icon name="check-circle" [size]="17"></app-icon> All Clear — No Dues
+        <app-icon name="check-circle" [size]="17"></app-icon> All Clear — No Pending Dues
       </div>
     </div>
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
 
-  <app-confirm-modal #confirmModal (confirm)="confirmPayment()" />
   <app-payment-gateway-modal #gatewayModal (paymentComplete)="onGatewayPaymentComplete($event)" />
 
-  <!-- Summary stat cards -->
-  <div class="stats-grid" *ngIf="!loading() && fees().length > 0">
-    <div class="stat-card stat-card--red">
-      <div class="stat-icon"><app-icon name="alert-triangle" [size]="22"></app-icon></div>
-      <div class="stat-value">৳{{ totalDues() | number:'1.0-0' }}</div>
-      <div class="stat-label">Outstanding Dues</div>
-      <div class="stat-sub" *ngIf="gapFineTotal() > 0">
-        Incl. ৳{{ gapFineTotal() | number:'1.0-0' }} Gap Fines
-      </div>
-    </div>
-    <div class="stat-card stat-card--blue" *ngIf="gapFineTotal() > 0">
-      <div class="stat-icon"><app-icon name="calendar" [size]="22"></app-icon></div>
-      <div class="stat-value">৳{{ gapFineTotal() | number:'1.0-0' }}</div>
-      <div class="stat-label">Semester Gap Fines</div>
-      <div class="stat-sub">10,000 BDT per missed term</div>
-    </div>
-    <div class="stat-card stat-card--green">
-      <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ paidCount() }}</div>
-      <div class="stat-label">Paid Invoices</div>
-      <div class="stat-sub">৳{{ paidTotal() | number:'1.0-0' }} cleared</div>
-    </div>
-    <div class="stat-card stat-card--purple">
-      <div class="stat-icon"><app-icon name="wallet" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ fees().length }}</div>
-      <div class="stat-label">Total Records</div>
-    </div>
+  <!-- Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && fees().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
   </div>
 
   <!-- Filter tabs -->
@@ -116,21 +105,21 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
       </div>
 
       <!-- Amount -->
-      <div class="invoice-amount">৳{{ f.amount | number:'1.0-0' }}</div>
+      <div class="invoice-amount font-mono">৳{{ f.amount | number:'1.0-0' }}</div>
       <div class="invoice-desc" *ngIf="f.description">{{ f.description }}</div>
 
       <!-- Dates -->
       <div class="invoice-dates">
         <div class="invoice-date-item" *ngIf="f.dueDate">
-          <span class="date-label">Due</span>
+          <span class="date-label">Due Date</span>
           <span [class.overdue]="isOverdue(f)">{{ f.dueDate | date:'dd MMM yyyy' }}</span>
         </div>
         <div class="invoice-date-item" *ngIf="f.paidAt">
           <span class="date-label">Paid on</span>
           <span>{{ f.paidAt | date:'dd MMM yyyy' }}</span>
         </div>
-        
       </div>
+
       <div class="invoice-paid-confirm" *ngIf="f.status === 'PAID'">
         <div class="paid-content">
           <app-icon name="check-circle" [size]="20" class="paid-icon"></app-icon>
@@ -146,219 +135,228 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
         <div class="payment-options">
           <select #pmSelect class="pm-select">
             <option value="" disabled selected>Select Payment Method</option>
-            <option value="BKASH">bKash</option>
-            <option value="NAGAD">Nagad</option>
+            <option value="BKASH">bKash Online</option>
+            <option value="NAGAD">Nagad Mobile</option>
             <option value="ROCKET">Rocket</option>
-            <option value="CREDIT_CARD">Credit Card</option>
-            <option value="BANK_TRANSFER">Bank Transfer</option>
+            <option value="CREDIT_CARD">Credit / Debit Card</option>
+            <option value="BANK_TRANSFER">Bank Deposit</option>
           </select>
-          <button class="pay-btn magnetic" [class.paying]="payingId() === f.id"
-                  [disabled]="payingId() === f.id || !pmSelect.value" (click)="payFee(f.id, f.amount, pmSelect.value)">
-            <svg *ngIf="payingId() !== f.id" width="15" height="15" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-              <line x1="1" y1="10" x2="23" y2="10"/>
-            </svg>
-            <span class="paying-spinner" *ngIf="payingId() === f.id"></span>
-            {{ payingId() === f.id ? 'Processing...' : 'Pay' }}
-          </button>
+          <generic-button
+            label="Pay Now"
+            icon="credit-card"
+            [enable]="payingId() !== f.id"
+            styles="background: linear-gradient(135deg, #f87171, #fb923c); color: white;"
+            (onClick)="payFee(f.id, f.amount, pmSelect.value || 'BKASH')"
+          />
         </div>
       </div>
     </div>
   </div>
 
   <div class="empty-state" *ngIf="!loading() && filteredFees().length === 0">
-    <div class="empty-icon">
-      <app-icon [name]="fees().length === 0 ? 'check-circle' : 'filter'" [size]="28"></app-icon>
-    </div>
-    <h3>{{ fees().length === 0 ? 'No fee records' : 'No matching fees' }}</h3>
-    <p>{{ fees().length === 0 ? 'You have no fee history yet.' : 'Choose another filter to see records.' }}</p>
+    <div class="empty-icon"><app-icon name="check-circle" [size]="28"></app-icon></div>
+    <h3>No invoices found</h3>
+    <p>You have no records under this filter view.</p>
   </div>
 </div>
   `,
   styles: [`
-    /* Outstanding header amount */
-    .outstanding-amount { text-align: right; }
-    .outstanding-label  { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-    .outstanding-value  { font-size: 2rem; font-weight: 800; color: var(--accent-red); line-height: 1.1; }
-
-    /* Filter tabs bar */
+    .outstanding-amount {
+      text-align: right;
+    }
+    .outstanding-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .outstanding-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-red, #ef4444);
+    }
+    .metric-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .metric-chip--green {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green, #10b981);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
     .filter-tabs-bar {
-      display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border); padding-bottom: 0;
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+      margin-bottom: 1.25rem;
     }
     .filter-tab {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.6rem 1rem; border: none; background: none;
-      color: var(--text-muted); font-size: 0.875rem; cursor: pointer;
-      border-bottom: 2px solid transparent; margin-bottom: -1px;
-      transition: all .2s; font-family: inherit; font-weight: 500;
+      padding: 0.6rem 1rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      font-weight: 500;
     }
     .filter-tab:hover { color: var(--text-primary); }
-    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); font-weight: 600; }
     .filter-count {
-      background: var(--bg-elevated); border-radius: 20px;
-      padding: 0.05rem 0.5rem; font-size: 0.72rem;
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      padding: 0.05rem 0.5rem;
+      font-size: 0.72rem;
     }
-    .dot-unpaid, .dot-paid {
-      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-    }
-    .dot-unpaid { background: var(--accent-red); }
-    .dot-paid   { background: var(--accent-green); }
+    .dot-unpaid { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-red, #ef4444); display: inline-block; }
+    .dot-paid   { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green, #10b981); display: inline-block; }
 
-    /* Invoice grid */
     .invoice-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 1.25rem;
     }
     .invoice-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column;
-      gap: 1rem; transition: all .25s; position: relative; overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      transition: all 0.2s;
     }
-    .invoice-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 3px; border-radius: 16px 16px 0 0;
+    .invoice-card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     }
-    .invoice-unpaid { border-color: rgba(248,113,113,0.25); }
-    .invoice-unpaid::before { background: linear-gradient(90deg, #f87171, #fb923c); }
-    .invoice-unpaid:hover { box-shadow: 0 8px 32px rgba(248,113,113,0.15); transform: translateY(-2px); }
-    .invoice-paid   { border-color: rgba(52,211,153,0.2); opacity: 0.85; }
-    .invoice-paid::before { background: linear-gradient(90deg, #34d399, #22d3ee); }
-    .invoice-waived { border-color: rgba(167,139,250,0.2); opacity: 0.8; }
-
-    /* Invoice header */
-    .invoice-header { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .invoice-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
     .invoice-type-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: var(--bg-elevated); display: flex; align-items: center;
-      justify-content: center; flex-shrink: 0; color: var(--text-secondary);
-    }
-    .invoice-type-info { flex: 1; }
-    .invoice-type-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
-    .invoice-semester  { font-size: 0.775rem; color: var(--text-muted); margin-top: 0.15rem; }
-
-    /* Status badges */
-    .invoice-status-badge {
-      display: flex; align-items: center; gap: 0.3rem;
-      padding: 0.25rem 0.625rem; border-radius: 20px;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(34, 211, 238, 0.1);
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
-    .badge-unpaid {
-      background: rgba(248,113,113,0.15); color: var(--accent-red);
-      border: 1px solid rgba(248,113,113,0.3);
+    .invoice-type-info { flex: 1; }
+    .invoice-type-name { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .invoice-semester { font-size: 0.75rem; color: var(--text-muted); }
+    .invoice-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
     }
-    .badge-paid {
-      background: rgba(52,211,153,0.12); color: var(--accent-green);
-      border: 1px solid rgba(52,211,153,0.25);
-    }
-    .badge-waived {
-      background: rgba(167,139,250,0.12); color: var(--purple);
-      border: 1px solid rgba(167,139,250,0.25);
-    }
-    .badge-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent-red);
-      animation: pulse-badge 1.5s ease infinite;
-    }
-    @keyframes pulse-badge {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50%  { transform: scale(1.4); opacity: 0.6; }
-    }
+    .badge-unpaid { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); }
+    .badge-paid { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge-waived { background: rgba(168, 85, 247, 0.12); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.25); }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; }
 
-    /* Amount */
-    .invoice-amount { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .invoice-unpaid .invoice-amount { color: var(--accent-red); }
-    .invoice-paid   .invoice-amount { color: var(--text-muted); }
+    .invoice-amount { font-size: 1.75rem; font-weight: 800; line-height: 1; }
+    .invoice-unpaid .invoice-amount { color: var(--accent-red, #ef4444); }
+    .invoice-paid .invoice-amount { color: var(--text-muted); }
     .invoice-desc { font-size: 0.82rem; color: var(--text-muted); }
-
-    /* Dates */
-    .invoice-dates { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .invoice-dates { display: flex; gap: 1.5rem; }
     .invoice-date-item { display: flex; flex-direction: column; gap: 0.15rem; }
-    .date-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-    .overdue { color: var(--accent-red); font-weight: 600; }
+    .date-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .overdue { color: #ef4444; font-weight: 600; }
 
-    /* Pay button */
-    .invoice-footer {}
-    .pay-btn {
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      width: 100%; padding: 0.75rem; border-radius: 10px;
-      background: linear-gradient(135deg, #f87171, #fb923c);
-      color: #fff; font-weight: 600; font-size: 0.9rem;
-      border: none; cursor: pointer; transition: all .2s;
-      font-family: inherit;
-    }
-    .pay-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(248,113,113,0.4); }
-    .pay-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-    .paying-spinner {
-      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .payment-options {
-      display: flex; gap: 0.5rem; width: 100%;
-    }
+    .payment-options { display: flex; gap: 0.5rem; width: 100%; }
     .pm-select {
-      flex: 1; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border);
-      background: var(--bg-elevated); color: var(--text-primary);
-      font-size: 0.85rem; outline: none; font-family: inherit; font-weight: 500;
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      outline: none;
     }
-    .pm-select:focus { border-color: var(--accent-primary); }
-    .pm-badge {
-      background: var(--bg-elevated); padding: 0.1rem 0.4rem; border-radius: 4px;
-      font-size: 0.7rem; font-weight: 600; color: var(--text-primary);
-    }
-
     .invoice-paid-confirm {
-      padding: 1.5rem; border-top: 1px solid var(--border);
-      background: rgba(16, 185, 129, 0.05); color: var(--accent-green);
-      font-weight: 500; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.06);
+      color: var(--accent-green, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
     }
-    .paid-content { display: flex; align-items: center; gap: 0.8rem; }
+    .paid-content { display: flex; align-items: center; gap: 0.5rem; }
     .download-receipt-btn {
-      background: transparent; border: 1px solid var(--accent-green); color: var(--accent-green);
-      padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.85rem; font-weight: 600; transition: all 0.2s;
+      background: none;
+      border: 1px solid var(--accent-green, #10b981);
+      color: var(--accent-green, #10b981);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
     }
-    .download-receipt-btn:hover { background: var(--accent-green); color: white; }
-    .paid-icon { flex-shrink: 0; }
-
-    @media (max-width: 640px) {
-      .invoice-grid { grid-template-columns: 1fr; }
-    }
+    .download-receipt-btn:hover { background: var(--accent-green, #10b981); color: white; }
   `]
 })
 export class DuesComponent implements OnInit {
-  fees     = signal<FeeResponse[]>([]);
-  loading  = signal(true);
+  fees = signal<FeeResponse[]>([]);
+  loading = signal(true);
   payingId = signal<number | null>(null);
-  filter   = signal<'ALL' | 'UNPAID' | 'PAID'>('ALL');
-  error    = signal('');
+  filter = signal<'ALL' | 'UNPAID' | 'PAID'>('ALL');
+  error = signal('');
 
-  @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
   @ViewChild('gatewayModal') gatewayModal!: PaymentGatewayModalComponent;
-  pendingFeeId = signal<number | null>(null);
-  pendingPaymentMethod = signal<string>('CASH');
 
   private pdfService = inject(PdfService);
   private toast = inject(ToastService);
   private auth = inject(AuthStateService);
+  private api = inject(ApiService);
 
-  totalDues    = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
+  totalDues = computed(() => this.fees().filter(f => f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
   gapFineTotal = computed(() => this.fees().filter(f => f.feeType === 'SEMESTER_GAP' && f.status === 'UNPAID').reduce((s, f) => s + f.amount, 0));
-  paidTotal    = computed(() => this.fees().filter(f => f.status === 'PAID').reduce((s, f) => s + f.amount, 0));
-  unpaidCount  = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
-  paidCount    = computed(() => this.fees().filter(f => f.status === 'PAID').length);
+  paidTotal = computed(() => this.fees().filter(f => f.status === 'PAID').reduce((s, f) => s + f.amount, 0));
+  unpaidCount = computed(() => this.fees().filter(f => f.status === 'UNPAID').length);
+  paidCount = computed(() => this.fees().filter(f => f.status === 'PAID').length);
+
+  summaryItems = computed<SummaryCardItem[]>(() => [
+    { key: 'dues', label: 'Outstanding Dues', value: `৳${this.totalDues().toLocaleString()}`, tone: 'danger', icon: 'failed' },
+    { key: 'gapFines', label: 'Semester Gap Fines', value: `৳${this.gapFineTotal().toLocaleString()}`, tone: 'warning', icon: 'pause' },
+    { key: 'paid', label: 'Paid Invoices', value: `৳${this.paidTotal().toLocaleString()}`, tone: 'success', icon: 'completed' },
+    { key: 'total', label: 'Total Invoices', value: this.fees().length, tone: 'neutral', icon: 'info' }
+  ]);
+
   filteredFees = computed(() => {
     const status = this.filter();
     return status === 'ALL' ? this.fees() : this.fees().filter(f => f.status === status);
   });
 
-  constructor(private api: ApiService) {}
-
-  ngOnInit(): void { this.loadFees(); }
+  ngOnInit(): void {
+    this.loadFees();
+  }
 
   loadFees(): void {
     this.loading.set(true);
@@ -369,32 +367,12 @@ export class DuesComponent implements OnInit {
   }
 
   payFee(feeId: number, amount: number, method: string): void {
-    // Open the realistic payment gateway modal
     this.gatewayModal.open(feeId, amount, method);
   }
 
   onGatewayPaymentComplete(event: { feeId: number, method: string }): void {
     this.payingId.set(event.feeId);
     this.api.payMyFee(event.feeId, event.method).subscribe({
-      next: () => {
-        this.payingId.set(null);
-        this.toast.success('Payment completed successfully! 🎉');
-        this.loadFees();
-      },
-      error: () => {
-        this.toast.error('Payment failed. Please try again.');
-        this.payingId.set(null);
-      }
-    });
-  }
-
-  confirmPayment(): void {
-    const feeId = this.pendingFeeId();
-    const method = this.pendingPaymentMethod();
-    if (!feeId) return;
-
-    this.payingId.set(feeId);
-    this.api.payMyFee(feeId, method).subscribe({
       next: () => {
         this.payingId.set(null);
         this.toast.success('Payment completed successfully! 🎉');

@@ -5,42 +5,57 @@ import { PdfService } from '../../../core/services/pdf.service';
 import { GradeResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
+// CenterPoint Shared Components
+import {
+  SummaryCardStrip,
+  SummaryCardItem,
+  GenericButton
+} from '../../../shared';
+
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, IconComponent],
+  imports: [
+    CommonModule,
+    DecimalPipe,
+    IconComponent,
+    SummaryCardStrip,
+    GenericButton
+  ],
   template: `
 <div class="page">
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic performance</div>
       <h1 class="page-title">Academic Results</h1>
-      <p class="page-subtitle">Your full academic transcript by semester</p>
+      <p class="page-subtitle">Your full academic transcript and term-by-term assessment breakdown</p>
     </div>
     
     <div class="header-actions" style="display:flex; align-items:center; gap: 1rem;">
-      <button class="btn btn-primary" (click)="downloadTranscript()" [disabled]="downloading()" *ngIf="!loading() && grades().length > 0">
-        <app-icon name="download" [size]="15" *ngIf="!downloading()"></app-icon>
-        <span class="spinner-sm" *ngIf="downloading()"></span>
-        {{ downloading() ? 'Generating PDF...' : 'Download Transcript' }}
-      </button>
+      <generic-button
+        *ngIf="!loading() && grades().length > 0"
+        [label]="downloading() ? 'Generating PDF...' : 'Download Official Transcript (PDF)'"
+        icon="download"
+        [enable]="!downloading()"
+        (onClick)="downloadTranscript()"
+      />
 
       <!-- CGPA Ring in header -->
       <div class="header-cgpa-ring" *ngIf="!loading() && grades().length > 0">
-      <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
-        <circle cx="40" cy="40" r="32" fill="none" stroke="#F1F5F9" stroke-width="7"/>
-        <circle cx="40" cy="40" r="32" fill="none"
-          [attr.stroke]="cgpaColor(cgpa())"
-          stroke-width="7" stroke-linecap="round"
-          stroke-dasharray="201.1"
-          [attr.stroke-dashoffset]="201.1 * (1 - cgpa() / 4.0)"
-          style="transition: stroke-dashoffset 1s ease"/>
-      </svg>
-      <div class="header-cgpa-text">
-        <div class="header-cgpa-val">{{ cgpa() | number:'1.2-2' }}</div>
-        <div class="header-cgpa-lbl">CGPA</div>
+        <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bg-elevated)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="32" fill="none"
+            [attr.stroke]="cgpaColor(cgpa())"
+            stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="201.1"
+            [attr.stroke-dashoffset]="201.1 * (1 - cgpa() / 4.0)"
+            style="transition: stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="header-cgpa-text">
+          <div class="header-cgpa-val font-mono">{{ cgpa() | number:'1.2-2' }}</div>
+          <div class="header-cgpa-lbl">CGPA</div>
+        </div>
       </div>
-    </div>
     </div>
   </div>
 
@@ -49,23 +64,9 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
     <app-icon name="alert-triangle" [size]="16"></app-icon>{{ error() }}
   </div>
 
-  <!-- Stats Grid -->
-  <div class="stats-grid" *ngIf="!loading() && grades().length > 0">
-    <div class="stat-card stat-card--green">
-      <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ completedCourses() }}</div>
-      <div class="stat-label">Graded Courses</div>
-    </div>
-    <div class="stat-card stat-card--purple">
-      <div class="stat-icon"><app-icon name="book-open" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ earnedCredits() }}</div>
-      <div class="stat-label">Completed Credits</div>
-    </div>
-    <div class="stat-card stat-card--blue">
-      <div class="stat-icon"><app-icon name="calendar" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ semesters().length }}</div>
-      <div class="stat-label">Semesters</div>
-    </div>
+  <!-- Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && grades().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
   </div>
 
   <!-- Semester accordion -->
@@ -80,7 +81,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
           </div>
         </div>
         <div class="accordion-chips">
-          <span class="gpa-chip" [style.background]="cgpaColor(+getSemesterGpa(sem)) + '18'" [style.color]="cgpaColor(+getSemesterGpa(sem))">
+          <span class="gpa-chip font-mono" [style.background]="cgpaColor(+getSemesterGpa(sem)) + '18'" [style.color]="cgpaColor(+getSemesterGpa(sem))">
             {{ getSemesterGpa(sem) }}
           </span>
           <span class="accordion-chevron" [class.rotated]="isOpen(sem)">
@@ -108,19 +109,19 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
             </thead>
             <tbody>
               <tr *ngFor="let g of getSemesterGrades(sem)" class="result-row">
-                <td><span class="code-badge">{{ g.courseCode }}</span></td>
+                <td><span class="code-badge font-mono">{{ g.courseCode }}</span></td>
                 <td><strong>{{ g.courseName }}</strong></td>
                 <td>{{ g.creditHours }}</td>
-                <td class="numeric">{{ g.midtermMarks ?? '—' }}<span *ngIf="g.midtermMarks !== null" class="mark-denominator">/40</span></td>
-                <td class="numeric">{{ g.finalMarks ?? '—' }}<span *ngIf="g.finalMarks !== null" class="mark-denominator">/60</span></td>
-                <td class="numeric"><strong *ngIf="g.totalMarks !== null">{{ g.totalMarks }}</strong><span *ngIf="g.totalMarks === null" class="text-muted">—</span></td>
+                <td class="numeric font-mono">{{ g.midtermMarks ?? '—' }}<span *ngIf="g.midtermMarks !== null" class="mark-denominator">/40</span></td>
+                <td class="numeric font-mono">{{ g.finalMarks ?? '—' }}<span *ngIf="g.finalMarks !== null" class="mark-denominator">/60</span></td>
+                <td class="numeric font-mono"><strong *ngIf="g.totalMarks !== null">{{ g.totalMarks }}</strong><span *ngIf="g.totalMarks === null" class="text-muted">—</span></td>
                 <td>
-                  <span class="grade-badge" [class]="gradeClass(g.gradeLetter)">
+                  <span class="grade-badge font-mono font-bold" [class]="gradeClass(g.gradeLetter)">
                     {{ g.gradeDisplay ?? 'Pending' }}
                   </span>
                 </td>
                 <td>
-                  <span *ngIf="g.gradePoint !== null" class="grade-point">{{ g.gradePoint }}</span>
+                  <span *ngIf="g.gradePoint !== null" class="grade-point font-mono font-bold">{{ g.gradePoint | number:'1.2-2' }}</span>
                   <span *ngIf="g.gradePoint === null" class="text-muted">—</span>
                 </td>
               </tr>
@@ -148,7 +149,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
       position: absolute; inset: 0;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .header-cgpa-val { font-size: 1.1rem; font-weight: 800; line-height: 1; }
+    .header-cgpa-val { font-size: 1.1rem; font-weight: 800; line-height: 1; color: var(--text-primary); }
     .header-cgpa-lbl { font-size: 0.6rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em; }
 
     /* Accordion */
@@ -157,14 +158,14 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
       border-radius: 16px; overflow: hidden; margin-bottom: 0.875rem;
       transition: border-color .2s;
     }
-    .accordion-card.accordion-open { border-color: var(--border-glow); }
+    .accordion-card.accordion-open { border-color: var(--accent-primary); }
     .accordion-header {
       width: 100%; padding: 1.25rem 1.5rem; display: flex; align-items: center;
       justify-content: space-between; border: none; background: none;
       cursor: pointer; transition: background .2s; font-family: inherit;
       gap: 1rem;
     }
-    .accordion-header:hover { background: var(--bg-card-hover); }
+    .accordion-header:hover { background: var(--bg-card-hover, rgba(255,255,255,0.02)); }
     .accordion-left { display: flex; align-items: center; gap: 1rem; }
     .accordion-semester-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .accordion-title { font-weight: 700; font-size: 0.975rem; color: var(--text-primary); }
@@ -182,14 +183,27 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
     .accordion-body { border-top: 1px solid var(--border); animation: fadeIn .2s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
     .result-row:hover td { background: rgba(34,211,238,0.02); }
+    .mark-denominator { color: var(--text-muted); font-size: 0.75rem; }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .grade-a { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .grade-a-minus { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .grade-b { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .grade-c { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .grade-f { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
   `]
 })
 export class ResultsComponent implements OnInit {
-  grades  = signal<GradeResponse[]>([]);
-  cgpa    = signal<number>(0);
+  grades = signal<GradeResponse[]>([]);
+  cgpa = signal<number>(0);
   loading = signal(true);
   downloading = signal(false);
-  error   = signal('');
+  error = signal('');
   private openSemesters = new Set<string>();
 
   gradesBySemester = computed(() => {
@@ -202,11 +216,17 @@ export class ResultsComponent implements OnInit {
     return map;
   });
 
-  semesters        = computed(() => Array.from(this.gradesBySemester().keys()));
+  semesters = computed(() => Array.from(this.gradesBySemester().keys()));
   completedCourses = computed(() => this.grades().filter(g => g.gradePoint !== null).length);
-  earnedCredits    = computed(() =>
+  earnedCredits = computed(() =>
     this.grades().filter(g => g.gradePoint !== null).reduce((sum, g) => sum + g.creditHours, 0)
   );
+
+  summaryItems = computed<SummaryCardItem[]>(() => [
+    { key: 'courses', label: 'Graded Courses', value: this.completedCourses(), tone: 'success', icon: 'completed' },
+    { key: 'credits', label: 'Earned Credits', value: `${this.earnedCredits()} Cr`, tone: 'primary', icon: 'completed' },
+    { key: 'semesters', label: 'Enrolled Semesters', value: this.semesters().length, tone: 'neutral', icon: 'calendar' }
+  ]);
 
   constructor(
     private api: ApiService,
@@ -217,8 +237,6 @@ export class ResultsComponent implements OnInit {
     this.api.getMyGrades().subscribe({
       next: (g) => {
         this.grades.set(g);
-        // auto-open the latest semester
-        const sems = Array.from(new Map<string, GradeResponse[]>().keys());
         if (g.length) this.openSemesters.add(g[0].semesterLabel);
         this.loading.set(false);
       },
@@ -257,7 +275,7 @@ export class ResultsComponent implements OnInit {
   getSemesterGpa(sem: string): string {
     const grades = this.getSemesterGrades(sem).filter(g => g.gradePoint !== null);
     if (!grades.length) return '—';
-    const total   = grades.reduce((s, g) => s + (g.gradePoint! * g.creditHours), 0);
+    const total = grades.reduce((s, g) => s + (g.gradePoint! * g.creditHours), 0);
     const credits = grades.reduce((s, g) => s + g.creditHours, 0);
     return credits ? (total / credits).toFixed(2) : '—';
   }
@@ -268,19 +286,6 @@ export class ResultsComponent implements OnInit {
     if (val >= 2.5) return '#fbbf24';
     if (val >= 2.0) return '#fb923c';
     return '#f87171';
-  }
-
-  cgpaGradeLabel(cgpa: number): string {
-    if (cgpa >= 4.00) return 'A+';
-    if (cgpa >= 3.75) return 'A';
-    if (cgpa >= 3.5)  return 'A-';
-    if (cgpa >= 3.25) return 'B+';
-    if (cgpa >= 3.0)  return 'B';
-    if (cgpa >= 2.75) return 'B-';
-    if (cgpa >= 2.5)  return 'C+';
-    if (cgpa >= 2.25) return 'C';
-    if (cgpa >= 2.0)  return 'D';
-    return 'F';
   }
 
   semColor(idx: number): string {

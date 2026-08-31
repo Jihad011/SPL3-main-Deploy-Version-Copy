@@ -5,78 +5,56 @@
       <div class="auth-brand-icon auth-brand-mark"><app-icon name="graduation-cap" [size]="30" /></div>
       <h1 class="auth-brand-title">MIT Open Credit Management</h1>
       <p class="auth-brand-sub">
-        The official academic credit system for IIT, University of Dhaka. Manage enrollments, grades, and fees in one place.
+        The official academic credit and examination management system for IIT, University of Dhaka.
       </p>
       <ul class="auth-features">
-        <li>Automated CGPA & grade calculation</li>
+        <li>Automated CGPA & term grade calculation</li>
         <li>Real-time seat capacity tracking</li>
-        <li>Role-based secure access control</li>
-        <li>Digital fee management</li>
+        <li>Dynamic semester roll & gap fine audit</li>
+        <li>Official PDF transcripts & financial receipts</li>
       </ul>
     </div>
 
     <!-- Right form panel -->
     <div class="auth-right">
       <h2 class="auth-form-title">Welcome back</h2>
-      <p class="auth-form-sub">Sign in to continue to your portal</p>
+      <p class="auth-form-sub">Sign in with your institutional credentials to access your portal</p>
 
-      <div *ngIf="error()" class="alert alert-error">
+      <div *ngIf="error()" class="alert alert-error" style="margin-bottom: 1.25rem;">
         <app-icon name="alert-triangle" [size]="18" /> {{ error() }}
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <div class="input-shell">
-            <span class="input-icon"><app-icon name="users" [size]="17" /></span>
-            <input
-              id="email"
-              type="email"
-              formControlName="email"
-              placeholder="you@iit.du.ac.bd"
-              [class.invalid]="email.invalid && email.touched"
-              autocomplete="email" />
-          </div>
-          <span class="field-error" *ngIf="email.invalid && email.touched">
-            {{ email.hasError('required') ? 'Email is required' : 'Invalid email format' }}
-          </span>
-        </div>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form-cluster" novalidate>
+        <input-text-box
+          [frmGroup]="form"
+          controlName="email"
+          label="Institutional Email Address"
+          placeholder="you@iit.du.ac.bd"
+          type="email"
+          displayMode="vertical"
+        />
 
-        <div class="form-group">
-          <label for="password">Password</label>
-          <div class="input-shell">
-            <span class="input-icon"><app-icon name="settings" [size]="17" /></span>
-            <input
-              id="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Enter your password"
-              [class.invalid]="password.invalid && password.touched"
-              autocomplete="current-password" />
-            <button
-              type="button"
-              class="input-action"
-              (click)="togglePasswordVisibility()"
-              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
-              <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="17" />
-            </button>
-          </div>
-          <span class="field-error" *ngIf="password.invalid && password.touched">
-            Password must be at least 6 characters
-          </span>
-        </div>
+        <input-text-box
+          [frmGroup]="form"
+          controlName="password"
+          label="Account Password"
+          placeholder="Enter your password"
+          type="password"
+          displayMode="vertical"
+        />
 
-        <button type="submit" class="btn-primary btn-neon" [disabled]="loading()" style="margin-top:0.5rem">
-          <span *ngIf="!loading()" class="button-label">
-            Sign in <app-icon name="arrow-right" [size]="17" />
-          </span>
-          <span *ngIf="loading()" class="spinner-sm"></span>
-        </button>
+        <generic-button
+          [label]="loading() ? 'Signing in...' : 'Sign in to Portal'"
+          icon="arrow-right"
+          [enable]="!loading()"
+          styles="width: 100%; margin-top: 1rem; justify-content: center;"
+          (onClick)="onSubmit()"
+        />
       </form>
 
-      <p class="auth-footer">
+      <p class="auth-footer" style="margin-top: 1.5rem;">
         Don't have an account?
-        <a routerLink="/auth/register">Register here</a>
+        <a routerLink="/auth/register">Register student account here</a>
       </p>
     </div>
   </div>

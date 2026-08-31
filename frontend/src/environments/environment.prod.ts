@@ -1,4 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: '/api'   // Proxied by nginx in production
+  apiUrl: '/api',
+  baseUrl: '/api',
+  centrinoEndPoint: '/api',
+  reportManagementApiUrl: '/api'
 };

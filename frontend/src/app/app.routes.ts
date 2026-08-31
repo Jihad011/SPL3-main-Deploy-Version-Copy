@@ -30,6 +30,11 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/components/unauthorized/unauthorized.component')
       .then(m => m.UnauthorizedComponent)
   },
+  {
+    path: 'components-showcase',
+    loadComponent: () => import('./features/components-showcase/components-showcase.component')
+      .then(m => m.ComponentsShowcaseComponent)
+  },
 
   // ── Student (lazy-loaded) ──────────────────────────────────
   {

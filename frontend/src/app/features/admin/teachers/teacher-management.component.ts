@@ -1,233 +1,281 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { UserResponse } from '../../../core/models/models';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
-import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ToastService } from '../../../core/services/toast.service';
+
+// CenterPoint Shared Controls & Layouts
+import {
+  ExpansionPanelHeader,
+  InputTextBox,
+  GenericSwitch,
+  GenericModal,
+  GenericButton
+} from '../../../shared';
+
+import {
+  ButtonUtils,
+  ONCLICK_SAVE,
+  ONCLICK_UPDATE,
+  ONCLICK_RESET,
+  ONCLICK_VIEW
+} from '../../../shared/constant/button-signals.constant';
+
+import { TeacherManagementListComponent } from './teacher-management-list.component';
 
 @Component({
   selector: 'app-teacher-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, ToolbarComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ExpansionPanelHeader,
+    InputTextBox,
+    GenericSwitch,
+    GenericModal,
+    GenericButton,
+    TeacherManagementListComponent
+  ],
   template: `
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-eyebrow">Directory administration</div>
-      <h1 class="page-title">Faculty Management</h1>
-      <p class="page-subtitle">View and add faculty accounts</p>
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="teacherSetupPanel"
+          [panelTitle]="isEdit ? 'Update Faculty Profile' : 'Register New Faculty Member'"
+        />
+
+        <div *ngIf="teacherSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-2">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Full Legal Name *"
+                placeholder="e.g. Dr. Kazi Sakib"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="email"
+                label="Institutional Email *"
+                placeholder="e.g. sakib@iit.du.ac.bd"
+                type="email"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-3" style="margin-top: 1rem;">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="designation"
+                label="Academic Designation *"
+                placeholder="e.g. Professor / Associate Professor"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="phone"
+                label="Contact Number"
+                placeholder="e.g. +880 1711 000000"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                *ngIf="!isEdit"
+                [frmGroup]="frmGroup"
+                controlName="password"
+                label="Initial Password (min 6 chars) *"
+                placeholder="••••••••"
+                type="password"
+                displayMode="vertical"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
-    <button class="btn btn-primary" (click)="showAddModal.set(true)">
-      <app-icon name="user" [size]="15"></app-icon>Add Faculty
-    </button>
   </div>
 
-  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
-
-  <!-- Universal Toolbar -->
-  <app-toolbar
-    *ngIf="!loading() && teachers().length > 0"
-    searchPlaceholder="Search faculty by name or email..."
-    [showViewToggle]="false"
-    [resultCount]="filteredTeachers().length"
-    (searchChange)="query.set($event)"
-  />
-
-  <div class="card" *ngIf="!loading()">
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Faculty Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Account Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let t of filteredTeachers()">
-            <td>
-              <div class="table-cell-user">
-                <div class="user-avatar" [style.background]="avatarGradient(t.name)">
-                  {{ t.name.charAt(0).toUpperCase() }}
-                </div>
-                <strong>{{ t.name }}</strong>
-              </div>
-            </td>
-            <td><span class="text-muted">{{ t.email }}</span></td>
-            <td><span class="badge badge-teacher">FACULTY</span></td>
-            <td>
-              <span class="status-badge" [class.status-active]="t.isActive" [class.status-inactive]="!t.isActive">
-                <span class="badge-dot" *ngIf="t.isActive"></span>
-                {{ t.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
-          </tr>
-          <tr *ngIf="filteredTeachers().length === 0">
-            <td colspan="4" class="text-center text-muted py-8">No matching faculty members found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Masterclass Pagination -->
-    <app-pagination
-      *ngIf="!query() && totalElements() > 0"
-      [currentPage]="currentPage()"
-      [pageSize]="pageSize()"
-      [totalPages]="totalPages()"
-      [totalElements]="totalElements()"
-      [pageSizeOptions]="pageSizeOptions"
-      [disabled]="loading()"
-      (pageChange)="loadTeachers($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
+  <!-- CenterPoint Generic Modal for Faculty List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Faculty Member Directory"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-teacher-management-list
+      (modalResult)="onModalResult($event)"
     />
-  </div>
-</div>
-
-<!-- Add Modal -->
-<div class="modal-overlay" *ngIf="showAddModal()" (click)="showAddModal.set(false)">
-  <div class="modal-card" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Add New Faculty</h2>
-      <button class="btn-icon" (click)="showAddModal.set(false)"><app-icon name="x" [size]="20"></app-icon></button>
-    </div>
-    <div class="modal-body">
-      <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
-      <div class="form-group">
-        <label>Full Name</label>
-        <input [(ngModel)]="newTeacher.name" placeholder="Dr. John Doe" />
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input [(ngModel)]="newTeacher.email" type="email" placeholder="john.doe@university.edu" />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input [(ngModel)]="newTeacher.password" type="password" placeholder="••••••••" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="showAddModal.set(false)" [disabled]="saving()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveTeacher()" [disabled]="saving()">
-        <span *ngIf="!saving()">Create Faculty</span>
-        <span *ngIf="saving()">Creating...</span>
-      </button>
-    </div>
-  </div>
+  </generic-modal>
 </div>
   `,
   styles: [`
-    .table-cell-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .page-wrapper {
+      max-width: 1300px;
+      margin: 0 auto;
     }
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 14px;
+    .panel {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .badge-teacher {
-      background: rgba(147, 51, 234, 0.15);
-      color: #c084fc;
-      border: 1px solid rgba(147, 51, 234, 0.3);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
+    .grid-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .grid-row-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
     }
   `]
 })
-export class TeacherManagementComponent implements OnInit {
-  teachers      = signal<UserResponse[]>([]);
-  loading       = signal(true);
-  query         = signal('');
-  currentPage   = signal(0);
-  totalPages    = signal(0);
-  totalElements = signal(0);
-  pageSize      = signal(25);
-  readonly pageSizeOptions = [25, 50, 75, 100];
-  
-  showAddModal = signal(false);
-  saving = signal(false);
-  error = signal('');
-  
-  newTeacher = { name: '', email: '', password: '', role: 'TEACHER' };
+export class TeacherManagementComponent implements OnInit, OnDestroy {
+  teacherSetupPanel = signal(true);
+  isModalShow = false;
+  isEdit = false;
+  editTeacherId: number | null = null;
 
-  filteredTeachers = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    return !q ? this.teachers() : this.teachers().filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      t.email.toLowerCase().includes(q)
-    );
-  });
+  frmGroup: FormGroup;
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  private fb = inject(FormBuilder);
+  private api = inject(ApiService);
+  private toast = inject(ToastService);
 
-  ngOnInit() {
-    this.loadTeachers(0);
+  constructor() {
+    this.frmGroup = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      designation: ['Professor', Validators.required],
+      phone: [''],
+      password: ['123456', [Validators.required, Validators.minLength(6)]]
+    });
+
+    // Wire up Navbar Action signals
+    effect(() => {
+      if (ONCLICK_SAVE()) {
+        this.submitSave();
+        ONCLICK_SAVE.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_UPDATE()) {
+        this.submitUpdate();
+        ONCLICK_UPDATE.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_RESET()) {
+        this.resetForm();
+        ONCLICK_RESET.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_VIEW()) {
+        this.isModalShow = true;
+        ONCLICK_VIEW.set(false);
+      }
+    }, { allowSignalWrites: true });
+
   }
 
-  loadTeachers(page: number = 0) {
-    this.loading.set(true);
-    this.api.getAllTeachers(page, this.pageSize()).subscribe({
-      next: (res) => {
-        this.teachers.set(res.content);
-        this.currentPage.set(res.number);
-        this.totalPages.set(res.totalPages);
-        this.totalElements.set(res.totalElements);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
+  ngOnInit(): void {
+    ButtonUtils.setPageButtons({
+      save: true,
+      update: false,
+      view: true,
+      reset: true,
+      exit: true
     });
   }
 
-  onPageSizeChange(newSize: number): void {
-    this.pageSize.set(newSize);
-    this.loadTeachers(0);
+  ngOnDestroy(): void {
+    ButtonUtils.resetAll();
   }
 
-  saveTeacher() {
-    if (!this.newTeacher.name || !this.newTeacher.email || !this.newTeacher.password) {
-      this.error.set('All fields are required');
+  submitSave(): void {
+    if (this.frmGroup.invalid) {
+      this.frmGroup.markAllAsTouched();
+      this.toast.error('Please complete all required fields.');
       return;
     }
-    
-    this.saving.set(true);
-    this.error.set('');
-    
-    this.api.createTeacher(this.newTeacher).subscribe({
+
+    this.api.createTeacher(this.frmGroup.value).subscribe({
       next: (res) => {
-        this.toast.success('Faculty member created successfully');
-        this.showAddModal.set(false);
-        this.saving.set(false);
-        this.newTeacher = { name: '', email: '', password: '', role: 'TEACHER' };
-        this.loadTeachers();
+        this.toast.success(`Faculty member ${res.name} registered successfully!`);
+        this.resetForm();
       },
       error: (err) => {
-        this.error.set(err.error?.message || 'Failed to create faculty member');
-        this.saving.set(false);
+        const msg = err.error?.detail || err.error?.message || 'Failed to register faculty.';
+        this.toast.error(msg);
       }
     });
   }
 
-  avatarGradient(name: string): string {
-    const char = name ? name.charAt(0).toUpperCase() : 'A';
-    const charCode = char.charCodeAt(0);
-    if (charCode < 70) return 'linear-gradient(135deg, #3b82f6, #8b5cf6)';
-    if (charCode < 77) return 'linear-gradient(135deg, #10b981, #3b82f6)';
-    if (charCode < 84) return 'linear-gradient(135deg, #f59e0b, #ef4444)';
-    return 'linear-gradient(135deg, #ec4899, #8b5cf6)';
+  submitUpdate(): void {
+    if (this.frmGroup.invalid) {
+      this.frmGroup.markAllAsTouched();
+      return;
+    }
+    this.toast.success('Faculty profile updated.');
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.isEdit = false;
+    this.editTeacherId = null;
+    this.frmGroup.reset({
+      designation: 'Professor',
+      password: 'password123'
+    });
+    ButtonUtils.setPageButtons({
+      save: true,
+      update: false,
+      view: true,
+      reset: true,
+      exit: true
+    });
+  }
+
+  onModalResult(result: any): void {
+    if (result.data) {
+      const t: UserResponse = result.data;
+      if (result.isEdit) {
+        this.isEdit = true;
+        this.editTeacherId = t.id;
+        this.frmGroup.patchValue({
+          name: t.name,
+          email: t.email,
+          designation: t.designation || 'Faculty Member',
+          phone: t.phone
+        });
+        ButtonUtils.setPageButtons({
+          save: false,
+          update: true,
+          view: true,
+          reset: true,
+          exit: true
+        });
+        this.isModalShow = false;
+        this.toast.info(`Editing faculty: ${t.name}`);
+      } else if (result.viewMode) {
+        this.isModalShow = false;
+      }
+    }
   }
 }

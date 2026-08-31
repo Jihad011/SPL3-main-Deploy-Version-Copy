@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="crsBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <filter id="crsGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#4f46e5" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#crsBg)" filter="url(#crsGlow)"/>
+  <g transform="translate(22, 22)">
+    <!-- 3 Stacked Books (Isometric 3D) -->
+    <!-- Book 1 (Bottom - Blue) -->
+    <rect x="6" y="52" width="64" height="14" rx="4" fill="#3b82f6"/>
+    <rect x="10" y="55" width="56" height="8" rx="2" fill="#ffffff"/>
+    <rect x="6" y="52" width="10" height="14" rx="2" fill="#1d4ed8"/>
+    <!-- Book 2 (Middle - Amber) -->
+    <rect x="12" y="36" width="58" height="14" rx="4" fill="#f59e0b"/>
+    <rect x="16" y="39" width="50" height="8" rx="2" fill="#ffffff"/>
+    <rect x="12" y="36" width="10" height="14" rx="2" fill="#b45309"/>
+    <!-- Book 3 (Top - Emerald) -->
+    <rect x="8" y="20" width="62" height="14" rx="4" fill="#10b981"/>
+    <rect x="12" y="23" width="54" height="8" rx="2" fill="#ffffff"/>
+    <rect x="8" y="20" width="10" height="14" rx="2" fill="#047857"/>
+    <!-- Bookmark ribbon -->
+    <path d="M46 12 v16 l4 -4 l4 4 v-16 Z" fill="#ef4444"/>
+    <!-- Seat / Star Badge -->
+    <circle cx="58" cy="18" r="11" fill="#8b5cf6" stroke="#ffffff" stroke-width="2"/>
+    <polygon points="58,13 60,16.5 64,16.5 61,19 62,23 58,20.5 54,23 55,19 52,16.5 56,16.5" fill="#ffffff"/>
+  </g>
+</svg>

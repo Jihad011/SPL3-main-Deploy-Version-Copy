@@ -5,17 +5,31 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
+// CenterPoint Shared Components
+import {
+  InputTextBox,
+  InputNumber,
+  GenericButton
+} from '../../../shared';
+
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink, IconComponent],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    RouterLink,
+    IconComponent,
+    InputTextBox,
+    InputNumber,
+    GenericButton
+  ],
   templateUrl: './register.component.html'
 })
 export class RegisterComponent {
   form: FormGroup;
   loading = signal(false);
   error   = signal('');
-  showPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -23,25 +37,26 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      name:     ['', [Validators.required, Validators.minLength(2)]],
-      email:    ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      name:               ['', [Validators.required, Validators.minLength(2)]],
+      email:              ['', [Validators.required, Validators.email]],
+      password:           ['', [Validators.required, Validators.minLength(8)]],
       rollNumber:         ['', Validators.required],
       registrationNumber: [''],
-      phone:    [''],
-      batch:    [null, Validators.required]
+      phone:              [''],
+      batch:              [2026, [Validators.required, Validators.min(2015), Validators.max(2035)]]
     });
   }
 
-  get f()         { return this.form.controls; }
-
   onSubmit(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading.set(true);
     this.error.set('');
 
     this.authService.register(this.form.value).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading.set(false);
         this.router.navigate(['/student/dashboard']);
       },

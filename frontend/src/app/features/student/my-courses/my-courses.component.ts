@@ -1,17 +1,33 @@
-import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { EnrollmentResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastService } from '../../../core/services/toast.service';
+
+// CenterPoint Shared Components
+import {
+  SummaryCardStrip,
+  SummaryCardItem,
+  ConfirmationDialogue,
+  GenericButton
+} from '../../../shared';
 
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, IconComponent, ToolbarComponent, ConfirmModalComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    DatePipe,
+    IconComponent,
+    ToolbarComponent,
+    SummaryCardStrip,
+    ConfirmationDialogue,
+    GenericButton
+  ],
   template: `
 <div class="page">
   <div class="page-header">
@@ -21,7 +37,7 @@ import { ToastService } from '../../../core/services/toast.service';
       <p class="page-subtitle">View and manage your registered courses for all semesters</p>
     </div>
     <div class="header-actions">
-      <div class="metric-chip metric-chip--green" *ngIf="!loading()">
+      <div class="metric-chip metric-chip--green font-mono" *ngIf="!loading()">
         <app-icon name="book-open" [size]="15"></app-icon>
         {{ activeCount() }} active course(s) · {{ totalCredits() }} credit(s)
       </div>
@@ -33,28 +49,9 @@ import { ToastService } from '../../../core/services/toast.service';
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
 
-  <!-- Summary Cards -->
-  <div class="stats-grid" *ngIf="!loading() && enrollments().length > 0">
-    <div class="stat-card stat-card--blue">
-      <div class="stat-icon"><app-icon name="list-check" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ activeCount() }}</div>
-      <div class="stat-label">Active Enrollments</div>
-    </div>
-    <div class="stat-card stat-card--purple">
-      <div class="stat-icon"><app-icon name="clock" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ totalCredits() }}</div>
-      <div class="stat-label">Total Registered Credits</div>
-    </div>
-    <div class="stat-card stat-card--green">
-      <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ completedCount() }}</div>
-      <div class="stat-label">Completed Courses</div>
-    </div>
-    <div class="stat-card stat-card--red" *ngIf="droppedCount() > 0">
-      <div class="stat-icon"><app-icon name="alert-triangle" [size]="22"></app-icon></div>
-      <div class="stat-value">{{ droppedCount() }}</div>
-      <div class="stat-label">Dropped Courses</div>
-    </div>
+  <!-- Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && enrollments().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
   </div>
 
   <!-- Filter & Search Toolbar -->
@@ -89,7 +86,7 @@ import { ToastService } from '../../../core/services/toast.service';
     <div class="course-card my-course-card" *ngFor="let e of filteredEnrollments(); let i = index"
          [class.card-dropped]="e.status === 'DROPPED'">
       <div class="course-card-header">
-        <span class="code-badge">{{ e.courseCode }}</span>
+        <span class="code-badge font-mono">{{ e.courseCode }}</span>
         <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
           {{ e.status }}
         </span>
@@ -103,23 +100,18 @@ import { ToastService } from '../../../core/services/toast.service';
         <span class="retake-badge" *ngIf="e.isRetake">Retake</span>
       </div>
 
-      <!-- Schedule pill -->
-      <div class="schedule-pill-row">
-        <span class="schedule-pill">
-          <app-icon name="clock" [size]="12"></app-icon> Mon & Wed · 10:00 AM - 11:30 AM
-        </span>
-      </div>
-
-      <div class="enrolled-date-row">
+      <div class="enrolled-date-row font-mono">
         Enrolled on {{ e.enrolledAt | date:'mediumDate' }}
       </div>
 
       <div class="card-action-bar" *ngIf="e.status === 'ACTIVE'">
-        <button class="btn-drop" [disabled]="droppingId() === e.id" (click)="confirmDrop(e)">
-          <app-icon name="x" [size]="15" *ngIf="droppingId() !== e.id"></app-icon>
-          <span class="spinner-sm" *ngIf="droppingId() === e.id"></span>
-          {{ droppingId() === e.id ? 'Dropping...' : 'Drop Course' }}
-        </button>
+        <generic-button
+          label="Drop Course"
+          icon="trash"
+          styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.8rem; padding: 0.35rem 0.75rem; width: 100%; justify-content: center;"
+          [enable]="droppingId() !== e.id"
+          (onClick)="confirmDrop(e)"
+        />
       </div>
     </div>
   </div>
@@ -144,26 +136,30 @@ import { ToastService } from '../../../core/services/toast.service';
           <tr class="fade-in-up" *ngFor="let e of filteredEnrollments(); let i = index" 
               [style.animation-delay.ms]="i * 30"
               [class.row-dropped]="e.status === 'DROPPED'">
-            <td><span class="code-badge">{{ e.courseCode }}</span></td>
+            <td><span class="code-badge font-mono">{{ e.courseCode }}</span></td>
             <td><strong>{{ e.courseName }}</strong></td>
-            <td>{{ e.creditHours }}</td>
+            <td>{{ e.creditHours }} Cr</td>
             <td>{{ e.semesterLabel }}</td>
             <td>
+              <span class="badge badge-subtle" *ngIf="!e.isRetake">Regular</span>
               <span class="retake-badge" *ngIf="e.isRetake">Retake</span>
-              <span class="text-muted" *ngIf="!e.isRetake">Regular</span>
             </td>
-            <td class="table-date">{{ e.enrolledAt | date:'mediumDate' }}</td>
+            <td><span class="font-mono text-muted">{{ e.enrolledAt | date:'dd MMM yyyy' }}</span></td>
             <td>
               <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
                 {{ e.status }}
               </span>
             </td>
             <td>
-              <button class="btn-drop-sm" *ngIf="e.status === 'ACTIVE'"
-                      [disabled]="droppingId() === e.id" (click)="confirmDrop(e)">
-                {{ droppingId() === e.id ? 'Dropping...' : 'Drop' }}
-              </button>
-              <span class="text-muted" *ngIf="e.status !== 'ACTIVE'">—</span>
+              <generic-button
+                *ngIf="e.status === 'ACTIVE'"
+                label="Drop"
+                icon="x"
+                styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; padding: 0.25rem 0.55rem;"
+                [enable]="droppingId() !== e.id"
+                (onClick)="confirmDrop(e)"
+              />
+              <span *ngIf="e.status !== 'ACTIVE'" class="text-muted text-xs">—</span>
             </td>
           </tr>
         </tbody>
@@ -171,115 +167,130 @@ import { ToastService } from '../../../core/services/toast.service';
     </div>
   </div>
 
-  <!-- Empty state -->
-  <div class="empty-state" *ngIf="!loading() && enrollments().length === 0">
-    <div class="empty-icon"><app-icon name="book-open" [size]="42" /></div>
-    <h3>No courses enrolled yet</h3>
-    <p>You haven't enrolled in any courses. Head over to Course Enrollment to view available offerings.</p>
-    <a routerLink="../courses" class="btn btn-primary btn-neon" style="margin-top: 1rem">
-      Go to Course Enrollment
-    </a>
+  <div class="empty-state" *ngIf="!loading() && filteredEnrollments().length === 0">
+    <div class="empty-icon"><app-icon name="book-open" [size]="28" /></div>
+    <h3>No course enrollments found</h3>
+    <p>You haven't enrolled in any courses under this filter.</p>
   </div>
 
-  <div class="empty-state" *ngIf="!loading() && enrollments().length > 0 && filteredEnrollments().length === 0">
-    <div class="empty-icon"><app-icon name="search" [size]="42" /></div>
-    <h3>No matching courses</h3>
-    <p>Try clearing your search term or selecting a different status filter.</p>
-  </div>
-  
-  <app-confirm-modal
-    [title]="'Drop Course'"
+  <!-- CenterPoint Confirmation Dialogue -->
+  <confirmation-dialogue
+    [isOpen]="showConfirmDialogue()"
+    title="Confirm Drop Course"
     [message]="confirmMessage()"
-    confirmText="Drop Course"
-    cancelText="Cancel"
-    type="danger"
-    (confirm)="executeDrop()"
-  ></app-confirm-modal>
+    variant="danger"
+    (close)="showConfirmDialogue.set(false)"
+    (buttonClick)="executeDrop()"
+  />
 </div>
   `,
   styles: [`
-    .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .filter-tabs-bar {
-      display: flex; gap: 0.5rem; margin-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border); padding-bottom: 0;
-    }
-    .filter-tab {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.6rem 1rem; border: none; background: none;
-      color: var(--text-muted); font-size: 0.875rem; cursor: pointer;
-      border-bottom: 2px solid transparent; margin-bottom: -1px;
-      transition: all .2s; font-family: inherit; font-weight: 500;
-    }
-    .filter-tab:hover { color: var(--text-primary); }
-    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
-    .filter-count {
-      background: var(--bg-elevated); border-radius: 20px;
-      padding: 0.05rem 0.5rem; font-size: 0.72rem;
-    }
-    .dot-active, .dot-completed, .dot-dropped {
-      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-    }
-    .dot-active    { background: var(--accent-green); }
-    .dot-completed { background: var(--accent-primary); }
-    .dot-dropped   { background: var(--accent-red); }
-
-    .my-course-card {
-      display: flex; flex-direction: column; height: 100%;
-    }
-    .card-dropped { opacity: 0.65; }
-    .row-dropped td { opacity: 0.6; }
-    .enrolled-date-row {
-      font-size: 0.775rem; color: var(--text-muted); margin-top: auto; padding-top: 0.75rem;
-    }
-    .card-action-bar { margin-top: 0.75rem; }
-    .btn-drop {
-      width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      padding: 0.75rem 1rem; border-radius: var(--radius);
-      background: rgba(239, 68, 68, 0.05); border: 1px dashed rgba(239, 68, 68, 0.3);
-      color: #ef4444; font-size: 0.9rem; font-weight: 600;
-      cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-family: 'Inter', sans-serif;
-    }
-    .btn-drop:hover:not(:disabled) {
-      background: rgba(239, 68, 68, 0.15); border-color: #ef4444;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
-    }
-    .btn-drop:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    .btn-drop-sm {
-      padding: 0.4rem 0.75rem; border-radius: 6px;
-      background: rgba(239, 68, 68, 0.05); border: 1px dashed rgba(239, 68, 68, 0.3);
-      color: #ef4444; font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif;
-    }
-    .schedule-pill-row {
-      margin-top: 0.25rem;
-    }
-    .schedule-pill {
+    .metric-chip {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.25rem 0.6rem;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      border-radius: var(--radius-xs);
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
       font-weight: 600;
     }
-    .btn-drop-sm:hover:not(:disabled) { 
-      background: rgba(239, 68, 68, 0.15); 
-      border-color: #ef4444;
+    .metric-chip--green {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-green, #10b981);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+    .filter-tabs-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+      margin-bottom: 1.25rem;
+    }
+    .filter-tab {
+      padding: 0.6rem 1rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .filter-tab:hover { color: var(--text-primary); }
+    .filter-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); font-weight: 600; }
+    .filter-count {
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      padding: 0.05rem 0.5rem;
+      font-size: 0.72rem;
+    }
+    .dot-active { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green, #10b981); display: inline-block; }
+    .dot-completed { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; display: inline-block; }
+    .dot-dropped { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; }
+
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+    .course-card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .course-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .course-name { font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--text-primary); }
+    .course-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+    .meta-item { display: flex; align-items: center; gap: 0.35rem; }
+    .retake-badge {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .enrolled-date-row {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .card-action-bar {
+      margin-top: 0.5rem;
     }
   `]
 })
 export class MyCoursesComponent implements OnInit {
   enrollments = signal<EnrollmentResponse[]>([]);
-  loading     = signal(true);
-  droppingId  = signal<number | null>(null);
+  loading = signal(true);
+  droppingId = signal<number | null>(null);
   searchQuery = signal('');
   statusFilter = signal<string>('ALL');
-  view        = signal<'grid' | 'list'>('grid');
+  view = signal<'grid' | 'list'>('grid');
 
   activeCount = computed(() => this.enrollments().filter(e => e.status === 'ACTIVE').length);
   completedCount = computed(() => this.enrollments().filter(e => e.status === 'COMPLETED').length);
@@ -291,12 +302,19 @@ export class MyCoursesComponent implements OnInit {
       .reduce((sum, e) => sum + e.creditHours, 0)
   );
 
+  summaryItems = computed<SummaryCardItem[]>(() => [
+    { key: 'active', label: 'Active Enrollments', value: this.activeCount(), tone: 'success', icon: 'completed' },
+    { key: 'credits', label: 'Registered Credits', value: `${this.totalCredits()} Cr`, tone: 'primary', icon: 'completed' },
+    { key: 'completed', label: 'Completed Courses', value: this.completedCount(), tone: 'neutral', icon: 'info' },
+    { key: 'dropped', label: 'Dropped Courses', value: this.droppedCount(), tone: this.droppedCount() > 0 ? 'danger' : 'neutral', icon: 'failed' }
+  ]);
+
   filteredEnrollments = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
     const sf = this.statusFilter();
     return this.enrollments().filter(e => {
       const matchesStatus = sf === 'ALL' || e.status === sf;
-      const matchesQuery  = !q ||
+      const matchesQuery = !q ||
         e.courseName.toLowerCase().includes(q) ||
         e.courseCode.toLowerCase().includes(q) ||
         e.semesterLabel.toLowerCase().includes(q);
@@ -304,12 +322,12 @@ export class MyCoursesComponent implements OnInit {
     });
   });
 
-  @ViewChild(ConfirmModalComponent) confirmModal!: ConfirmModalComponent;
+  showConfirmDialogue = signal(false);
   enrollmentToDrop = signal<EnrollmentResponse | null>(null);
+
   confirmMessage = computed(() => {
     const e = this.enrollmentToDrop();
-    if (!e) return '';
-    return `Are you sure you want to drop ${e.courseCode} — ${e.courseName}? This action cannot be undone.`;
+    return e ? `Are you sure you want to drop ${e.courseCode} — ${e.courseName}? This action cannot be undone.` : '';
   });
 
   constructor(private api: ApiService, private toast: ToastService) {}
@@ -334,14 +352,16 @@ export class MyCoursesComponent implements OnInit {
 
   confirmDrop(e: EnrollmentResponse): void {
     this.enrollmentToDrop.set(e);
-    this.confirmModal.open();
+    this.showConfirmDialogue.set(true);
   }
-  
+
   executeDrop(): void {
     const e = this.enrollmentToDrop();
     if (!e) return;
-    
+
+    this.showConfirmDialogue.set(false);
     this.droppingId.set(e.id);
+
     this.api.dropCourse(e.id).subscribe({
       next: () => {
         this.droppingId.set(null);

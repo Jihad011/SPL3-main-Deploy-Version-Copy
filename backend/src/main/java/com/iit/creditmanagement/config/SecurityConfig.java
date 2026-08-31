@@ -65,7 +65,7 @@ public class SecurityConfig {
                 }
 
                 auth.requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/teacher/**").hasAnyRole("TEACHER", "ADMIN")
+                    .requestMatchers("/teacher/**").hasRole("TEACHER")
                     .anyRequest().authenticated();
             })
             .sessionManagement(session ->

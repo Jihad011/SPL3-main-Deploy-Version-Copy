@@ -6,17 +6,29 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
+// CenterPoint Shared Components
+import {
+  InputTextBox,
+  GenericButton
+} from '../../../shared';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink, IconComponent],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    RouterLink,
+    IconComponent,
+    InputTextBox,
+    GenericButton
+  ],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
   form: FormGroup;
   loading = signal(false);
   error   = signal('');
-  showPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -31,14 +43,16 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading.set(true);
     this.error.set('');
 
     this.authService.login(this.form.value).subscribe({
       next: (res) => {
         this.loading.set(false);
-        // Redirect based on role
         const routes: Record<string, string> = {
           STUDENT: '/student/dashboard',
           TEACHER: '/teacher/dashboard',
@@ -52,12 +66,5 @@ export class LoginComponent {
         this.error.set(msg);
       }
     });
-  }
-
-  get email()    { return this.form.get('email')!; }
-  get password() { return this.form.get('password')!; }
-
-  togglePasswordVisibility(): void {
-    this.showPassword.update(value => !value);
   }
 }

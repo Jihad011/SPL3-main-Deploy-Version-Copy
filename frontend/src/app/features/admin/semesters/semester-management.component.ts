@@ -1,189 +1,247 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
-import { SemesterResponse } from '../../../core/models/models';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { ToastService } from '../../../core/services/toast.service';
+
+// CenterPoint Shared Controls & Layouts
+import {
+  ExpansionPanelHeader,
+  InputSelectOptionField,
+  InputNumber,
+  InputDate,
+  GenericSwitch,
+  GenericModal,
+  GenericButton,
+  SelectOptionsModel
+} from '../../../shared';
+
+import {
+  ButtonUtils,
+  ONCLICK_SAVE,
+  ONCLICK_RESET,
+  ONCLICK_VIEW
+} from '../../../shared/constant/button-signals.constant';
+
+import { SemesterManagementListComponent } from './semester-management-list.component';
 
 @Component({
   selector: 'app-semester-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ExpansionPanelHeader,
+    InputSelectOptionField,
+    InputNumber,
+    InputDate,
+    GenericSwitch,
+    GenericModal,
+    GenericButton,
+    SemesterManagementListComponent
+  ],
   template: `
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-eyebrow">Term Administration</div>
-      <h1 class="page-title">Semester Management</h1>
-      <p class="page-subtitle">Control which semester is open for student enrollment</p>
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="semSetupPanel"
+          [panelTitle]="'Academic Semester Term Setup'"
+        />
+
+        <div *ngIf="semSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-2">
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Academic Term *"
+                [options]="termOptions"
+                displayMode="vertical"
+              />
+
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="year"
+                label="Academic Year *"
+                placeholder="2026"
+                [minValue]="2020"
+                [maxValue]="2035"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-2" style="margin-top: 1rem;">
+              <input-date
+                [frmGroup]="frmGroup"
+                controlName="startDate"
+                label="Term Start Date *"
+                displayMode="vertical"
+              />
+
+              <input-date
+                [frmGroup]="frmGroup"
+                controlName="endDate"
+                label="Term End Date *"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <generic-switch
+                [frmGroup]="frmGroup"
+                controlName="isActive"
+                label="Open Registration & Activate Term Immediately"
+                displayMode="horizontal"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
-    <button class="btn btn-primary" (click)="showModal.set(true)">
-      <app-icon name="calendar" [size]="15"></app-icon>Add Semester
-    </button>
   </div>
 
-  <div class="alert alert-success" *ngIf="success()">
-    <app-icon name="check-circle" [size]="16"></app-icon> {{ success() }}
-  </div>
-  <div class="alert alert-error" *ngIf="error()">
-    <app-icon name="alert-triangle" [size]="16"></app-icon> {{ error() }}
-  </div>
-
-  <!-- Semester List (Main View) -->
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">All Academic Semesters</div>
-        <div class="card-sub">{{ semesters().length }} semester terms configured</div>
-      </div>
-    </div>
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Semester Term</th>
-            <th>Academic Period</th>
-            <th>Enrollment Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of semesters()">
-            <td>
-              <div style="display:flex;align-items:center;gap:0.6rem">
-                <span class="code-badge font-mono">{{ s.name.substring(0, 2) }}{{ s.year % 100 }}</span>
-                <strong>{{ s.label }}</strong>
-              </div>
-            </td>
-            <td style="font-size:0.85rem;color:var(--text-secondary)">
-              {{ s.startDate | date:'dd MMM yyyy' }} – {{ s.endDate | date:'dd MMM yyyy' }}
-            </td>
-            <td>
-              <span class="status-badge" [class.status-active]="s.isActive" [class.status-inactive]="!s.isActive">
-                <span class="badge-dot" *ngIf="s.isActive"></span>
-                {{ s.isActive ? 'Enrollment & Term Active' : 'Concluded / Inactive' }}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-primary btn-sm btn-neon" *ngIf="!s.isActive" (click)="activate(s)">
-                <app-icon name="check-circle" [size]="14"></app-icon> Activate Term
-              </button>
-              <span *ngIf="s.isActive" class="status-badge status-active" style="border:none">
-                <app-icon name="check-circle" [size]="14"></app-icon> Current Session
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="empty-state" *ngIf="semesters().length === 0">
-      <div class="empty-icon"><app-icon name="calendar" [size]="32"></app-icon></div>
-      <h3>No semesters configured yet</h3>
-      <p>Click 'Add Semester' above to open an academic session.</p>
-    </div>
-  </div>
+  <!-- CenterPoint Generic Modal for Semester List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Academic Semester Sessions"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-semester-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
 </div>
-
-<!-- Create Semester Modal -->
-<div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Create New Semester</h2>
-      <button class="btn-close" (click)="closeModal()" aria-label="Close dialog">
-        <app-icon name="x" [size]="17"></app-icon>
-      </button>
-    </div>
-    <div class="alert alert-error" *ngIf="modalError()">
-      <app-icon name="alert-triangle" [size]="18"></app-icon>{{ modalError() }}
-    </div>
-    
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">Semester</label>
-        <select [(ngModel)]="newSem.name" class="form-control">
-          <option value="SPRING">🌸 Spring</option>
-          <option value="SUMMER">☀️ Summer</option>
-          <option value="FALL">🍂 Fall</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Year</label>
-        <input type="number" [(ngModel)]="newSem.year" placeholder="2026" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Start Date</label>
-        <input type="date" [(ngModel)]="newSem.startDate" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">End Date</label>
-        <input type="date" [(ngModel)]="newSem.endDate" class="form-control" />
-      </div>
-      <div class="form-group form-grid-wide" style="margin-top: 0.5rem;">
-        <label style="display:flex; align-items:center; gap: 0.75rem; cursor:pointer;">
-          <input type="checkbox" [(ngModel)]="newSem.makeActive" style="width: 1.25rem; height: 1.25rem;" />
-          Activate immediately (opens enrollment)
-        </label>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-primary btn-neon" (click)="createSemester()" [disabled]="saving()">
-        {{ saving() ? 'Creating...' : 'Create Semester' }}
-      </button>
-    </div>
-  </div>
-</div>
-  `
+  `,
+  styles: [`
+    .page-wrapper {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .grid-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+  `]
 })
-export class SemesterManagementComponent implements OnInit {
-  semesters  = signal<SemesterResponse[]>([]);
-  saving     = signal(false);
-  success    = signal('');
-  error      = signal('');
-  modalError = signal('');
-  showModal  = signal(false);
-  newSem     = { name: 'SPRING', year: new Date().getFullYear(), startDate: '', endDate: '', makeActive: false };
+export class SemesterManagementComponent implements OnInit, OnDestroy {
+  semSetupPanel = signal(true);
+  isModalShow = false;
 
-  constructor(private api: ApiService) {}
+  frmGroup: FormGroup;
+
+  readonly termOptions: SelectOptionsModel[] = [
+    { key: 'SPRING', value: 'Spring Semester' },
+    { key: 'SUMMER', value: 'Summer Semester' },
+    { key: 'FALL', value: 'Fall Semester' }
+  ];
+
+  private fb = inject(FormBuilder);
+  private api = inject(ApiService);
+  private toast = inject(ToastService);
+
+  constructor() {
+    this.frmGroup = this.fb.group({
+      name: ['SPRING', Validators.required],
+      year: [2026, [Validators.required, Validators.min(2020), Validators.max(2035)]],
+      startDate: [new Date(), Validators.required],
+      endDate: [new Date(Date.now() + 120 * 24 * 60 * 60 * 1000), Validators.required],
+      isActive: [false]
+    });
+
+    // Wire up Navbar Action signals
+    effect(() => {
+      if (ONCLICK_SAVE()) {
+        this.submitSave();
+        ONCLICK_SAVE.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_RESET()) {
+        this.resetForm();
+        ONCLICK_RESET.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_VIEW()) {
+        this.isModalShow = true;
+        ONCLICK_VIEW.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+  }
 
   ngOnInit(): void {
-    this.api.getAllSemesters().subscribe({ next: s => this.semesters.set(s) });
+    ButtonUtils.setPageButtons({
+      save: true,
+      update: false,
+      view: true,
+      reset: true,
+      exit: true
+    });
   }
 
-  closeModal(): void {
-    this.showModal.set(false);
-    this.modalError.set('');
+  ngOnDestroy(): void {
+    ButtonUtils.resetAll();
   }
 
-  createSemester(): void {
-    if (!this.newSem.startDate || !this.newSem.endDate) {
-      this.modalError.set('Start Date and End Date are required.');
+  submitSave(): void {
+    if (this.frmGroup.invalid) {
+      this.frmGroup.markAllAsTouched();
+      this.toast.error('Please complete all required fields.');
       return;
     }
-    
-    this.saving.set(true); 
-    this.modalError.set('');
-    
-    this.api.createSemester(this.newSem).subscribe({
-      next: (s) => {
-        this.semesters.update(arr => [s, ...arr]);
-        this.success.set(`Semester ${s.label} created successfully!`);
-        this.saving.set(false);
-        this.closeModal();
+
+    const val = this.frmGroup.value;
+    const req = {
+      name: val.name,
+      year: val.year,
+      startDate: val.startDate instanceof Date ? val.startDate.toISOString().split('T')[0] : val.startDate,
+      endDate: val.endDate instanceof Date ? val.endDate.toISOString().split('T')[0] : val.endDate,
+      isActive: val.isActive ?? false
+    };
+
+    this.api.createSemester(req).subscribe({
+      next: (res) => {
+        this.toast.success(`Semester ${res.label} configured successfully!`);
+        this.resetForm();
       },
-      error: (e) => { 
-        this.modalError.set(e.error?.detail || e.error?.message || 'Failed to create semester.'); 
-        this.saving.set(false); 
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.message || 'Failed to create semester.';
+        this.toast.error(msg);
       }
     });
   }
 
-  activate(sem: SemesterResponse): void {
-    this.api.activateSemester(sem.id).subscribe({
-      next: () => {
-        this.success.set(`${sem.label} is now the active semester.`);
-        this.api.getAllSemesters().subscribe(s => this.semesters.set(s));
-      }
+  resetForm(): void {
+    this.frmGroup.reset({
+      name: 'SPRING',
+      year: 2026,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000),
+      isActive: false
     });
+  }
+
+  onModalResult(result: any): void {
+    if (result.data) {
+      this.isModalShow = false;
+    }
   }
 }

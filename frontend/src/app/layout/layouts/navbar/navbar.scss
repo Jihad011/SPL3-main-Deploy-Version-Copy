@@ -1,0 +1,164 @@
+/* ============================================
+   NAVBAR - Pure SCSS (No Tailwind dependency)
+   ============================================ */
+
+.navbar-container {
+  background-color: var(--theme-primary, #086AD8);
+  transition: background-color 0.3s ease;
+  position: relative;
+  z-index: 100;
+}
+
+.navbar-inner {
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+/* LEFT: toggle + brand */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  color: #ffffff;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.brand-clickable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.brand-icon-box {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/* CENTER: absolute page title */
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.navbar-page-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* RIGHT: desktop action buttons */
+.desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Mobile menu toggle button */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Mobile dropdown */
+.mobile-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 50;
+
+  &.open {
+    max-height: 300px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.mobile-dropdown-inner {
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Responsive: below 640px, show mobile menu */
+@media (max-width: 640px) {
+  .brand-title {
+    display: none;
+  }
+  .desktop-actions {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  .mobile-dropdown {
+    display: block !important;
+  }
+}

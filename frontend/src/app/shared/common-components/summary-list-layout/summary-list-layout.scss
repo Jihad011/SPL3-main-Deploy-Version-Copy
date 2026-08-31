@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.summary-list {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+  color: #172033;
+}
+
+.summary-list__header {
+  h3 {
+    margin: 0;
+    color: #172033;
+    font-size: 1.25rem;
+    font-weight: 650;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: #667085;
+    font-size: 0.85rem;
+  }
+}
+
+.summary-list__banner:empty,
+.summary-list__filters:empty,
+.summary-list__content:empty,
+.summary-list__footer:empty {
+  display: none;
+}
+
+.summary-list__footer {
+  min-width: 0;
+}
+
+.summary-list--modal {
+  gap: 0.65rem;
+}

@@ -1,0 +1,198 @@
+<!-- employee-id-box.component.html -->
+<div
+  [formGroup]="frmGroup()"
+  [ngClass]="{
+    'input-container-vertical': displayMode() === 'vertical',
+    'input-container-horizontal': displayMode() === 'horizontal',
+    'input-container-outline': displayMode() === 'outline'
+  }"
+>
+  <!-- ======================== OUTLINE MODE ======================== -->
+  @if (displayMode() === 'outline') {
+  <div class="input-wrapper relative">
+    <input
+      id="employee_idbox_outlined"
+      [formControlName]="controlName()"
+      [attr.controlName]="controlName()"
+      [ngClass]="{ 'readonly-input': isReadonly() }"
+      [readonly]="isReadonly()"
+      matInput
+      [placeholder]="' '"
+      type="text"
+      inputmode="numeric"
+      [attr.maxlength]="maxLen()"
+      [matTooltip]="tooltip()"
+      [matTooltipPosition]="tooltipPosition()"
+      [matTooltipClass]="tooltipClass()"
+      [matTooltipDisabled]="!tooltip()"
+      class="custom-input"
+      (keyup)="onChangeInput()"
+      (keydown)="preventSpecialChars($event)"
+      (input)="onInput($event)"
+      (change)="onChange($event)"
+      (blur)="onBlur()"
+    />
+
+    <!-- FLOATING LABEL -->
+    <label for="employee_idbox_outlined" class="floating-input-label">
+      {{ label() }}
+      @if (isRequired()) { <span class="text-red-500">*</span> }
+    </label>
+
+    <!-- CLEAR BUTTON -->
+    @if (frmGroup().get(controlName())?.value && !isReadonly()) {
+    <button type="button" class="clear-button" (click)="clearInput()">
+      <mat-icon fontIcon="close"></mat-icon>
+    </button>
+    }
+
+    <!-- SEARCH BUTTON -->
+    @if (isDotsVisible()) {
+    <button
+      type="button"
+      class="dots-button"
+      (click)="onDotsClick()"
+      [disabled]="isReadonly()"
+      matRipple
+    >
+      <mat-icon fontIcon="search"></mat-icon>
+    </button>
+    }
+  </div>
+  }
+
+  <!-- ======================== HORIZONTAL / VERTICAL ======================== -->
+  @else { @if (displayMode() === 'vertical') {
+  <label class="input-label block mb-1">
+    {{ label() }}
+    @if (isRequired()) { <span class="text-red-500">*</span> }
+  </label>
+
+  <div class="input-wrapper">
+    <input
+      [formControlName]="controlName()"
+      [attr.controlName]="controlName()"
+      [ngClass]="{ 'readonly-input': isReadonly() }"
+      [readonly]="isReadonly()"
+      matInput
+      [placeholder]="placeholder() ?? 'Enter ' + label()"
+      type="text"
+      inputmode="numeric"
+      [attr.maxlength]="maxLen()"
+      [matTooltip]="tooltip()"
+      [matTooltipPosition]="tooltipPosition()"
+      [matTooltipClass]="tooltipClass()"
+      [matTooltipDisabled]="!tooltip()"
+      class="custom-input"
+      (keyup)="onChangeInput()"
+      (keydown)="preventSpecialChars($event)"
+      (keypress)="handleKeyPress($event)"
+      (input)="onInput($event)"
+      (change)="onChange($event)"
+      (blur)="onBlur()"
+    />
+
+    <!-- CLEAR BUTTON -->
+    @if (frmGroup().get(controlName())?.value && !isReadonly()) {
+    <button type="button" class="clear-button" (click)="clearInput()">
+      <mat-icon fontIcon="close"></mat-icon>
+    </button>
+    }
+
+    <!-- SEARCH BUTTON -->
+    @if (isDotsVisible()) {
+    <button
+      type="button"
+      class="dots-button"
+      (click)="onDotsClick()"
+      [disabled]="isReadonly()"
+      matRipple
+    >
+      <mat-icon fontIcon="search"></mat-icon>
+    </button>
+    }
+  </div>
+  } @if (displayMode() === 'horizontal') {
+  <span
+    class="input-label"
+    style="width: auto !important; white-space: nowrap; margin-right: 0.25rem"
+  >
+    {{ label() }}@if (isRequired()) {<span class="text-red-500">*</span>}:
+  </span>
+
+  <div class="input-wrapper">
+    <input
+      [formControlName]="controlName()"
+      [attr.controlName]="controlName()"
+      [ngClass]="{ 'readonly-input': isReadonly() }"
+      [readonly]="isReadonly()"
+      matInput
+      [placeholder]="placeholder() ?? 'Enter ' + label()"
+      type="text"
+      inputmode="numeric"
+      [attr.maxlength]="maxLen()"
+      [matTooltip]="tooltip()"
+      [matTooltipPosition]="tooltipPosition()"
+      [matTooltipClass]="tooltipClass()"
+      [matTooltipDisabled]="!tooltip()"
+      class="custom-input"
+      (keyup)="onChangeInput()"
+      (keydown)="preventSpecialChars($event)"
+      (keypress)="handleKeyPress($event)"
+      (input)="onInput($event)"
+      (change)="onChange($event)"
+      (blur)="onBlur()"
+    />
+
+    <!-- CLEAR BUTTON -->
+    @if (frmGroup().get(controlName())?.value && !isReadonly()) {
+    <button type="button" class="clear-button" (click)="clearInput()">
+      <mat-icon fontIcon="close"></mat-icon>
+    </button>
+    }
+
+    <!-- SEARCH BUTTON -->
+    @if (isDotsVisible()) {
+    <button
+      type="button"
+      class="dots-button"
+      (click)="onDotsClick()"
+      [disabled]="isReadonly()"
+      matRipple
+    >
+      <mat-icon fontIcon="search"></mat-icon>
+    </button>
+    }
+  </div>
+  } }
+
+  <!-- ======================== VALIDATION ======================== -->
+  @if (isInvalid()) {
+  <div class="text-red-500 text-sm mt-1">
+    @if (hasError('required')) {
+    <div>{{ label() }} is required!</div>
+    } @if (hasError('min')) {
+    <div>Minimum value is {{ getErrorValue("min")?.min }}</div>
+    } @if (hasError('max')) {
+    <div>Maximum value is {{ getErrorValue("max")?.max }}</div>
+    } @if (hasError('minlength')) {
+    <div>
+      Minimum length required is
+      {{ getErrorValue("minlength")?.requiredLength }} characters
+    </div>
+    } @if (hasError('maxlength')) {
+    <div>
+      Maximum length allowed is
+      {{ getErrorValue("maxlength")?.requiredLength }} characters
+    </div>
+    } @if (hasError('pattern')) {
+    <div>{{ label() }} format is invalid</div>
+    } @if (hasError('specialCharacterNotAllowed')) {
+    <div>{{ label() }} contains invalid characters</div>
+    } @if (hasCustomErrors()) { @for (errorKey of getCustomErrorKeys(); track
+    errorKey) {
+    <div>{{ getCustomErrorMessage(errorKey) }}</div>
+    } }
+  </div>
+  }
+</div>

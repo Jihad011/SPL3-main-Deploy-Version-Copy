@@ -1,0 +1,38 @@
+<section
+  class="summary-list"
+  [class.summary-list--modal]="displayMode() === 'modal'"
+>
+  @if (showHeader() && (title() || subtitle())) {
+    <header class="summary-list__header">
+      @if (title()) {
+        <h3>{{ title() }}</h3>
+      }
+      @if (subtitle()) {
+        <p>{{ subtitle() }}</p>
+      }
+    </header>
+  }
+
+  <div class="summary-list__banner">
+    <ng-content select="[summaryListBanner]"></ng-content>
+  </div>
+
+  @if (summaryItems().length) {
+    <app-summary-card-strip
+      [items]="summaryItems()"
+      [displayMode]="displayMode()"
+    />
+  }
+
+  <div class="summary-list__filters">
+    <ng-content select="[summaryListFilters]"></ng-content>
+  </div>
+
+  <div class="summary-list__content">
+    <ng-content select="[summaryListContent]"></ng-content>
+  </div>
+
+  <footer class="summary-list__footer">
+    <ng-content select="[summaryListFooter]"></ng-content>
+  </footer>
+</section>

@@ -1,232 +1,340 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { CourseResponse, CourseRequest, UserResponse } from '../../../core/models/models';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
-import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
-import { ViewChild } from '@angular/core';
+import { ToastService } from '../../../core/services/toast.service';
+
+// CenterPoint Shared Controls & Layouts
+import {
+  ExpansionPanelHeader,
+  InputTextBox,
+  InputNumber,
+  InputTextArea,
+  InputSelectOptionField,
+  GenericModal,
+  GenericButton,
+  SelectOptionsModel
+} from '../../../shared';
+
+import {
+  ButtonUtils,
+  ONCLICK_SAVE,
+  ONCLICK_UPDATE,
+  ONCLICK_RESET,
+  ONCLICK_VIEW
+} from '../../../shared/constant/button-signals.constant';
+
+import { CourseManagementListComponent } from './course-management-list.component';
 
 @Component({
   selector: 'app-course-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IconComponent, ToolbarComponent, ConfirmModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ExpansionPanelHeader,
+    InputTextBox,
+    InputNumber,
+    InputTextArea,
+    InputSelectOptionField,
+    GenericModal,
+    GenericButton,
+    CourseManagementListComponent
+  ],
   template: `
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-eyebrow">Academic catalog</div>
-      <h1 class="page-title">Course Management</h1>
-      <p class="page-subtitle">Create and manage course offerings</p>
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="courseSetupPanel"
+          [panelTitle]="isEdit ? 'Update Course Offering' : 'Course Offering & Curriculum Setup'"
+        />
+
+        <div *ngIf="courseSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-3">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="code"
+                label="Course Code"
+                placeholder="e.g. MIT-501"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Course Title"
+                placeholder="e.g. Advanced Software Architecture"
+                displayMode="vertical"
+              />
+
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="courseType"
+                label="Course Classification"
+                [options]="typeOptions"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-3" style="margin-top: 1rem;">
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="creditHours"
+                label="Credit Units"
+                placeholder="3"
+                [minValue]="1"
+                [maxValue]="6"
+                displayMode="vertical"
+              />
+
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="maxSeats"
+                label="Max Student Capacity"
+                placeholder="40"
+                [minValue]="5"
+                [maxValue]="200"
+                displayMode="vertical"
+              />
+
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="teacherId"
+                label="Assigned Lead Faculty"
+                [options]="facultyOptions()"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <input-text-area
+                [frmGroup]="frmGroup"
+                controlName="description"
+                label="Course Syllabus & Learning Outcomes"
+                placeholder="Describe course objectives, prerequisites, and evaluation scheme..."
+                [rows]="3"
+                displayMode="vertical"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
-    <button class="btn btn-primary" (click)="showForm.set(!showForm())">
-      <app-icon [name]="showForm() ? 'x' : 'book-open'" [size]="15"></app-icon>
-      {{ showForm() ? 'Cancel' : 'Add Course' }}
-    </button>
   </div>
 
-  <!-- Create Course Panel -->
-  <div class="card form-panel" *ngIf="showForm()">
-    <div class="card-header">
-      <div class="card-title">Create New Course</div>
-      <div class="card-sub">Fill in all required fields</div>
-    </div>
-    <div class="form-card">
-      <div class="alert alert-error" *ngIf="formError()">
-        <app-icon name="alert-triangle" [size]="16"></app-icon>{{ formError() }}
-      </div>
-      <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-        <div class="form-group">
-          <label>Course Code</label>
-          <input formControlName="code" placeholder="e.g. MIT-501" />
-        </div>
-        <div class="form-group">
-          <label>Course Name</label>
-          <input formControlName="name" placeholder="e.g. Software Engineering" />
-        </div>
-        <div class="form-group">
-          <label>Credit Hours</label>
-          <input formControlName="creditHours" type="number" min="1" max="6" />
-        </div>
-        <div class="form-group">
-          <label>Course Type</label>
-          <select formControlName="courseType">
-            <option value="CORE">Core</option>
-            <option value="OPTIONAL">Optional</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Max Seats</label>
-          <input formControlName="maxSeats" type="number" placeholder="40" />
-        </div>
-        <div class="form-group">
-          <label>Assign Teacher</label>
-          <select formControlName="teacherId">
-            <option [ngValue]="null">-- Select a Faculty Member --</option>
-            <option *ngFor="let t of teachers()" [ngValue]="t.id">{{ t.name }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <input formControlName="description" placeholder="Short course description (optional)" />
-        </div>
-        <div class="form-actions form-grid-wide">
-          <button type="submit" class="btn btn-primary btn-neon" [disabled]="saving()">
-            <span *ngIf="!saving()">Create Course</span>
-            <span *ngIf="saving()" class="spinner-sm"></span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
-
-  <app-confirm-modal #confirmModal (confirm)="confirmDeactivate()" />
-
-  <!-- Universal Toolbar -->
-  <app-toolbar
-    *ngIf="!loading() && courses().length > 0"
-    searchPlaceholder="Search by course code, name, or faculty..."
-    [showViewToggle]="false"
-    [resultCount]="filteredCourses().length"
-    (searchChange)="query.set($event)"
-  />
-
-  <!-- Courses Table -->
-  <div class="card card-glow-border" *ngIf="!loading()">
-    <div class="card-header card-glow-border">
-      <div>
-        <div class="card-title card-glow-border">All Academic Courses</div>
-        <div class="card-sub card-glow-border">{{ filteredCourses().length }} of {{ courses().length }} courses found</div>
-      </div>
-    </div>
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Credits</th>
-            <th>Type</th>
-            <th>Enrollment</th>
-            <th>Assigned Faculty</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of filteredCourses()">
-            <td><span class="code-badge">{{ c.code }}</span></td>
-            <td><strong>{{ c.name }}</strong></td>
-            <td>{{ c.creditHours }} Cr</td>
-            <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
-            <td>
-              <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'">
-                {{ c.currentEnrollment }} / {{ c.maxSeats }}
-              </span>
-            </td>
-            <td>{{ c.teacherName ?? '—' }}</td>
-            <td>
-              <span class="status-badge" [class.status-active]="c.isActive" [class.status-inactive]="!c.isActive">
-                <span class="badge-dot" *ngIf="c.isActive"></span>
-                {{ c.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
-            <td>
-              <button class="btn-danger btn-sm" (click)="deactivate(c)">Deactivate</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="empty-state" *ngIf="filteredCourses().length === 0">
-      <div class="empty-icon"><app-icon name="book-open" [size]="28"></app-icon></div>
-      <h3>No courses found</h3>
-      <p>Try adjusting your search query or click '+ Add Course' to create a new offering.</p>
-    </div>
-  </div>
+  <!-- CenterPoint Generic Modal for Course List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Course Catalog Offerings"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-course-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
 </div>
-  `
+  `,
+  styles: [`
+    .page-wrapper {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .grid-row-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+  `]
 })
-export class CourseManagementComponent implements OnInit {
-  courses   = signal<CourseResponse[]>([]);
-  teachers  = signal<UserResponse[]>([]);
-  loading   = signal(true);
-  showForm  = signal(false);
-  saving    = signal(false);
-  formError = signal('');
-  query     = signal('');
-  form: FormGroup;
+export class CourseManagementComponent implements OnInit, OnDestroy {
+  courseSetupPanel = signal(true);
+  isModalShow = false;
+  isEdit = false;
+  editCourseId: number | null = null;
+  teachers = signal<UserResponse[]>([]);
 
-  filteredCourses = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    return !q ? this.courses() : this.courses().filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.code.toLowerCase().includes(q) ||
-      (c.teacherName || '').toLowerCase().includes(q) ||
-      c.courseType.toLowerCase().includes(q)
-    );
-  });
+  frmGroup: FormGroup;
 
-  @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
-  pendingCourse = signal<CourseResponse | null>(null);
+  readonly typeOptions: SelectOptionsModel[] = [
+    { key: 'CORE', value: 'Core Course' },
+    { key: 'OPTIONAL', value: 'Optional Course' }
+  ];
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
-    this.form = this.fb.group({
-      code:        ['', Validators.required],
-      name:        ['', Validators.required],
+  facultyOptions = computed<SelectOptionsModel[]>(() => [
+    { key: null, value: 'None (Assign Later)' },
+    ...this.teachers().map(t => ({
+      key: t.id,
+      value: `${t.name} (${t.designation || 'Faculty'})`
+    }))
+  ]);
+
+  private fb = inject(FormBuilder);
+  private api = inject(ApiService);
+  private toast = inject(ToastService);
+
+  constructor() {
+    this.frmGroup = this.fb.group({
+      code: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
       creditHours: [3, [Validators.required, Validators.min(1), Validators.max(6)]],
-      courseType:  ['CORE', Validators.required],
-      maxSeats:    [40],
-      description: [''],
-      teacherId:   [null]
+      maxSeats: [40, [Validators.required, Validators.min(5), Validators.max(200)]],
+      courseType: ['CORE', Validators.required],
+      teacherId: [null],
+      description: ['']
     });
+
+    // Wire up Navbar Action signals
+    effect(() => {
+      if (ONCLICK_SAVE()) {
+        this.submitSave();
+        ONCLICK_SAVE.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_UPDATE()) {
+        this.submitUpdate();
+        ONCLICK_UPDATE.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_RESET()) {
+        this.resetForm();
+        ONCLICK_RESET.set(false);
+      }
+    }, { allowSignalWrites: true });
+
+    effect(() => {
+      if (ONCLICK_VIEW()) {
+        this.isModalShow = true;
+        ONCLICK_VIEW.set(false);
+      }
+    }, { allowSignalWrites: true });
+
   }
 
   ngOnInit(): void {
-    this.api.getAllCourses().subscribe({
-      next: (c) => { this.courses.set(c); this.loading.set(false); }
+    ButtonUtils.setPageButtons({
+      save: true,
+      update: false,
+      view: true,
+      reset: true,
+      exit: true
     });
+    this.loadFaculty();
+  }
+
+  ngOnDestroy(): void {
+    ButtonUtils.resetAll();
+  }
+
+  loadFaculty(): void {
     this.api.getAllTeachers(0, 100).subscribe({
-      next: (res) => this.teachers.set(res.content)
+      next: (res) => this.teachers.set(res.content),
+      error: () => {}
     });
   }
 
-  submit(): void {
-    if (this.form.invalid) return;
-    this.saving.set(true); this.formError.set('');
-    this.api.createCourse(this.form.value as CourseRequest).subscribe({
-      next: (c) => {
-        this.courses.update(arr => [c, ...arr]);
-        this.showForm.set(false);
-        this.form.reset({ creditHours: 3, courseType: 'CORE', maxSeats: 40, teacherId: null });
-        this.saving.set(false);
+  submitSave(): void {
+    if (this.frmGroup.invalid) {
+      this.frmGroup.markAllAsTouched();
+      this.toast.error('Please complete all required fields.');
+      return;
+    }
+
+    const req: CourseRequest = this.frmGroup.value;
+    this.api.createCourse(req).subscribe({
+      next: (res) => {
+        this.toast.success(`Course ${res.code} created successfully!`);
+        this.resetForm();
       },
-      error: (e) => { this.formError.set(e.error?.detail || e.error?.message || 'Failed to create course.'); this.saving.set(false); }
-    });
-  }
-
-  deactivate(c: CourseResponse): void {
-    this.pendingCourse.set(c);
-    this.confirmModal.title = 'Confirm Deactivation';
-    this.confirmModal.message = `Deactivate "${c.name}"? Students will no longer be able to enroll.`;
-    this.confirmModal.iconName = 'alert-triangle';
-    this.confirmModal.type = 'danger';
-    this.confirmModal.confirmText = 'Deactivate';
-    this.confirmModal.open();
-  }
-
-  confirmDeactivate(): void {
-    const c = this.pendingCourse();
-    if (!c) return;
-
-    this.api.deactivateCourse(c.id).subscribe({
-      next: () => {
-        this.courses.update(arr => arr.filter(x => x.id !== c.id));
-        this.pendingCourse.set(null);
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.message || 'Failed to create course.';
+        this.toast.error(msg);
       }
     });
+  }
+
+  submitUpdate(): void {
+    if (this.frmGroup.invalid || !this.editCourseId) {
+      this.frmGroup.markAllAsTouched();
+      return;
+    }
+    const req: CourseRequest = this.frmGroup.value;
+    this.api.updateCourse(this.editCourseId, req).subscribe({
+      next: (res) => {
+        this.toast.success(`Course ${res.code} updated successfully.`);
+        this.resetForm();
+      },
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.message || 'Failed to update course.';
+        this.toast.error(msg);
+      }
+    });
+  }
+
+  resetForm(): void {
+    this.isEdit = false;
+    this.editCourseId = null;
+    this.frmGroup.reset({
+      creditHours: 3,
+      maxSeats: 40,
+      courseType: 'CORE',
+      teacherId: null
+    });
+    ButtonUtils.setPageButtons({
+      save: true,
+      update: false,
+      view: true,
+      reset: true,
+      exit: true
+    });
+  }
+
+  onModalResult(result: any): void {
+    if (result.data) {
+      const c: CourseResponse = result.data;
+      if (result.isEdit) {
+        this.isEdit = true;
+        this.editCourseId = c.id;
+        this.frmGroup.patchValue({
+          code: c.code,
+          name: c.name,
+          creditHours: c.creditHours,
+          maxSeats: c.maxSeats,
+          courseType: c.courseType,
+          teacherId: c.teacherId,
+          description: c.description
+        });
+        ButtonUtils.setPageButtons({
+          save: false,
+          update: true,
+          view: true,
+          reset: true,
+          exit: true
+        });
+        this.isModalShow = false;
+        this.toast.info(`Editing course: ${c.code}`);
+      } else if (result.viewMode) {
+        this.isModalShow = false;
+      }
+    }
   }
 }

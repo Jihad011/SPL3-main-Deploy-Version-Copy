@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="facBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="facCard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ccfbf1"/>
+    </linearGradient>
+    <filter id="facGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f766e" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#facBg)" filter="url(#facGlow)"/>
+  <g transform="translate(20, 18)">
+    <!-- ID Card Lanyard & Badge -->
+    <rect x="36" y="2" width="8" height="12" rx="2" fill="#f59e0b"/>
+    <rect x="8" y="12" width="64" height="68" rx="10" fill="url(#facCard)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Teacher Avatar with Glasses & Tie -->
+    <circle cx="40" cy="34" r="14" fill="#0d9488"/>
+    <circle cx="40" cy="30" r="6" fill="#ffffff"/>
+    <path d="M30 44 c0 -6 5 -8 10 -8 s10 2 10 8 Z" fill="#ffffff"/>
+    <!-- Tie -->
+    <polygon points="40,36 38,42 40,46 42,42" fill="#f59e0b"/>
+    <!-- Name/Dept lines -->
+    <rect x="20" y="52" width="40" height="4" rx="2" fill="#0f766e"/>
+    <rect x="26" y="60" width="28" height="3" rx="1.5" fill="#5eead4"/>
+    <!-- Plus / Register Badge -->
+    <circle cx="62" cy="68" r="11" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+    <line x1="62" y1="63" x2="62" y2="73" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="57" y1="68" x2="67" y2="68" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

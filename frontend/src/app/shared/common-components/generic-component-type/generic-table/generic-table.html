@@ -1,0 +1,76 @@
+<!-- dynamic-table.component.html -->
+
+<!-- ======================== LOADING STATE ======================== -->
+@if (isLoading()) {
+  <div class="gt-state-wrapper">
+    <div class="spinner-wrapper">
+      <div class="spinner"></div>
+      <p style="color: #64748b; font-weight: 500; margin-top: 0.75rem;">Loading Information...</p>
+    </div>
+  </div>
+}
+
+<!-- ======================== ERROR STATE ======================== -->
+@else if (errorMessage()) {
+  <div class="gt-state-wrapper">
+    <div class="gt-error-box">
+      <h2 style="font-size: 1.2rem; font-weight: 700; color: #dc2626; margin: 0 0 0.5rem 0;">Error Loading Data</h2>
+      <p style="color: #475569; margin: 0;">{{ errorMessage() }}</p>
+    </div>
+  </div>
+}
+
+<!-- ======================== MAIN CONTENT ======================== -->
+@else if (tableConfig()) {
+  <div class="gt-content-wrapper">
+    <div class="gt-inner">
+
+      <!-- Header -->
+      @if (showHeader) {
+        <div class="gt-header animate-slide-down">
+          <h1 class="header-title" style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem 0;">
+            {{ customTitle || 'Data Overview' }}
+          </h1>
+          <p style="color: #64748b; font-size: 0.95rem; margin: 0;">
+            {{ customSubtitle || 'Complete information display' }}
+          </p>
+        </div>
+      }
+
+      <!-- Sections Loop -->
+      <div class="gt-sections-stack animate-fade-in">
+        @for (section of tableConfig()!.sections; track trackByIndex($index)) {
+          <div class="gt-section-card">
+
+            <!-- Section Header -->
+            <div class="gt-section-header" style="font-weight: 500;"
+                 [ngClass]="section.headerClass || ''">
+              {{ section.title }}
+            </div>
+
+            <!-- Table -->
+            <table style="width: 100%; border-collapse: collapse;">
+              <tbody>
+                @for (row of section.rows; track trackByIndex($index)) {
+                  <tr [ngClass]="getRowClass(row, hasHighlightedCell(row))">
+                    @for (cell of row.cells; track trackByIndex($index)) {
+                      <td
+                        [ngClass]="getCellClass(cell)"
+                        [attr.colspan]="cell.colspan && cell.colspan > 1 ? cell.colspan : null"
+                        [attr.rowspan]="cell.rowspan && cell.rowspan > 1 ? cell.rowspan : null"
+                        [style]="cell.style"
+                        [style.width]="cell.width || null">
+                        {{ displayValue(cell) }}
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+}

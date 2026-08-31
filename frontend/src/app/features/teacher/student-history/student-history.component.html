@@ -287,9 +287,19 @@
               </div>
             </div>
 
-            <!-- Course Table -->
+            <!-- Course Table or Empty Term State -->
             <div class="table-responsive-wrapper">
-              <table class="academic-table">
+              <div *ngIf="!sem.courses || sem.courses.length === 0" class="empty-sem-courses-notice">
+                <div class="empty-sem-icon-wrap">
+                  <app-icon name="book-open" [size]="18"></app-icon>
+                </div>
+                <div class="empty-sem-content">
+                  <span class="empty-sem-title">No Course Registrations</span>
+                  <span class="empty-sem-subtitle">No courses were enrolled or evaluated in this semester session.</span>
+                </div>
+              </div>
+
+              <table *ngIf="sem.courses && sem.courses.length > 0" class="academic-table">
                 <thead>
                   <tr>
                     <th>Course Code</th>

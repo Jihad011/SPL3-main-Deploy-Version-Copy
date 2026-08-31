@@ -1,0 +1,225 @@
+<div style="max-height: 85vh; overflow: visible;">
+  @if (config && filterForm) {
+    <!-- Dynamic Search Form -->
+    <div class="panel">
+      <div class="transaction-grid-container">
+        @if (!config.hideSearchCriteriaHeader) {
+          <section class="header-section">
+            <app-expansion-panel-header
+              [isOpenSignal]="searchCriteriaPanel"
+              [panelTitle]="'Search Criteria'"
+            />
+          </section>
+        }
+        @if (searchCriteriaPanel() || config.hideSearchCriteriaHeader) {
+          <div class="py-2">
+            <div [ngClass]="config.formGridCss || 'grid md:grid-cols-4 gap-x-4'">
+              <form
+                [formGroup]="filterForm"
+                (ngSubmit)="onSearch()"
+                class="contents"
+              >
+                @for (field of config.searchFields; track field.controlName) {
+                  <div [ngClass]="getFieldClass(field)">
+                    <!-- Text Input -->
+                    @if (field.type === "text") {
+                      <input-text-box
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [label]="field.label"
+                        [placeholder]="field.placeholder || ''"
+                        [isReadonly]="field.isReadonly || false"
+                        [isVertical]="true"
+                        (onEnter)="onSearch()"
+                      />
+                    }
+
+                    <!-- Number Input -->
+                    @if (field.type === "number") {
+                      <input-number
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [label]="field.label"
+                        [placeholder]="field.placeholder || ''"
+                        [isReadonly]="field.isReadonly || false"
+                        [isVertical]="true"
+                        (onEnter)="onSearch()"
+                      />
+                    }
+
+                    @if (field.type === "number-range") {
+                      <div style="display: grid; grid-template-columns: 92px auto 92px; align-items: flex-end; gap: 0.5rem; max-width: 100%;">
+                        <div class="min-w-0">
+                          <input-number
+                            [frmGroup]="filterForm"
+                            [controlName]="field.controlName"
+                            [label]="field.label"
+                            [placeholder]="field.placeholder || 'Min'"
+                            [isReadonly]="field.isReadonly || false"
+                            [isVertical]="true"
+                          />
+                        </div>
+
+                        <div style="padding-bottom: 1.5rem; color: #4b5563; font-weight: 500; font-size: 0.875rem; white-space: nowrap;">
+                          Between
+                        </div>
+
+                        <div class="min-w-0">
+                          <input-number
+                            [frmGroup]="filterForm"
+                            [controlName]="field.secondControlName!"
+                            [label]="' '"
+                            [placeholder]="field.secondPlaceholder || 'Max'"
+                            [isReadonly]="field.isReadonly || false"
+                            [isVertical]="true"
+                          />
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Select/Dropdown Input -->
+                    @if (field.type === "select") {
+                      <input-select-option-field
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [label]="field.label"
+                        [options]="field.options || []"
+                        [searchable]="field.searchable ?? true"
+                        [placeholder]="
+                          field.placeholder || 'Select ' + field.label
+                        "
+                        [isReadonly]="field.isReadonly || false"
+                      />
+                    }
+
+                    <!-- Date Input -->
+                    @if (field.type === "date") {
+                      <input-date
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [label]="field.label"
+                        [isReadonly]="field.isReadonly || false"
+                        [isVertical]="true"
+                      />
+                    }
+
+                    <!-- Textarea Input -->
+                    @if (field.type === "textarea") {
+                      <input-text-area
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [label]="field.label"
+                        [placeholder]="field.placeholder || ''"
+                        [isVertical]="true"
+                      />
+                    }
+
+                    <!-- Display Field -->
+                    @if (field.type === "display") {
+                      <generic-label
+                        [frmGroup]="filterForm"
+                        [controlName]="field.controlName"
+                        [labelKey]="field.label"
+                        [displayMode]="field.displayMode || 'vertical'"
+                        [isSelectable]="field.isSelectable || false"
+                        [options]="field.options || null"
+                      />
+                    }
+                  </div>
+                }
+              </form>
+
+              <!-- Action Buttons -->
+              @if (!config.hideSearchButton || !config.hideResetButton) {
+                <div>
+                  <div style="display: flex; margin-top: 0.75rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem;">
+                      @if (!config.hideSearchButton) {
+                        <generic-button
+                          label="Search"
+                          icon="search"
+                          (onClick)="onSearch()"
+                        />
+                      }
+                      @if (!config.hideResetButton) {
+                        <generic-button
+                          label="Reset"
+                          icon="refresh"
+                          (onClick)="onReset()"
+                        />
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div style="display: flex; justify-content: center; align-items: center; padding: 2rem 0;">
+          <div class="spinner"></div>
+      </div>
+    }
+
+    <!-- No Results State -->
+    @if (noResults() && !loading()) {
+      <div style="text-align: center; padding: 2rem 0; color: #6b7280;">
+        <svg
+          style="display: block; margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; color: #9ca3af;"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 2a10 10 0 110 20 10 10 0 010-20z"
+          />
+        </svg>
+        <p class="text-lg font-medium">No results found</p>
+        <p class="text-sm mt-1">Try adjusting your search criteria</p>
+      </div>
+    }
+
+    <!-- Results Grid -->
+    @if (!config.hideResultsGrid && !loading() && searchResults().length > 0) {
+      <div class="panel mt-4">
+        <div class="transaction-grid-container mb-3">
+          <section class="header-section">
+            <app-expansion-panel-header
+              [isOpenSignal]="resultsPanel"
+              [panelTitle]="config.gridConfig?.gridTitle || 'Search Results'"
+            />
+          </section>
+
+          @if (resultsPanel()) {
+            <div>
+              <generic-data-grid
+                #dataGrid
+                [dataSource]="searchResults()"
+                [initPageSize]="getPageSize()"
+                [showEditButton]="getShowEditButton()"
+                [enableSelection]="getEnableSelection()"
+                [useInlineEdit]="false"
+                (onFHEditClick)="onSelectRow($event)"
+                (onRowDoubleClick)="onSelectRow($event)"
+                (onSelectAllChange)="onSelectionChange($event)"
+                [selectedColumns]="config.gridConfig?.selectedColumns || []"
+                [customColumnNames]="config.gridConfig?.customColumnNames || {}"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div style="text-align: center; padding: 2rem 0;">
+      <p style="color: #6b7280;">Loading search form...</p>
+    </div>
+  }
+</div>

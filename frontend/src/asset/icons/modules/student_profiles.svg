@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="stuBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="cardGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0f9ff"/>
+    </linearGradient>
+    <filter id="stuGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#stuBg)" filter="url(#stuGlow)"/>
+  <g transform="translate(20, 20)">
+    <!-- Back profile card -->
+    <rect x="18" y="4" width="56" height="68" rx="8" fill="rgba(255,255,255,0.3)"/>
+    <!-- Front profile ID card -->
+    <rect x="6" y="12" width="66" height="66" rx="10" fill="url(#cardGrad2)" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+    <!-- Avatar circle -->
+    <circle cx="39" cy="32" r="13" fill="#3b82f6"/>
+    <!-- Avatar head & body -->
+    <circle cx="39" cy="28" r="5" fill="#ffffff"/>
+    <path d="M30 40 c0 -5 4 -7 9 -7 s9 2 9 7 Z" fill="#ffffff"/>
+    <!-- Details lines -->
+    <rect x="18" y="50" width="42" height="4" rx="2" fill="#93c5fd"/>
+    <rect x="24" y="58" width="30" height="3" rx="1.5" fill="#cbd5e1"/>
+    <rect x="28" y="65" width="22" height="3" rx="1.5" fill="#38bdf8"/>
+    <!-- Search / Directory badge -->
+    <circle cx="62" cy="66" r="11" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="60.5" cy="64.5" r="4" fill="none" stroke="#ffffff" stroke-width="2"/>
+    <line x1="63.5" y1="67.5" x2="67" y2="71" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

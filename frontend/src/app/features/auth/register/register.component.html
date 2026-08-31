@@ -18,76 +18,81 @@
 
     <div class="auth-right">
       <div class="auth-kicker">Create your portal account</div>
-      <h2 class="auth-form-title">Create Account</h2>
+      <h2 class="auth-form-title">Create Student Account</h2>
       <p class="auth-form-sub">A few details and your academic workspace is ready.</p>
 
-      <div *ngIf="error()" class="alert alert-error">
+      <div *ngIf="error()" class="alert alert-error" style="margin-bottom: 1.25rem;">
         <app-icon name="alert-triangle" [size]="18"></app-icon>
         {{ error() }}
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form-cluster" novalidate>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <input-text-box
+            [frmGroup]="form"
+            controlName="name"
+            label="Full Name"
+            placeholder="Md. Jihad Hossain"
+            displayMode="vertical"
+          />
 
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="reg-name">Full name</label>
-            <div class="input-shell">
-              <app-icon class="input-icon" name="user" [size]="18"></app-icon>
-            <input id="reg-name" type="text" formControlName="name" placeholder="Md. Jihad Hossain"
-              [class.invalid]="f['name'].invalid && f['name'].touched" />
-            </div>
-            <span class="field-error" *ngIf="f['name'].invalid && f['name'].touched">Name is required</span>
-          </div>
-          <div class="form-group">
-            <label for="reg-email">Email address</label>
-            <div class="input-shell">
-              <span class="input-icon input-icon-text">&#64;</span>
-              <input id="reg-email" type="email" formControlName="email" placeholder="you@iit.du.ac.bd"
-                [class.invalid]="f['email'].invalid && f['email'].touched" />
-            </div>
-            <span class="field-error" *ngIf="f['email'].invalid && f['email'].touched">Enter a valid email address</span>
-          </div>
+          <input-text-box
+            [frmGroup]="form"
+            controlName="email"
+            label="Institutional Email"
+            placeholder="you@iit.du.ac.bd"
+            type="email"
+            displayMode="vertical"
+          />
         </div>
 
-        <div class="form-group">
-          <label for="reg-password">Password</label>
-          <div class="input-shell">
-            <app-icon class="input-icon" name="lock" [size]="18"></app-icon>
-            <input id="reg-password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
-              placeholder="At least 8 characters"
-              [class.invalid]="f['password'].invalid && f['password'].touched" />
-            <button class="input-action" type="button" (click)="showPassword.set(!showPassword())"
-              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
-              <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"></app-icon>
-            </button>
-          </div>
-          <span class="field-hint" *ngIf="!f['password'].touched">Use 8 or more characters</span>
-          <span class="field-error" *ngIf="f['password'].invalid && f['password'].touched">Password must be at least 8 characters</span>
+        <input-text-box
+          [frmGroup]="form"
+          controlName="password"
+          label="Password (min 8 characters)"
+          placeholder="••••••••"
+          type="password"
+          displayMode="vertical"
+        />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <input-text-box
+            [frmGroup]="form"
+            controlName="rollNumber"
+            label="Roll Number"
+            placeholder="e.g. 1413 or 26S0204"
+            displayMode="vertical"
+          />
+
+          <input-number
+            [frmGroup]="form"
+            controlName="batch"
+            label="Batch Year"
+            placeholder="2026"
+            [minValue]="2015"
+            [maxValue]="2035"
+            displayMode="vertical"
+          />
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="roll">Roll Number</label>
-            <input id="roll" type="text" formControlName="rollNumber" placeholder="e.g. 1413" />
-          </div>
-          <div class="form-group">
-            <label for="batch">Batch Year</label>
-            <input id="batch" type="number" formControlName="batch" placeholder="e.g. 2021" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="reg-number">Registration Number</label>
-          <input id="reg-number" type="text" formControlName="registrationNumber" placeholder="REG-2021-1413" />
-        </div>
+        <input-text-box
+          [frmGroup]="form"
+          controlName="registrationNumber"
+          label="Registration Number (Optional)"
+          placeholder="REG-2021-1413"
+          displayMode="vertical"
+        />
 
-        <button type="submit" class="btn-primary auth-submit btn-neon" [disabled]="loading()">
-          <span *ngIf="!loading()" class="button-label">Create account <app-icon name="arrow-right" [size]="18"></app-icon></span>
-          <span *ngIf="loading()" class="spinner-sm"></span>
-        </button>
+        <generic-button
+          [label]="loading() ? 'Creating account...' : 'Create Student Account'"
+          icon="arrow-right"
+          [enable]="!loading()"
+          styles="width: 100%; margin-top: 1rem; justify-content: center;"
+          (onClick)="onSubmit()"
+        />
       </form>
 
-      <p class="auth-footer">Already have an account? <a routerLink="/auth/login">Sign in</a></p>
+      <p class="auth-footer" style="margin-top: 1.5rem;">Already have an account? <a routerLink="/auth/login">Sign in</a></p>
     </div>
   </div>
 </div>

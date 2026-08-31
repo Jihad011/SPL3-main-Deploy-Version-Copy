@@ -1,31 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import {
-  PortalNavItem,
-  PortalShellComponent
-} from '../../../shared/components/portal-shell/portal-shell.component';
+import { LayoutComponent } from '../../../layout/layout';
 
 @Component({
   selector: 'app-student-layout',
   standalone: true,
-  imports: [RouterOutlet, PortalShellComponent],
-  template: `
-  <app-portal-shell
-    portalLabel="Student Portal"
-    brandIcon="graduation-cap"
-    role="student"
-    [navItems]="navItems">
-    <router-outlet />
-  </app-portal-shell>
-  `
+  imports: [LayoutComponent],
+  template: `<app-layout></app-layout>`
 })
-export class StudentLayoutComponent {
-  readonly navItems: PortalNavItem[] = [
-    { label: 'Dashboard', link: 'dashboard', icon: 'layout-dashboard' },
-    { label: 'Course Enrollment', link: 'courses', icon: 'book-open' },
-    { label: 'My Course(s)', link: 'my-courses', icon: 'list-check' },
-    { label: 'My Results', link: 'results', icon: 'chart' },
-    { label: 'Academic History', link: 'history', icon: 'history' },
-    { label: 'Fees & Dues', link: 'dues', icon: 'credit-card' }
-  ];
-}
+export class StudentLayoutComponent {}

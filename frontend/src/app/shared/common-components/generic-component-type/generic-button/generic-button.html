@@ -1,0 +1,17 @@
+@if (!isHidden) {
+  <button
+    [id]="id()"
+    [type]="'button'"
+    [disabled]="isDisabled"
+    [attr.style]="styles()"
+    [ngClass]="buttonClasses"
+    (click)="onButtonClick($event)"
+    [attr.aria-label]="label() || value()"
+    class="btn">
+
+    @if (icon()) {
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px; line-height: 18px; flex-shrink: 0;">{{icon()}}</mat-icon>
+    }
+    {{ label() || value() }}
+  </button>
+}

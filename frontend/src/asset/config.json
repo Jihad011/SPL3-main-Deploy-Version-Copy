@@ -1,0 +1,29 @@
+{
+  "production": true,
+  "baseUrl": "http://192.168.10.227:9999",
+  "centrinoEndPoint": "http://192.168.10.227:9999/centrino/api",
+  "payrollEndPoint": "http://192.168.10.227:9999/payflex/v1/",
+  "employeeEndPoint": "http://192.168.10.227:9999/hrspare/v1",
+  "recruitmentEndPoint": "http://192.168.10.227:9999/joblynk/v1",
+  "portalEndPoint": "http://192.168.10.227:9999/joblynk-portal/v1",
+  "keycloakApi": "http://192.168.10.227:9999/resource-manager/api/v1/resource",
+  "sentinelUrl": "http://192.168.10.227:9999/sentinel/api",
+  "appName": "Payflex",
+  "appId": "106",
+  "returnUri": "http://localhost:4106/landing/home",
+  "logoutUri": "http://localhost:4106/login",
+  "keycloak": {
+    "url": "http://192.168.10.227:9080",
+    "realm": "MicroCube_QA",
+    "clientId": "Payflex_FE"
+  },
+  "reportManagementApiUrl": "http://192.168.10.227:9999/centrino/api",
+  "reportGenerationApiUrl": "http://192.168.10.227:9999",
+  "sessionUrl": "http://192.168.10.227:9999/centrino/api/office-session/getOfficeSession",
+  "novu_identifier": "1uXpKIJUa3Rg",
+  "novu_socket": "http://192.168.10.227:3002",
+  "novu_api": "http://192.168.10.227:3000/novu/api",
+  "novu_service": "http://192.168.10.227:8088/notify",
+  "contractEmpAgeLimit": 65,
+  "regularEmpAgeLimit": 60
+}

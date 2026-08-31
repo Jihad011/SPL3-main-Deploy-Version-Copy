@@ -1,0 +1,36 @@
+<div class="h-full overflow-y-auto module-drawer bg-[var(--theme-background)] p-3.5">
+  <div class="max-w-md mx-auto">
+    <!-- Header info -->
+    <div class="mb-3 text-center">
+      <h3 class="text-sm font-bold text-gray-800">Academic Portals</h3>
+      <p class="text-[11px] text-gray-500">Select a portal module to switch your workspace</p>
+    </div>
+
+    <!-- Modules 2-column Grid -->
+    <div class="grid grid-cols-2 gap-2.5">
+      <div
+        *ngFor="let module of visibleModules()"
+        (click)="selectModule(module)"
+        class="module-card group relative p-3 rounded-xl border border-gray-200/80 bg-white/90 shadow-sm hover:shadow-md hover:border-[var(--theme-primary)] transition-all duration-200 cursor-pointer flex flex-col items-center text-center"
+        [class.selected-module]="isModuleSelected(module)"
+      >
+        <!-- Selection Dot Indicator -->
+        <div *ngIf="isModuleSelected(module)" class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white"></div>
+
+        <!-- Module Icon Container (Balanced Size) -->
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-2 overflow-hidden transition-transform duration-200 group-hover:scale-105" [style.background]="module.color !== 'transparent' ? module.color : 'none'">
+          <app-icon *ngIf="module.vectorIcon; else customImg" [name]="module.vectorIcon" [size]="22" />
+          <ng-template #customImg>
+            <img [src]="module.icon" [alt]="module.name" class="w-10 h-10 object-contain rounded-lg drop-shadow-sm" (error)="onIconError($event, module)" />
+          </ng-template>
+        </div>
+
+        <!-- Module Name -->
+        <h4 class="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-[var(--theme-primary)]">
+          {{ module.name }}
+        </h4>
+        <span class="text-[10px] text-gray-500 mt-0.5">{{ module.badge }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="semBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <filter id="semGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#b45309" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#semBg)" filter="url(#semGlow)"/>
+  <g transform="translate(22, 20)">
+    <!-- Calendar Body 3D -->
+    <rect x="6" y="14" width="68" height="66" rx="10" fill="url(#calGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Calendar Top Red Header -->
+    <path d="M6 24 c0 -5.5 4.5 -10 10 -10 h48 c5.5 0 10 4.5 10 10 v6 h-68 Z" fill="#ef4444"/>
+    <!-- Spiral Rings -->
+    <rect x="18" y="8" width="6" height="12" rx="3" fill="#cbd5e1"/>
+    <rect x="37" y="8" width="6" height="12" rx="3" fill="#cbd5e1"/>
+    <rect x="56" y="8" width="6" height="12" rx="3" fill="#cbd5e1"/>
+    <!-- Calendar Grid Dates -->
+    <rect x="16" y="38" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <rect x="30" y="38" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <rect x="44" y="38" width="8" height="8" rx="2" fill="#3b82f6"/>
+    <rect x="56" y="38" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <rect x="16" y="50" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <rect x="30" y="50" width="8" height="8" rx="2" fill="#10b981"/>
+    <rect x="44" y="50" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <rect x="56" y="50" width="8" height="8" rx="2" fill="#fed7aa"/>
+    <!-- Clock / Session Window Badge -->
+    <circle cx="62" cy="66" r="12" fill="#3b82f6" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="62" cy="66" r="8" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+    <polyline points="62,61 62,66 66,66" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
