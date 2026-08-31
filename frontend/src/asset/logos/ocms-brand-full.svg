@@ -1,0 +1,65 @@
+<svg width="360" height="80" viewBox="0 0 360 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00C0FF" />
+      <stop offset="100%" stop-color="#0066EE" />
+    </linearGradient>
+  </defs>
+  <style>
+    .emblem-ring {
+      fill: none;
+      stroke: url(#brandGrad);
+      stroke-width: 3.5;
+    }
+    .emblem-text {
+      fill: url(#brandGrad);
+      font-family: 'Montserrat', 'Arial Black', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+    }
+    .emblem-sub {
+      fill: #0072FF;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 6px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+    }
+    .brand-title {
+      fill: #FFFFFF;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .brand-highlight {
+      fill: #38BDF8;
+    }
+    .brand-caption {
+      fill: #94A3B8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+  </style>
+
+  <!-- Left Circular Emblem -->
+  <g transform="translate(10, 5)">
+    <circle cx="35" cy="35" r="32" class="emblem-ring"/>
+    <text x="35" y="32" class="emblem-text">OCMS</text>
+    <text x="35" y="44" class="emblem-sub">IIT · DU</text>
+  </g>
+
+  <!-- Brand Typography -->
+  <text x="92" y="38" class="brand-title">
+    MIT <tspan class="brand-highlight">OCMS</tspan>
+  </text>
+  <text x="92" y="56" class="brand-caption">
+    Open Credit &amp; Examination System
+  </text>
+</svg>
