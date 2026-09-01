@@ -492,7 +492,9 @@ export class CourseRegistrationComponent implements OnInit {
 
   onConfirmModalAction(event: any): void {
     this.showConfirmDialogue.set(false);
-    this.confirmEnrollment();
+    if (event && (event.action === 'confirm' || event.action === 'click')) {
+      this.confirmEnrollment();
+    }
   }
 
   confirmEnrollment(): void {
