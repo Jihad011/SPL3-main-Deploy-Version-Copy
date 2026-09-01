@@ -4,14 +4,14 @@
 
 -- 1. Insert or Update Teacher User Records
 INSERT INTO users (name, email, password_hash, role, designation, is_active) VALUES
-('Dr. B M Mainul Hossain',       'mainul@iit.du.ac.bd',        '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Professor', true),
-('Mohammad Shoyaib',             'shoyaib@iit.du.ac.bd',       '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Professor', true),
-('Dr. Md. Shariful Islam',       'shariful@iit.du.ac.bd',      '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Professor', true),
-('Dr. Zerina Begum',             'zerina@iit.du.ac.bd',        '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Professor', true),
-('Dr. Naushin Nower',            'naushin@iit.du.ac.bd',       '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Associate Professor', true),
-('Ahmedul Kabir',                'ahmedul.kabir@iit.du.ac.bd', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Associate Professor', true),
-('Dr. Sumon Ahmed',              'sumon@iit.du.ac.bd',         '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Assistant Professor', true),
-('Dr. Md. Nurul Ahad Tawhid',    'tawhid@iit.du.ac.bd',        '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'TEACHER', 'Professor', true)
+('Dr. B M Mainul Hossain',       'mainul@iit.du.ac.bd',        '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Professor', true),
+('Mohammad Shoyaib',             'shoyaib@iit.du.ac.bd',       '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Professor', true),
+('Dr. Md. Shariful Islam',       'shariful@iit.du.ac.bd',      '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Professor', true),
+('Dr. Zerina Begum',             'zerina@iit.du.ac.bd',        '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Professor', true),
+('Dr. Naushin Nower',            'naushin@iit.du.ac.bd',       '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Associate Professor', true),
+('Ahmedul Kabir',                'ahmedul.kabir@iit.du.ac.bd', '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Associate Professor', true),
+('Dr. Sumon Ahmed',              'sumon@iit.du.ac.bd',         '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Assistant Professor', true),
+('Dr. Md. Nurul Ahad Tawhid',    'tawhid@iit.du.ac.bd',        '$2b$12$6gVdHM3TYhWD9z9OfKswT.cn0F6hKjTGPhQczZqtNeFKqXX9IZj7i', 'TEACHER', 'Professor', true)
 ON CONFLICT (email) DO UPDATE SET
     name = EXCLUDED.name,
     role = EXCLUDED.role,
