@@ -13,7 +13,6 @@ public enum SemesterName {
     Y4S1("4th Year 1st Semester"),
     Y4S2("4th Year 2nd Semester"),
     SPRING("Spring"),
-    SUMMER("Summer"),
     FALL("Fall");
 
     private final String displayName;

@@ -3,7 +3,7 @@
 -- Tracks academic semesters; only one can be active at a time
 -- ============================================================
 
-CREATE TYPE semester_name AS ENUM ('SPRING', 'SUMMER', 'FALL');
+CREATE TYPE semester_name AS ENUM ('SPRING', 'FALL');
 
 CREATE TABLE semesters (
     id          BIGSERIAL PRIMARY KEY,

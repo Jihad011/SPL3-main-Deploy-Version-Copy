@@ -22,7 +22,7 @@ export type GradeLetter = 'A_PLUS' | 'A' | 'A_MINUS' | 'B_PLUS' | 'B' | 'B_MINUS
 export type FeeType = 'RETAKE' | 'SEMESTER_GAP' | 'REGISTRATION' | 'OTHER';
 export type FeeStatus = 'UNPAID' | 'PAID' | 'WAIVED';
 export type PaymentMethod = 'CREDIT_CARD' | 'BKASH' | 'NAGAD' | 'ROCKET' | 'BANK_TRANSFER' | 'CASH';
-export type SemesterName = 'SPRING' | 'SUMMER' | 'FALL';
+export type SemesterName = 'SPRING' | 'FALL';
 
 // ── Auth ────────────────────────────────────────────────────
 export interface AuthResponse {

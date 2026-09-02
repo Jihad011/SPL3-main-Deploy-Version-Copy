@@ -146,7 +146,6 @@ export class SemesterManagementComponent implements OnInit, OnDestroy {
 
   readonly termOptions: SelectOptionsModel[] = [
     { key: 'SPRING', value: 'Spring Semester' },
-    { key: 'SUMMER', value: 'Summer Semester' },
     { key: 'FALL', value: 'Fall Semester' }
   ];
 
