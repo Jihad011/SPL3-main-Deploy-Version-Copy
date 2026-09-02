@@ -33,7 +33,7 @@ import { AuthStateService } from '../../../core/services/auth-state.service';
 export class Navbar implements OnInit {
   buttons = BUTTON_VISIBILITY;
   toggleMenu: boolean = false;
-  moduleName = signal('SPL3 Open Credit');
+  moduleName = signal('MIT Open Credit Management System');
   currentPageName = signal('Dashboard');
 
   private sidebarService = inject(SidebarService);

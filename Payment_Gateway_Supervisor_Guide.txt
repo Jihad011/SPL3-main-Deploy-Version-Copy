@@ -1,0 +1,137 @@
+================================================================================
+MIT OPEN CREDIT MANAGEMENT SYSTEM — PAYMENT GATEWAY INTEGRATION GUIDE
+================================================================================
+
+1. EXECUTIVE OVERVIEW
+--------------------------------------------------------------------------------
+The system incorporates an end-to-end payment gateway infrastructure supporting:
+  - Mobile Financial Services (MFS): bKash, Nagad, Rocket
+  - Credit & Debit Cards: Visa, Mastercard, American Express (AMEX)
+  - Internet Banking: City Touch, Islami Bank, DBBL, Brac Bank, etc.
+
+Architecture Flow:
+  [Student Dashboard] -> [Select SSLCommerz] -> [Spring Boot Backend Initiate]
+          |                                                   |
+  [Download Receipt PDF] <--- [Callback Success Webhook] <--- [SSLCommerz Portal]
+
+--------------------------------------------------------------------------------
+2. CURRENT DEVELOPMENT STATE: SANDBOX TEST MODE
+--------------------------------------------------------------------------------
+Currently, the application runs in SSLCOMMERZ SANDBOX MODE.
+  - Store ID       : testbox
+  - Store Password : qwerty
+  - Environment    : Sandbox (https://sandbox.sslcommerz.com/gwprocess/v4/api.php)
+  - Purpose        : Allows full testing of payment initiation, callback webhooks,
+                     database status updates, and receipt generation without
+                     spending real money.
+
+--------------------------------------------------------------------------------
+3. HOW TO SWITCH TO LIVE REAL-MONEY PRODUCTION MODE
+--------------------------------------------------------------------------------
+To accept real money transfers from live Bangladeshi bKash/Nagad accounts:
+
+Step 1: Obtain Production Merchant Credentials from SSLCommerz.
+  - Apply for a Merchant Account at https://www.sslcommerz.com/
+  - Receive your Live Store ID and Live Store Password.
+
+Step 2: Update Application Environment Variables.
+  Set the following environment variables on your production server (or in application.properties):
+
+  SSL_STORE_ID=your_live_store_id
+  SSL_STORE_PASS=your_live_store_password
+  SSL_IS_SANDBOX=false
+  SSL_INIT_URL=https://securepay.sslcommerz.com/gwprocess/v4/api.php
+  SSL_VALIDATION_URL=https://securepay.sslcommerz.com/validator/api/validationserverAPI.php
+
+Step 3: Update Callback Webhook Domains.
+  Configure your production domain (e.g. https://mit.du.ac.bd) for success/fail callbacks:
+  SSL_SUCCESS_URL=https://your-domain.com/api/payment/sslcommerz/callback/success
+  SSL_FAIL_URL=https://your-domain.com/api/payment/sslcommerz/callback/fail
+  SSL_CANCEL_URL=https://your-domain.com/api/payment/sslcommerz/callback/cancel
+
+NO CODE CHANGES ARE REQUIRED. The system automatically switches from Sandbox to Live
+when environment variables are updated.
+
+--------------------------------------------------------------------------------
+4. KEY SECURITY HIGHLIGHTS (FOR SUPERVISOR / THESIS DEFENSE)
+--------------------------------------------------------------------------------
+1. Server-Side Amount Validation:
+   The payable amount is fetched directly from the database server (fees.amount).
+   Clients cannot modify the payable amount from browser console or HTTP inspection tools.
+
+2. Ownership & IDOR Protection:
+   Students can only pay their own fee invoices. Attempting to pass another student's
+   fee ID is blocked by Spring Security and domain service guards.
+
+3. Direct Server-to-Server Verification:
+   When SSLCommerz postbacks a successful payment token (val_id), the Spring Boot backend
+   independently contacts the SSLCommerz Validator Server API to verify signature and
+   status before marking the invoice as PAID.
+
+4. Transaction Auditing & PDF Receipts:
+   Every transaction generates a unique transaction reference (TXN_timestamp_feeId),
+   logs paidAt timestamps, and issues an officially formatted PDF Receipt.
+
+--------------------------------------------------------------------------------
+5. REAL-WORLD FINANCIAL SETTLEMENT & MONEY RECEIVING PROCESS
+--------------------------------------------------------------------------------
+How collected student fees reach the University/Institute Bank Account:
+
+1. Merchant Agreement & Bank Account Linking:
+   The university/institute signs an agreement with SSLCommerz and provides the official
+   university bank account details (Account Name, Account Number, Branch, Routing Number).
+
+2. Automated Student Payment Collection:
+   When a student pays a fee (via bKash, Nagad, Visa, Mastercard, or Internet Banking),
+   SSLCommerz securely collects and holds the funds in a designated merchant settlement account.
+
+3. Automated Bank Settlement (BEFTN Transfer):
+   SSLCommerz automatically transfers collected funds into the University of Dhaka's bank
+   account on a daily/weekly schedule via Bangladesh Electronic Funds Transfer Network (BEFTN).
+
+4. Admin Settlement Dashboard:
+   Institute administrators log into the SSLCommerz Merchant Portal to view settlement
+   reports, transaction logs by payment method, and download financial statements.
+
+5. In-System Fee Assessment Options:
+   - Automated Retake Invoices : Auto-generated when students register for retake courses.
+   - Automated Gap Penalties   : Auto-generated for missed semesters.
+   - Admin Custom Invoices     : Created by Admins for registration, lab, or tuition fees.
+   - Bank Counter Cash Collection: Bank officers can manually verify & mark fees as PAID
+                                  in the system for offline cash deposits.
+
+--------------------------------------------------------------------------------
+6. CONCRETE ACTION CHECKLIST TO RECEIVE REAL MONEY FROM STUDENTS
+--------------------------------------------------------------------------------
+Follow these 4 exact steps to start receiving real payments:
+
+[ ] STEP 1: Apply for an Official Merchant Account
+    - Visit https://www.sslcommerz.com/ and click "Register as Merchant".
+    - Submit Institute Documents: Trade License/DU Agreement, TIN, University Bank
+      Account Details (Account Number, Bank Name, Branch, Routing Number).
+
+[ ] STEP 2: Receive Production Live Credentials
+    - SSLCommerz will issue your official Live Store ID and Live Store Password.
+
+[ ] STEP 3: Deploy Application Backend to a Public Domain with HTTPS
+    - Deploy backend to a live server/VPS (e.g., https://api.your-domain.com).
+    - Note: Public HTTPS domain is required so SSLCommerz live servers can send
+      postback webhooks to your backend.
+
+[ ] STEP 4: Set Production Environment Variables
+    Set the live variables on your server (no code changes needed):
+
+    SSL_STORE_ID=your_live_store_id
+    SSL_STORE_PASS=your_live_store_pass
+    SSL_IS_SANDBOX=false
+    SSL_INIT_URL=https://securepay.sslcommerz.com/gwprocess/v4/api.php
+    SSL_VALIDATION_URL=https://securepay.sslcommerz.com/validator/api/validationserverAPI.php
+    SSL_SUCCESS_URL=https://api.your-domain.com/api/payment/sslcommerz/callback/success
+    SSL_FAIL_URL=https://api.your-domain.com/api/payment/sslcommerz/callback/fail
+    SSL_CANCEL_URL=https://api.your-domain.com/api/payment/sslcommerz/callback/cancel
+
+================================================================================
+Generated for: MIT Open Credit Management System · IIT, University of Dhaka
+================================================================================
+
+

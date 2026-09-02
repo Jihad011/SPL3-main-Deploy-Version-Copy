@@ -1,4 +1,4 @@
-// Central barrel export for all SPL3 Shared Components, Directives, Services and Models
+// Central barrel export for all MIT Open Credit Management System Shared Components, Directives, Services and Models
 
 // Input Controls
 export * from './common-components/input-types/input-text-box/input-text-box';

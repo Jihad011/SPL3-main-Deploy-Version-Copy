@@ -68,7 +68,7 @@ import { ThemeService, Theme } from '../../shared/services/theme.service';
         </div>
         <div>
           <h1 class="brand-title">CenterPoint Shared Components Library</h1>
-          <p class="brand-sub">Interactive Master Showcase & Design System for SPL3 OCMS</p>
+          <p class="brand-sub">Interactive Master Showcase & Design System for MIT Open Credit Management System</p>
         </div>
       </div>
       <div class="header-actions">

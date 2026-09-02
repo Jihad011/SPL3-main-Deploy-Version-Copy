@@ -127,6 +127,9 @@ export class ApiService {
     const req: PaymentRequest = { paymentMethod: method as any };
     return this.http.patch<FeeResponse>(`${this.api}/fees/my/${feeId}/pay`, req);
   }
+  initiateSSLCommerzPayment(feeId: number): Observable<{ gatewayUrl: string }> {
+    return this.http.post<{ gatewayUrl: string }>(`${this.api}/payment/sslcommerz/initiate`, { feeId });
+  }
   getAllFees(): Observable<FeeResponse[]> {
     return this.http.get<FeeResponse[]>(`${this.api}/fees`);
   }

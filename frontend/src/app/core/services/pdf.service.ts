@@ -15,6 +15,10 @@ export class PdfService {
    */
   generateReceipt(fee: FeeResponse, studentName: string = 'Student', studentRoll: string = ''): void {
     const doc = new jsPDF();
+    const boxLeft = 20;
+    const boxWidth = 170;
+    const cardY = 52;
+    const cardHeight = 80;
     
     // Header
     doc.setFontSize(20);
@@ -34,88 +38,121 @@ export class PdfService {
     
     // Receipt Title Badge
     doc.setFillColor(79, 70, 229);
-    doc.roundedRect(65, 38, 80, 10, 2, 2, 'F');
+    doc.roundedRect(65, 37, 80, 10, 2, 2, 'F');
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text('OFFICIAL PAYMENT RECEIPT', 105, 44.5, { align: 'center' });
+    doc.text('OFFICIAL PAYMENT RECEIPT', 105, 43.5, { align: 'center' });
     
     // Receipt Details Card
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(20, 55, 170, 68, 3, 3, 'F');
+    doc.roundedRect(boxLeft, cardY, boxWidth, cardHeight, 3, 3, 'F');
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(20, 55, 170, 68, 3, 3, 'S');
+    doc.setLineWidth(0.5);
+    doc.roundedRect(boxLeft, cardY, boxWidth, cardHeight, 3, 3, 'S');
 
-    doc.setFontSize(10.5);
-    doc.setFont('helvetica', 'normal');
+    const startY = 62;
+    const lineHeight = 8.8;
+
+    const col1LabelX = 25;
+    const col1ValX = 62;
+    const col1MaxW = 45;
+
+    const col2LabelX = 112;
+    const col2ValX = 144;
+    const col2MaxW = 41; // 185 - 144
+
     doc.setTextColor(30, 41, 59);
 
-    const startY = 66;
-    const lineHeight = 8.5;
-    
+    // Row 1: Reference & Issued On
+    doc.setFontSize(9.5);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Receipt Reference:`, 26, startY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`#REC-${fee.id.toString().padStart(6, '0')}`, 65, startY);
+    doc.text('Receipt Ref:', col1LabelX, startY);
+    this.printBoundedText(doc, `#REC-${fee.id.toString().padStart(6, '0')}`, col1ValX, startY, col1MaxW, 'normal', 9.5);
 
     doc.setFont('helvetica', 'bold');
-    doc.text(`Issued On:`, 120, startY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(new Date().toLocaleDateString('en-GB'), 145, startY);
-    
+    doc.text('Issued On:', col2LabelX, startY);
+    this.printBoundedText(doc, new Date().toLocaleDateString('en-GB'), col2ValX, startY, col2MaxW, 'normal', 9.5);
+
+    // Row 2: Student Name & Student Roll
     doc.setFont('helvetica', 'bold');
-    doc.text(`Student Name:`, 26, startY + lineHeight);
-    doc.setFont('helvetica', 'normal');
-    doc.text(studentName, 65, startY + lineHeight);
+    doc.text('Student Name:', col1LabelX, startY + lineHeight);
+    this.printBoundedText(doc, studentName, col1ValX, startY + lineHeight, col1MaxW, 'normal', 9.5);
 
     if (studentRoll) {
       doc.setFont('helvetica', 'bold');
-      doc.text(`Student Roll:`, 120, startY + lineHeight);
-      doc.setFont('helvetica', 'normal');
-      doc.text(studentRoll, 145, startY + lineHeight);
+      doc.text('Student Roll:', col2LabelX, startY + lineHeight);
+      this.printBoundedText(doc, studentRoll, col2ValX, startY + lineHeight, col2MaxW, 'normal', 9.5);
     }
-    
+
+    // Row 3: Fee Category & Payment Method
     doc.setFont('helvetica', 'bold');
-    doc.text(`Fee Category:`, 26, startY + lineHeight * 2);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fee.feeTypeDisplay || fee.feeType.replace('_', ' '), 65, startY + lineHeight * 2);
+    doc.text('Fee Category:', col1LabelX, startY + lineHeight * 2);
+    this.printBoundedText(doc, fee.feeTypeDisplay || fee.feeType.replace('_', ' '), col1ValX, startY + lineHeight * 2, col1MaxW, 'normal', 9.5);
 
     doc.setFont('helvetica', 'bold');
-    doc.text(`Semester:`, 120, startY + lineHeight * 2);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fee.semesterLabel || 'N/A', 145, startY + lineHeight * 2);
+    doc.text('Payment Method:', col2LabelX, startY + lineHeight * 2);
+    this.printBoundedText(doc, fee.paymentMethod ? fee.paymentMethod.replace('_', ' ') : 'Online Gateway', col2ValX, startY + lineHeight * 2, col2MaxW, 'normal', 9.5);
+
+    // Row 4: Semester (Dedicated Full Row -> 123mm width available!)
+    doc.setFont('helvetica', 'bold');
+    doc.text('Semester:', col1LabelX, startY + lineHeight * 3);
+    this.printBoundedText(doc, fee.semesterLabel || 'N/A', col1ValX, startY + lineHeight * 3, 123, 'bold', 9.5);
+
+    // Row 5: Description (Dedicated Full Row -> 123mm width available!)
+    doc.setFont('helvetica', 'bold');
+    doc.text('Description:', col1LabelX, startY + lineHeight * 4);
+    this.printBoundedText(doc, fee.description || 'Standard Academic Assessment', col1ValX, startY + lineHeight * 4, 123, 'normal', 9.5);
+
+    // Row 6: Paid Date & Status
+    doc.setFont('helvetica', 'bold');
+    doc.text('Paid Date:', col1LabelX, startY + lineHeight * 5);
+    this.printBoundedText(doc, fee.paidAt ? new Date(fee.paidAt).toLocaleString('en-GB') : 'Verified', col1ValX, startY + lineHeight * 5, col1MaxW, 'normal', 9.5);
 
     doc.setFont('helvetica', 'bold');
-    doc.text(`Description:`, 26, startY + lineHeight * 3);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fee.description || 'Standard Academic Assessment', 65, startY + lineHeight * 3);
-
+    doc.text('Payment Status:', col2LabelX, startY + lineHeight * 5);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Payment Method:`, 26, startY + lineHeight * 4);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fee.paymentMethod ? fee.paymentMethod.replace('_', ' ') : 'Online Gateway', 65, startY + lineHeight * 4);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Paid Date:`, 26, startY + lineHeight * 5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fee.paidAt ? new Date(fee.paidAt).toLocaleString('en-GB') : 'Verified', 65, startY + lineHeight * 5);
+    doc.setTextColor(16, 185, 129); // Emerald
+    this.printBoundedText(doc, fee.status || 'PAID', col2ValX, startY + lineHeight * 5, col2MaxW, 'bold', 9.5);
     
     // Amount Box
+    const amountY = cardY + cardHeight + 6;
     doc.setFillColor(16, 185, 129); // Emerald
-    doc.roundedRect(20, 132, 170, 18, 3, 3, 'F');
-    doc.setFontSize(13);
+    doc.roundedRect(boxLeft, amountY, boxWidth, 18, 3, 3, 'F');
+    doc.setFontSize(12.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(`TOTAL AMOUNT PAID:  BDT ${fee.amount} (CLEARED)`, 105, 143.5, { align: 'center' });
+    doc.text(`TOTAL AMOUNT PAID:  BDT ${fee.amount} (CLEARED)`, 105, amountY + 11.5, { align: 'center' });
     
     // Footer / Verification Notice
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(100, 116, 139);
     doc.text('This is an electronically generated official receipt issued by MIT Open Credit Management System.', 105, 270, { align: 'center' });
     doc.text('Institute of Information Technology · University of Dhaka · All rights reserved.', 105, 275, { align: 'center' });
     
     doc.save(`Receipt_${fee.feeType}_${fee.id}.pdf`);
+  }
+
+  /**
+   * Helper to print text dynamically scaled and clipped so it never exceeds maxWidth boundary.
+   */
+  private printBoundedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, fontStyle: string = 'normal', baseFontSize: number = 10): void {
+    doc.setFont('helvetica', fontStyle);
+    let fontSize = baseFontSize;
+    doc.setFontSize(fontSize);
+
+    while (fontSize > 6 && doc.getTextWidth(text) > maxWidth) {
+      fontSize -= 0.3;
+      doc.setFontSize(fontSize);
+    }
+
+    if (doc.getTextWidth(text) > maxWidth) {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines[0], x, y);
+    } else {
+      doc.text(text, x, y);
+    }
   }
 
   /**
@@ -320,10 +357,8 @@ export class PdfService {
             doc.setFillColor(15, 23, 42); // Deep Slate Navy
             doc.roundedRect(margin, boxStartY, contentWidth, 8, 2, 2, 'F');
 
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'bold');
             doc.setTextColor(255, 255, 255);
-            doc.text(`${sem.semesterLabel || sem.semesterName} (${sem.year})`, margin + 4, boxStartY + 5.5);
+            this.printBoundedText(doc, `${sem.semesterLabel || sem.semesterName} (${sem.year})`, margin + 4, boxStartY + 5.5, 80, 'bold', 8.5);
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);

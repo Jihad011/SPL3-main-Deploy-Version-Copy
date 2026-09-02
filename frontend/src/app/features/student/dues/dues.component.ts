@@ -134,10 +134,10 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
       <div class="invoice-footer" *ngIf="f.status === 'UNPAID'">
         <div class="payment-options">
           <select #pmSelect class="pm-select">
-            <option value="" disabled selected>Select Payment Method</option>
-            <option value="BKASH">bKash Online</option>
-            <option value="NAGAD">Nagad Mobile</option>
-            <option value="ROCKET">Rocket</option>
+            <option value="SSLCOMMERZ" selected>SSLCommerz Gateway (bKash/Nagad/Cards)</option>
+            <option value="BKASH">bKash Direct</option>
+            <option value="NAGAD">Nagad Direct</option>
+            <option value="ROCKET">Rocket Direct</option>
             <option value="CREDIT_CARD">Credit / Debit Card</option>
             <option value="BANK_TRANSFER">Bank Deposit</option>
           </select>
@@ -145,8 +145,8 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
             label="Pay Now"
             icon="credit-card"
             [enable]="payingId() !== f.id"
-            styles="background: linear-gradient(135deg, #f87171, #fb923c); color: white;"
-            (onClick)="payFee(f.id, f.amount, pmSelect.value || 'BKASH')"
+            styles="background: linear-gradient(135deg, #086AD8, #2563eb); color: white;"
+            (onClick)="payFee(f.id, f.amount, pmSelect.value || 'SSLCOMMERZ')"
           />
         </div>
       </div>
@@ -355,7 +355,20 @@ export class DuesComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.checkPaymentStatusCallback();
     this.loadFees();
+  }
+
+  checkPaymentStatusCallback(): void {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('paymentStatus');
+    if (status === 'success') {
+      this.toast.success('Payment completed successfully via SSLCommerz Gateway! 🎉');
+    } else if (status === 'failed') {
+      this.toast.error('SSLCommerz payment failed. Please try again.');
+    } else if (status === 'cancelled') {
+      this.toast.warning('SSLCommerz payment was cancelled.');
+    }
   }
 
   loadFees(): void {
@@ -367,7 +380,23 @@ export class DuesComponent implements OnInit {
   }
 
   payFee(feeId: number, amount: number, method: string): void {
-    this.gatewayModal.open(feeId, amount, method);
+    if (method === 'SSLCOMMERZ') {
+      this.payingId.set(feeId);
+      this.api.initiateSSLCommerzPayment(feeId).subscribe({
+        next: (res) => {
+          this.payingId.set(null);
+          this.toast.info('Redirecting to SSLCommerz Payment Gateway...');
+          window.location.href = res.gatewayUrl;
+        },
+        error: (err) => {
+          this.payingId.set(null);
+          const msg = err.error?.detail || err.error?.message || 'Could not initiate SSLCommerz payment.';
+          this.toast.error(msg);
+        }
+      });
+    } else {
+      this.gatewayModal.open(feeId, amount, method);
+    }
   }
 
   onGatewayPaymentComplete(event: { feeId: number, method: string }): void {

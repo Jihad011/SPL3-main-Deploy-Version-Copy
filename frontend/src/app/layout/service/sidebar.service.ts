@@ -8,7 +8,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 export class SidebarService {
   private _sidebarExpanded = new BehaviorSubject<boolean>(false);
   private _drawerOpen = new BehaviorSubject<boolean>(false);
-  private _selectedModuleName = new BehaviorSubject<string>('SPL3 Open Credit');
+  private _selectedModuleName = new BehaviorSubject<string>('MIT Open Credit Management System');
   selectedModuleName$ = this._selectedModuleName.asObservable();
   sidebarExpanded$ = this._sidebarExpanded.asObservable();
   drawerOpen$ = this._drawerOpen.asObservable();

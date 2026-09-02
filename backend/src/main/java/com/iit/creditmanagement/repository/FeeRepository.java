@@ -17,6 +17,7 @@ public interface FeeRepository extends JpaRepository<Fee, Long> {
     List<Fee> findAllByStudentId(Long studentId);
     List<Fee> findAllByStudentIdAndStatus(Long studentId, FeeStatus status);
     List<Fee> findAllByStudentIdAndFeeType(Long studentId, FeeType feeType);
+    java.util.Optional<Fee> findByTransactionId(String transactionId);
 
     @Query("""
         SELECT COALESCE(SUM(f.amount), 0)

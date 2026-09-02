@@ -65,6 +65,9 @@ public class Fee {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @Column(name = "transaction_id")
+    private String transactionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;

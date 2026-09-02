@@ -39,6 +39,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_URLS = {
         "/auth/**",
+        "/payment/sslcommerz/callback/**",
         "/actuator/health",
         "/actuator/info"
     };
