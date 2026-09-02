@@ -265,13 +265,18 @@ import {
       width: 100%;
       padding: 0.55rem;
       border-radius: 8px;
-      background: var(--accent-primary);
-      color: #0b1120;
+      background: linear-gradient(135deg, #086AD8, #2563eb);
+      color: #ffffff;
       text-decoration: none;
       font-size: 0.85rem;
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(8, 106, 216, 0.3);
     }
-    .btn-grade:hover { opacity: 0.9; }
+    .btn-grade:hover {
+      background: linear-gradient(135deg, #0456b8, #1d4ed8);
+      color: #ffffff;
+      opacity: 1;
+    }
   `]
 })
 export class TeacherDashboardComponent implements OnInit {

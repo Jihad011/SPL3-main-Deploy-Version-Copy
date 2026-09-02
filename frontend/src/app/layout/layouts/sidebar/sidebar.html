@@ -42,7 +42,7 @@
 
       <!-- Reports -->
       <div class="nav-item-group"
-           (click)="toggleDrawer('Menu'); setActiveItem('Report')"
+           (click)="navigateToReports(); setActiveItem('Report')"
            [class.active]="activeItem === 'Report'"
            title="Reports">
         <img [src]="getReportIcon()" class="nav-icon" alt="Reports" />

@@ -92,7 +92,7 @@ function computeGradeLetter(total: number): string {
         *ngIf="dirtyCount() > 0"
         [label]="'Save All (' + dirtyCount() + ')'"
         icon="save"
-        styles="background: var(--accent-primary); color: #0b1120;"
+        styles="background: linear-gradient(135deg, #086AD8, #2563eb); color: #ffffff;"
         (onClick)="showSaveConfirm.set(true)"
       />
     </div>
@@ -386,8 +386,8 @@ function computeGradeLetter(total: number): string {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: var(--accent-primary);
-      color: #0b1120;
+      background: linear-gradient(135deg, #086AD8, #2563eb);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -460,7 +460,16 @@ function computeGradeLetter(total: number): string {
       transition: all 0.2s;
     }
     .btn-action:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-    .btn-save-action { background: var(--accent-primary); color: #0b1120; border: none; }
+    .btn-save-action {
+      background: linear-gradient(135deg, #086AD8, #2563eb) !important;
+      color: #ffffff !important;
+      border: none !important;
+      box-shadow: 0 2px 6px rgba(8, 106, 216, 0.35);
+    }
+    .btn-save-action:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0456b8, #1d4ed8) !important;
+      color: #ffffff !important;
+    }
     .grade-badge {
       display: inline-block;
       padding: 0.2rem 0.5rem;

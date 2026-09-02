@@ -110,6 +110,10 @@ export class Sidebar implements OnInit, OnDestroy {
     else if (role === 'STUDENT') this.router.navigate(['/student/dashboard']);
   }
 
+  navigateToReports(): void {
+    // Functionality disabled per user request until dedicated reports module is implemented
+  }
+
   logout(): void {
     this.closeDrawer();
     this.authState.logout();
