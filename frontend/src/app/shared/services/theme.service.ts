@@ -135,8 +135,91 @@ export class ThemeService {
         '--primary-700': '#111827',
       }
     },
-   
-
+    {
+      id: 'amber',
+      name: 'Golden Amber',
+      icon: 'wb_sunny',
+      primary: '#d97706',
+      secondary: '#b45309',
+      accent: '#fbbf24',
+      background: '#fffbeb',
+      btn: '#d97706',
+      cssVariables: {
+        '--primary-50': '#fffbeb',
+        '--primary-100': '#fef3c7',
+        '--primary-500': '#f59e0b',
+        '--primary-600': '#d97706',
+        '--primary-700': '#b45309',
+      }
+    },
+    {
+      id: 'cyan',
+      name: 'Cyber Neon Cyan',
+      icon: 'bolt',
+      primary: '#0ea5e9',
+      secondary: '#0284c7',
+      accent: '#38bdf8',
+      background: '#f0f9ff',
+      btn: '#0ea5e9',
+      cssVariables: {
+        '--primary-50': '#f0f9ff',
+        '--primary-100': '#e0f2fe',
+        '--primary-500': '#38bdf8',
+        '--primary-600': '#0ea5e9',
+        '--primary-700': '#0284c7',
+      }
+    },
+    {
+      id: 'teal',
+      name: 'Nordic Teal',
+      icon: 'water_drop',
+      primary: '#0d9488',
+      secondary: '#0f766e',
+      accent: '#2dd4bf',
+      background: '#f0fdfa',
+      btn: '#0d9488',
+      cssVariables: {
+        '--primary-50': '#f0fdfa',
+        '--primary-100': '#ccfbf1',
+        '--primary-500': '#2dd4bf',
+        '--primary-600': '#0d9488',
+        '--primary-700': '#0f766e',
+      }
+    },
+    {
+      id: 'coral',
+      name: 'Sunset Coral',
+      icon: 'wb_twilight',
+      primary: '#ea580c',
+      secondary: '#c2410c',
+      accent: '#fb923c',
+      background: '#fff7ed',
+      btn: '#ea580c',
+      cssVariables: {
+        '--primary-50': '#fff7ed',
+        '--primary-100': '#ffedd5',
+        '--primary-500': '#fb923c',
+        '--primary-600': '#ea580c',
+        '--primary-700': '#c2410c',
+      }
+    },
+    {
+      id: 'indigo',
+      name: 'Royal Indigo',
+      icon: 'stars',
+      primary: '#4f46e5',
+      secondary: '#4338ca',
+      accent: '#818cf8',
+      background: '#eef2ff',
+      btn: '#4f46e5',
+      cssVariables: {
+        '--primary-50': '#eef2ff',
+        '--primary-100': '#e0e7ff',
+        '--primary-500': '#818cf8',
+        '--primary-600': '#4f46e5',
+        '--primary-700': '#4338ca',
+      }
+    }
   ];
 
   constructor(@Inject(DOCUMENT) private document: Document) {

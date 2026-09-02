@@ -81,6 +81,11 @@ import { ThemeService, Theme } from '../../shared/services/theme.service';
             <option value="purple">Royal Purple</option>
             <option value="rose">Cherry Rose</option>
             <option value="dark">Dark Mode</option>
+            <option value="amber">Golden Amber ☀️</option>
+            <option value="cyan">Cyber Neon Cyan ⚡</option>
+            <option value="teal">Nordic Teal 🌊</option>
+            <option value="coral">Sunset Coral 🌅</option>
+            <option value="indigo">Royal Indigo 🍇</option>
           </select>
         </div>
         <a routerLink="/admin/dashboard" class="btn-home">
