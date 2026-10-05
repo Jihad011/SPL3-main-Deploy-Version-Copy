@@ -1,9 +1,8 @@
-import { Component, OnInit, signal, computed, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { FeeResponse } from '../../../core/models/models';
 import { IconComponent, IconName } from '../../../shared/components/icon/icon.component';
-import { PaymentGatewayModalComponent } from '../../../shared/components/payment-gateway-modal/payment-gateway-modal.component';
 import { PdfService } from '../../../core/services/pdf.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
@@ -30,7 +29,6 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
     DatePipe,
     DecimalPipe,
     IconComponent,
-    PaymentGatewayModalComponent,
     SummaryCardStrip,
     GenericButton
   ],
@@ -54,8 +52,6 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
-
-  <app-payment-gateway-modal #gatewayModal (paymentComplete)="onGatewayPaymentComplete($event)" />
 
   <!-- Summary Card Strip -->
   <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && fees().length > 0">
@@ -132,23 +128,13 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
 
       <!-- Pay action -->
       <div class="invoice-footer" *ngIf="f.status === 'UNPAID'">
-        <div class="payment-options">
-          <select #pmSelect class="pm-select">
-            <option value="SSLCOMMERZ" selected>SSLCommerz Gateway (bKash/Nagad/Cards)</option>
-            <option value="BKASH">bKash Direct</option>
-            <option value="NAGAD">Nagad Direct</option>
-            <option value="ROCKET">Rocket Direct</option>
-            <option value="CREDIT_CARD">Credit / Debit Card</option>
-            <option value="BANK_TRANSFER">Bank Deposit</option>
-          </select>
-          <generic-button
-            label="Pay Now"
-            icon="credit-card"
-            [enable]="payingId() !== f.id"
-            styles="background: linear-gradient(135deg, #086AD8, #2563eb); color: white;"
-            (onClick)="payFee(f.id, f.amount, pmSelect.value || 'SSLCOMMERZ')"
-          />
-        </div>
+        <generic-button
+          label="Pay via SSLCommerz Gateway"
+          icon="credit-card"
+          [enable]="payingId() !== f.id"
+          styles="background: linear-gradient(135deg, #086AD8, #2563eb); color: white; width: 100%; font-weight: 600;"
+          (onClick)="payFee(f.id)"
+        />
       </div>
     </div>
   </div>
@@ -281,17 +267,6 @@ const FEE_TYPE_ICONS: Record<string, IconName> = {
     .date-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     .overdue { color: #ef4444; font-weight: 600; }
 
-    .payment-options { display: flex; gap: 0.5rem; width: 100%; }
-    .pm-select {
-      flex: 1;
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      font-size: 0.85rem;
-      outline: none;
-    }
     .invoice-paid-confirm {
       padding: 0.85rem;
       border-radius: 8px;
@@ -328,8 +303,6 @@ export class DuesComponent implements OnInit {
   payingId = signal<number | null>(null);
   filter = signal<'ALL' | 'UNPAID' | 'PAID'>('ALL');
   error = signal('');
-
-  @ViewChild('gatewayModal') gatewayModal!: PaymentGatewayModalComponent;
 
   private pdfService = inject(PdfService);
   private toast = inject(ToastService);
@@ -379,24 +352,20 @@ export class DuesComponent implements OnInit {
     });
   }
 
-  payFee(feeId: number, amount: number, method: string): void {
-    if (method === 'SSLCOMMERZ') {
-      this.payingId.set(feeId);
-      this.api.initiateSSLCommerzPayment(feeId).subscribe({
-        next: (res) => {
-          this.payingId.set(null);
-          this.toast.info('Redirecting to SSLCommerz Payment Gateway...');
-          window.location.href = res.gatewayUrl;
-        },
-        error: (err) => {
-          this.payingId.set(null);
-          const msg = err.error?.detail || err.error?.message || 'Could not initiate SSLCommerz payment.';
-          this.toast.error(msg);
-        }
-      });
-    } else {
-      this.gatewayModal.open(feeId, amount, method);
-    }
+  payFee(feeId: number): void {
+    this.payingId.set(feeId);
+    this.api.initiateSSLCommerzPayment(feeId).subscribe({
+      next: (res) => {
+        this.payingId.set(null);
+        this.toast.info('Redirecting to SSLCommerz Payment Gateway...');
+        window.location.href = res.gatewayUrl;
+      },
+      error: (err) => {
+        this.payingId.set(null);
+        const msg = err.error?.detail || err.error?.message || 'Could not initiate SSLCommerz payment.';
+        this.toast.error(msg);
+      }
+    });
   }
 
   onGatewayPaymentComplete(event: { feeId: number, method: string }): void {

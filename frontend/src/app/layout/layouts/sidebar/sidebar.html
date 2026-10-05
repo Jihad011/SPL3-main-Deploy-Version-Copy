@@ -40,16 +40,6 @@
         <span class="nav-tooltip" *ngIf="!sidebarExpanded">Dashboard</span>
       </div>
 
-      <!-- Reports -->
-      <div class="nav-item-group"
-           (click)="navigateToReports(); setActiveItem('Report')"
-           [class.active]="activeItem === 'Report'"
-           title="Reports">
-        <img [src]="getReportIcon()" class="nav-icon" alt="Reports" />
-        <span class="nav-label" *ngIf="sidebarExpanded">Reports</span>
-        <span class="nav-tooltip" *ngIf="!sidebarExpanded">Reports</span>
-      </div>
-
       <!-- Theme / Config -->
       <div class="nav-item-group"
            (click)="toggleDrawer('Theme'); setActiveItem('Theme')"
@@ -69,10 +59,10 @@
       <div class="nav-item-group nav-item-white"
            (click)="toggleDrawer('Profile'); setActiveItem('Profile')"
            [class.active]="activeItem === 'Profile' && drawerOpen"
-           title="Profile">
+           title="Profile & Notifications">
         <div class="nav-icon-badge-wrap">
           <img [src]="getProfileIcon()" class="nav-icon" alt="Profile" />
-          <span class="badge">2</span>
+          <span class="badge" *ngIf="notif.unreadCount() > 0">{{ notif.unreadCount() }}</span>
         </div>
         <span class="nav-label nav-label-white" *ngIf="sidebarExpanded">Profile</span>
         <span class="nav-tooltip" *ngIf="!sidebarExpanded">Profile</span>

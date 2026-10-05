@@ -21,7 +21,6 @@ public record RegisterRequest(
         @Size(min = 8, message = "Password must be at least 8 characters")
         String password,
 
-        @NotNull(message = "Role is required")
         Role role,
 
         // Student fields

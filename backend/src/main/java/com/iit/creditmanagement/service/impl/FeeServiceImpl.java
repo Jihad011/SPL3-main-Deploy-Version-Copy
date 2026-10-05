@@ -17,6 +17,7 @@ import com.iit.creditmanagement.repository.EnrollmentRepository;
 import com.iit.creditmanagement.repository.FeeRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
 import com.iit.creditmanagement.repository.UserRepository;
+import com.iit.creditmanagement.service.AuditService;
 import com.iit.creditmanagement.service.FeeService;
 import com.iit.creditmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class FeeServiceImpl implements FeeService {
     private final SemesterRepository   semesterRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final NotificationService  notificationService;
+    private final AuditService         auditService;
 
     @Override
     @Transactional(readOnly = true)
@@ -88,6 +90,7 @@ public class FeeServiceImpl implements FeeService {
 
         fee = feeRepository.save(fee);
         
+        auditService.logAction(adminId, "FEE_CREATED", "Fee", String.format("Admin created fee of ৳%s (%s) for student ID %s", request.amount(), request.feeType(), student.getId()));
         notificationService.sendNotification(
             student,
             "New Fee Generated",
@@ -119,6 +122,7 @@ public class FeeServiceImpl implements FeeService {
         }
         fee = feeRepository.save(fee);
         
+        auditService.logAction(adminId, "FEE_PAID_ADMIN", "Fee", String.format("Admin confirmed payment of ৳%s for fee ID %s (%s)", fee.getAmount(), feeId, fee.getFeeType()));
         notificationService.sendNotification(
             fee.getStudent(),
             "Fee Payment Confirmed",
@@ -149,6 +153,7 @@ public class FeeServiceImpl implements FeeService {
         fee.setPaymentMethod(paymentMethod);
         fee = feeRepository.save(fee);
         
+        auditService.logAction(studentId, "FEE_PAID_STUDENT", "Fee", String.format("Student paid fee ID %s of ৳%s via %s", feeId, fee.getAmount(), paymentMethod));
         notificationService.sendNotification(
             fee.getStudent(),
             "Payment Successful",

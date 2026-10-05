@@ -83,8 +83,15 @@
   }
 
   &.active {
-    background-color: rgba(8, 106, 216, 0.1);
+    background-color: rgba(8, 106, 216, 0.12);
+    box-shadow: inset 3px 0 0 var(--theme-primary, #086AD8);
+
+    .nav-label {
+      color: var(--theme-primary, #086AD8);
+      font-weight: 700;
+    }
   }
+
 }
 
 /* Nav icon */

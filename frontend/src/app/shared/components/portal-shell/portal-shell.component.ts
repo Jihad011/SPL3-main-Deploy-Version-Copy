@@ -27,6 +27,7 @@ export interface ThemeOption {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, IconComponent, DatePipe],
   template: `
+
     <div class="layout" [class.sidebar-open]="menuOpen()" [class.sidebar-collapsed]="sidebarCollapsed()">
       <header class="mobile-topbar">
         <button
@@ -182,6 +183,7 @@ export interface ThemeOption {
       </main>
     </div>
   `
+
 })
 export class PortalShellComponent {
   @Input({ required: true }) portalLabel!: string;

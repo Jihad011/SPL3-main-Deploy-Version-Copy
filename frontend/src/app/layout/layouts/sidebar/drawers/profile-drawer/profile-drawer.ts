@@ -2,11 +2,13 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthStateService } from '../../../../../core/services/auth-state.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { IconComponent } from '../../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-profile-drawer',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, IconComponent],
   template: `
     <div class="h-full overflow-y-auto pb-16 profile-drawer bg-gradient-to-br from-[var(--theme-background)] to-gray-50 p-4 space-y-4">
       <!-- User Profile Card -->
@@ -56,11 +58,54 @@ import { AuthStateService } from '../../../../../core/services/auth-state.servic
           </span>
         </div>
       </div>
+
+      <!-- Notifications & Alerts Center Card -->
+      <div class="bg-white/90 rounded-2xl p-4 border border-gray-200/80 shadow-sm space-y-3">
+        <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-blue-600 text-lg">notifications</mat-icon>
+            <h4 class="font-bold text-gray-800 text-xs">Notifications & Alerts</h4>
+            <span *ngIf="notif.unreadCount() > 0" class="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full font-mono">
+              {{ notif.unreadCount() }} unread
+            </span>
+          </div>
+          <button
+            *ngIf="notif.unreadCount() > 0"
+            (click)="notif.markAllAsRead()"
+            class="text-[11px] text-blue-600 font-semibold hover:underline bg-transparent border-none cursor-pointer"
+          >
+            Mark read
+          </button>
+        </div>
+
+        <div class="space-y-2 max-h-60 overflow-y-auto">
+          @for (n of notif.notifications(); track n.id) {
+            <div
+              class="p-2.5 rounded-xl border text-xs transition-all"
+              [style.background-color]="!n.isRead && !n.read ? '#f0f9ff' : '#f8fafc'"
+              [style.border-color]="!n.isRead && !n.read ? '#bae6fd' : '#f1f5f9'"
+            >
+              <div class="flex items-center justify-between font-bold text-gray-800 mb-0.5">
+                <span class="truncate">{{ n.title }}</span>
+                <span *ngIf="!n.isRead && !n.read" class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
+              </div>
+              <p class="text-gray-600 text-[11px] leading-relaxed">{{ n.message }}</p>
+              <span class="text-[9px] text-gray-400 mt-1 block font-mono">{{ n.createdAt | date:'short' }}</span>
+            </div>
+          }
+          @if (notif.notifications().length === 0) {
+            <div class="text-center py-4 text-gray-400 text-xs">
+              No recent notifications.
+            </div>
+          }
+        </div>
+      </div>
     </div>
   `
 })
 export class ProfileDrawer {
   private authState = inject(AuthStateService);
+  public notif = inject(NotificationService);
 
   user = this.authState.user;
 

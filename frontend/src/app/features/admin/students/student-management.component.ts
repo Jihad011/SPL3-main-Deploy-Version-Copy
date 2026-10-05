@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, effect, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
@@ -48,7 +48,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
       <section class="header-section">
         <app-expansion-panel-header
           [isOpenSignal]="studentSetupPanel"
-          [panelTitle]="isEdit ? 'Update Student Profile' : 'Register New Student Profile'"
+          [panelTitle]="isViewMode ? 'Student Profile Details' : isEdit ? 'Update Student Profile' : 'Register New Student Profile'"
         />
 
         <div *ngIf="studentSetupPanel()" style="padding: 1.25rem 0.5rem;">
@@ -59,6 +59,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 controlName="name"
                 label="Full Legal Name"
                 placeholder="e.g. Md. Jihad Hossain"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
@@ -68,6 +69,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 label="Institutional Email"
                 placeholder="e.g. jihad@iit.du.ac.bd"
                 type="email"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
@@ -76,6 +78,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 controlName="rollNumber"
                 label="Academic Roll Number"
                 placeholder="e.g. 1413 / BSSE1413"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
@@ -86,6 +89,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 placeholder="2021"
                 [minValue]="2015"
                 [maxValue]="2035"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
             </div>
@@ -96,6 +100,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 controlName="registrationNumber"
                 label="University Registration Number"
                 placeholder="e.g. REG-2021-1413"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
@@ -104,14 +109,15 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 controlName="phone"
                 label="Contact Mobile"
                 placeholder="e.g. +880 1700 000000"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
               <input-text-box
-                *ngIf="!isEdit"
+                *ngIf="!isEdit && !isViewMode"
                 [frmGroup]="frmGroup"
                 controlName="password"
-                label="Initial Password (min 6 characters)"
+                label="Initial Password (min 8 characters)"
                 placeholder="••••••••"
                 type="password"
                 displayMode="vertical"
@@ -123,6 +129,7 @@ import { StudentManagementListComponent } from './student-management-list.compon
                 [frmGroup]="frmGroup"
                 controlName="isActive"
                 label="Active Account Status"
+                [enable]="!isViewMode"
                 displayMode="horizontal"
               />
             </div>
@@ -172,9 +179,12 @@ import { StudentManagementListComponent } from './student-management-list.compon
   `]
 })
 export class StudentManagementComponent implements OnInit, OnDestroy {
+  @ViewChild(StudentManagementListComponent) listComponent?: StudentManagementListComponent;
+
   studentSetupPanel = signal(true);
   isModalShow = false;
   isEdit = false;
+  isViewMode = false;
   editStudentId: number | null = null;
 
   frmGroup: FormGroup;
@@ -191,7 +201,7 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
       batch: [2021, [Validators.required, Validators.min(2015), Validators.max(2035)]],
       registrationNumber: [''],
       phone: [''],
-      password: ['123456', [Validators.required, Validators.minLength(6)]],
+      password: ['password123', [Validators.required, Validators.minLength(8)]],
       isActive: [true]
     });
 
@@ -220,6 +230,7 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
     effect(() => {
       if (ONCLICK_VIEW()) {
         this.isModalShow = true;
+        setTimeout(() => this.listComponent?.loadData(), 0);
         ONCLICK_VIEW.set(false);
       }
     }, { allowSignalWrites: true });
@@ -252,6 +263,7 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.toast.success(`Student ${res.name} registered successfully!`);
         this.resetForm();
+        setTimeout(() => this.listComponent?.loadData(), 0);
       },
       error: (err) => {
         const msg = err.error?.detail || err.error?.message || 'Failed to register student.';
@@ -261,17 +273,31 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
   }
 
   submitUpdate(): void {
+    if (!this.editStudentId) return;
     if (this.frmGroup.invalid) {
       this.frmGroup.markAllAsTouched();
+      this.toast.error('Please fix form validation errors.');
       return;
     }
-    this.toast.success('Student profile updated.');
-    this.resetForm();
+    this.api.updateStudent(this.editStudentId, this.frmGroup.value).subscribe({
+      next: (res) => {
+        this.toast.success(`Student profile for ${res.name} updated successfully.`);
+        this.resetForm();
+        setTimeout(() => this.listComponent?.loadData(), 0);
+      },
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.message || 'Failed to update student profile.';
+        this.toast.error(msg);
+      }
+    });
   }
 
   resetForm(): void {
     this.isEdit = false;
+    this.isViewMode = false;
     this.editStudentId = null;
+    this.frmGroup.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
+    this.frmGroup.get('password')?.updateValueAndValidity();
     this.frmGroup.reset({
       batch: 2021,
       password: 'password123',
@@ -289,18 +315,23 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
   onModalResult(result: any): void {
     if (result.data) {
       const s: UserResponse = result.data;
+      this.frmGroup.get('password')?.clearValidators();
+      this.frmGroup.get('password')?.updateValueAndValidity();
+
+      this.frmGroup.patchValue({
+        name: s.name || '',
+        email: s.email || '',
+        rollNumber: s.rollNumber || '',
+        batch: s.batch || 2021,
+        registrationNumber: s.registrationNumber || '',
+        phone: s.phone || '',
+        isActive: s.isActive ?? true
+      });
+
       if (result.isEdit) {
         this.isEdit = true;
+        this.isViewMode = false;
         this.editStudentId = s.id;
-        this.frmGroup.patchValue({
-          name: s.name,
-          email: s.email,
-          rollNumber: s.rollNumber,
-          batch: s.batch,
-          registrationNumber: s.registrationNumber,
-          phone: s.phone,
-          isActive: s.isActive
-        });
         ButtonUtils.setPageButtons({
           save: false,
           update: true,
@@ -309,9 +340,20 @@ export class StudentManagementComponent implements OnInit, OnDestroy {
           exit: true
         });
         this.isModalShow = false;
-        this.toast.info(`Editing student: ${s.name}`);
+        this.toast.info(`Editing student profile: ${s.name}`);
       } else if (result.viewMode) {
+        this.isViewMode = true;
+        this.isEdit = false;
+        this.editStudentId = s.id;
+        ButtonUtils.setPageButtons({
+          save: false,
+          update: false,
+          view: true,
+          reset: true,
+          exit: true
+        });
         this.isModalShow = false;
+        this.toast.info(`Viewing student profile: ${s.name}`);
       }
     }
   }

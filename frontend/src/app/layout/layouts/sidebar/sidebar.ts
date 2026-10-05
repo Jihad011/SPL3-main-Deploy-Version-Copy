@@ -12,7 +12,7 @@ import { Search } from '../navbar/actions/search/search';
 import { SidebarService } from '../../service/sidebar.service';
 import { ThemeService } from '../../../shared/services/theme.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
-
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -41,6 +41,7 @@ export class Sidebar implements OnInit, OnDestroy {
   private sidebarService = inject(SidebarService);
   private themeService = inject(ThemeService);
   private authState = inject(AuthStateService);
+  public notif = inject(NotificationService);
   private router = inject(Router);
   private subs = new Subscription();
 
@@ -110,10 +111,6 @@ export class Sidebar implements OnInit, OnDestroy {
     else if (role === 'STUDENT') this.router.navigate(['/student/dashboard']);
   }
 
-  navigateToReports(): void {
-    // Functionality disabled per user request until dedicated reports module is implemented
-  }
-
   logout(): void {
     this.closeDrawer();
     this.authState.logout();
@@ -166,18 +163,6 @@ export class Sidebar implements OnInit, OnDestroy {
       case 'Lavendar': return 'asset/icons/lavendarProfile.svg';
       case 'dark': return 'asset/icons/blackProfile.svg';
       default: return 'asset/icons/profile3.svg';
-    }
-  }
-
-  getReportIcon(): string {
-    switch (this.activeTheme) {
-      case 'rose': return 'asset/icons/roseReport.svg';
-      case 'MidnightBlue': return 'asset/icons/midnightReport.svg';
-      case 'emerald': return 'asset/icons/greenReport.svg';
-      case 'purple': return 'asset/icons/purpleReport.svg';
-      case 'Lavendar': return 'asset/icons/lavendarReport.svg';
-      case 'dark': return 'asset/icons/blackReport.svg';
-      default: return 'asset/icons/report.svg';
     }
   }
 

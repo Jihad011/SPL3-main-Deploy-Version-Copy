@@ -30,6 +30,7 @@ public class AdminServiceImpl implements AdminService {
     private final FeeService         feeService;
     private final CourseService      courseService;
     private final PasswordEncoder    passwordEncoder;
+    private final AuditService       auditService;
 
     @Override
     @Transactional
@@ -65,6 +66,7 @@ public class AdminServiceImpl implements AdminService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        auditService.logAction(savedUser.getId(), "STUDENT_CREATED", "Student", "Registered new student: " + savedUser.getName() + " [" + savedUser.getEmail() + "]");
         log.info("Admin created student: {} [Roll: {}]", savedUser.getEmail(), savedUser.getRollNumber());
         return UserResponse.from(savedUser);
     }
@@ -88,7 +90,41 @@ public class AdminServiceImpl implements AdminService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        auditService.logAction(savedUser.getId(), "TEACHER_CREATED", "Teacher", "Registered new faculty member: " + savedUser.getName() + " [" + savedUser.getEmail() + "]");
         log.info("Admin created teacher: {}", savedUser.getEmail());
+        return UserResponse.from(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateTeacher(Long teacherId, com.iit.creditmanagement.model.dto.request.UserUpdateRequest request) {
+        User user = userRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher", teacherId));
+        if (request.name() != null) user.setName(request.name());
+        if (request.email() != null) user.setEmail(request.email());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.designation() != null) user.setDesignation(request.designation());
+        if (request.department() != null) user.setDepartment(request.department());
+        if (request.isActive() != null) user.setActive(request.isActive());
+        User savedUser = userRepository.save(user);
+        auditService.logAction(savedUser.getId(), "TEACHER_UPDATED", "Teacher", "Updated faculty profile: " + savedUser.getName());
+        return UserResponse.from(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateStudent(Long studentId, com.iit.creditmanagement.model.dto.request.UserUpdateRequest request) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
+        if (request.name() != null) user.setName(request.name());
+        if (request.email() != null) user.setEmail(request.email());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.rollNumber() != null) user.setRollNumber(request.rollNumber());
+        if (request.registrationNumber() != null) user.setRegistrationNumber(request.registrationNumber());
+        if (request.batch() != null) user.setBatch(request.batch());
+        if (request.isActive() != null) user.setActive(request.isActive());
+        User savedUser = userRepository.save(user);
+        auditService.logAction(savedUser.getId(), "STUDENT_UPDATED", "Student", "Updated student profile: " + savedUser.getName());
         return UserResponse.from(savedUser);
     }
 
@@ -109,6 +145,7 @@ public class AdminServiceImpl implements AdminService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        auditService.logAction(savedUser.getId(), "ADMIN_CREATED", "Admin", "Registered new admin account: " + savedUser.getName());
         log.info("Admin created admin: {}", savedUser.getEmail());
         return UserResponse.from(savedUser);
     }

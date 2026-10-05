@@ -29,7 +29,7 @@
         <button
           *ngIf="searchQuery"
           type="button"
-          (click)="searchQuery = ''; selectedStudent.set(null); errorMessage.set(null)"
+          (click)="clearSearch()"
           class="btn-clear"
           title="Clear search">
           <app-icon name="x" [size]="15"></app-icon>

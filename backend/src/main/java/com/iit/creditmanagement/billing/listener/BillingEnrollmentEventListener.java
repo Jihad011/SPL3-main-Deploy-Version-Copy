@@ -13,6 +13,7 @@ import com.iit.creditmanagement.repository.EnrollmentRepository;
 import com.iit.creditmanagement.repository.FeeRepository;
 import com.iit.creditmanagement.repository.SemesterRepository;
 import com.iit.creditmanagement.repository.UserRepository;
+import com.iit.creditmanagement.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -41,6 +42,7 @@ public class BillingEnrollmentEventListener {
     private final UserRepository       userRepository;
     private final SemesterRepository   semesterRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final NotificationService  notificationService;
 
     /**
      * Automatically generates retake and gap fee invoices when enrollment commits.
@@ -94,6 +96,13 @@ public class BillingEnrollmentEventListener {
                     .build();
 
             feeRepository.save(retakeFee);
+
+            notificationService.sendNotification(
+                    student,
+                    "Retake Fee Generated",
+                    String.format("A retake fee of ৳%s for %s (%s) has been added to your account.", event.retakeFeeAmount(), event.courseName(), event.courseCode()),
+                    "FEE_CREATED"
+            );
 
             log.info("[BillingListener] ✓ Retake fee of {} BDT created for student={} course={}",
                     event.retakeFeeAmount(), event.studentId(), event.courseCode());
@@ -164,6 +173,14 @@ public class BillingEnrollmentEventListener {
                             .build();
 
                     feeRepository.save(gapFee);
+
+                    notificationService.sendNotification(
+                            student,
+                            "Semester Gap Fine Assessed",
+                            String.format("A penalty fee of ৳%s for %d missed term(s) prior to %s has been assessed.", fineAmount, gapCount, semester.getLabel()),
+                            "SEMESTER_GAP_FINE"
+                    );
+
                     log.info("[BillingListener] ✓ Semester gap fine of {} BDT created for student={} ({} missed term(s))",
                             fineAmount, studentId, gapCount);
                 }

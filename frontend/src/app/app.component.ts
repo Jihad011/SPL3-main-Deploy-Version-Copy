@@ -12,6 +12,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
     <router-outlet />
     
     <div class="toast-container">
+
       @for (toast of toastService.toasts(); track toast.id) {
         <div class="toast" [ngClass]="toast.type" @fadeSlideInOut>
           <div class="toast-icon">

@@ -7,7 +7,8 @@ export interface NotificationResponse {
   title: string;
   message: string;
   type: string;
-  read: boolean;
+  read?: boolean;
+  isRead?: boolean;
   createdAt: string;
 }
 
@@ -20,12 +21,15 @@ export class NotificationService {
   readonly notifications = signal<NotificationResponse[]>([]);
   private pollSub?: Subscription;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) {
+    this.startPolling();
+  }
 
   startPolling(): void {
+    if (this.pollSub) return;
     this.refresh();
-    // Poll every 30 seconds
-    this.pollSub = interval(30000).subscribe(() => this.refresh());
+    // Poll every 5 seconds for fast responsive updates
+    this.pollSub = interval(5000).subscribe(() => this.refresh());
   }
 
   stopPolling(): void {
@@ -39,8 +43,8 @@ export class NotificationService {
     this.api.getUnreadNotificationsCount().subscribe({
       next: (count: any) => this.unreadCount.set(count)
     });
-    this.api.getNotifications(10).subscribe({
-      next: (list: any) => this.notifications.set(list)
+    this.api.getNotifications(15).subscribe({
+      next: (list: any) => this.notifications.set(list || [])
     });
   }
 
@@ -48,7 +52,7 @@ export class NotificationService {
     this.api.markNotificationsAsRead().subscribe({
       next: () => {
         this.unreadCount.set(0);
-        this.notifications.update(list => list.map(n => ({ ...n, read: true })));
+        this.notifications.update(list => list.map(n => ({ ...n, read: true, isRead: true })));
       }
     });
   }

@@ -1073,15 +1073,15 @@ export class StudentDashboardComponent implements OnInit {
 
   payFee(fee: FeeResponse): void {
     this.payingFeeId.set(fee.id);
-    this.api.payMyFee(fee.id).subscribe({
-      next: () => {
+    this.api.initiateSSLCommerzPayment(fee.id).subscribe({
+      next: (res) => {
         this.payingFeeId.set(null);
-        this.toast.success(`Payment of ৳${fee.amount} for ${fee.feeTypeDisplay} completed successfully! 🎉`);
-        this.loadDashboardData();
+        this.toast.info('Redirecting to SSLCommerz Payment Gateway...');
+        window.location.href = res.gatewayUrl;
       },
       error: (e) => {
         this.payingFeeId.set(null);
-        const msg = e.error?.detail || e.error?.message || 'Payment failed. Please try again.';
+        const msg = e.error?.detail || e.error?.message || 'Could not initiate SSLCommerz payment.';
         this.toast.error(msg);
       }
     });

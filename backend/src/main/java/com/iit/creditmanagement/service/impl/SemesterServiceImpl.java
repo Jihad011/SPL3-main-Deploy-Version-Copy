@@ -6,6 +6,7 @@ import com.iit.creditmanagement.model.dto.request.SemesterRequest;
 import com.iit.creditmanagement.model.dto.response.SemesterResponse;
 import com.iit.creditmanagement.model.entity.Semester;
 import com.iit.creditmanagement.repository.SemesterRepository;
+import com.iit.creditmanagement.service.AuditService;
 import com.iit.creditmanagement.service.SemesterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.List;
 public class SemesterServiceImpl implements SemesterService {
 
     private final SemesterRepository semesterRepository;
+    private final AuditService       auditService;
 
     @Override
     @Transactional
@@ -42,6 +44,8 @@ public class SemesterServiceImpl implements SemesterService {
                 .startDate(request.startDate()).endDate(request.endDate())
                 .isActive(false).build();
         semester = semesterRepository.save(semester);
+
+        auditService.logAction(null, "SEMESTER_CREATED", "Semester", "Created semester: " + semester.getLabel());
 
         if (request.makeActive()) {
             semester = activateInternal(semester.getId());
@@ -65,6 +69,7 @@ public class SemesterServiceImpl implements SemesterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", semesterId));
         target.setActive(false);
         Semester saved = semesterRepository.save(target);
+        auditService.logAction(null, "SEMESTER_DEACTIVATED", "Semester", "Deactivated semester: " + saved.getLabel());
         log.info("Deactivated semester: {}", saved.getLabel());
         return SemesterResponse.from(saved);
     }
@@ -74,6 +79,7 @@ public class SemesterServiceImpl implements SemesterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", semesterId));
         target.setActive(true);
         Semester saved = semesterRepository.save(target);
+        auditService.logAction(null, "SEMESTER_ACTIVATED", "Semester", "Activated semester: " + saved.getLabel());
         log.info("Activated semester: {}", saved.getLabel());
         return saved;
     }

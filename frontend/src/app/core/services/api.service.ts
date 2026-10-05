@@ -139,7 +139,7 @@ export class ApiService {
 
   // ── Admin ─────────────────────────────────────────────────
   createStudent(req: any): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.api}/admin/students`, req);
+    return this.http.post<UserResponse>(`${this.api}/admin/students`, { ...req, role: req.role || 'STUDENT' });
   }
   getAllStudents(page: number = 0, size: number = 20): Observable<Page<UserResponse>> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
@@ -153,8 +153,20 @@ export class ApiService {
   getStudentById(id: number): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${this.api}/admin/students/${id}`);
   }
+  updateStudent(id: number, req: any): Observable<UserResponse> {
+    return this.http.put<UserResponse>(`${this.api}/admin/students/${id}`, req);
+  }
+  patchStudent(id: number, req: any): Observable<UserResponse> {
+    return this.http.patch<UserResponse>(`${this.api}/admin/students/${id}`, req);
+  }
   createTeacher(req: any): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.api}/admin/teachers`, req);
+    return this.http.post<UserResponse>(`${this.api}/admin/teachers`, { ...req, role: req.role || 'TEACHER' });
+  }
+  updateTeacher(id: number, req: any): Observable<UserResponse> {
+    return this.http.put<UserResponse>(`${this.api}/admin/teachers/${id}`, req);
+  }
+  patchTeacher(id: number, req: any): Observable<UserResponse> {
+    return this.http.patch<UserResponse>(`${this.api}/admin/teachers/${id}`, req);
   }
   getAllTeachers(page: number = 0, size: number = 20): Observable<Page<UserResponse>> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
@@ -193,3 +205,4 @@ export class ApiService {
     return this.http.get(`${this.api}/teacher/students/${studentId}/transcript`, { responseType: 'blob' });
   }
 }
+

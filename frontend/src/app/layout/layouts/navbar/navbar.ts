@@ -13,12 +13,15 @@ import { CustomAction } from './actions/custom-action/custom-action';
 import { BUTTON_VISIBILITY, ButtonUtils } from '../../../shared/constant/button-signals.constant';
 import { SidebarService } from '../../service/sidebar.service';
 import { AuthStateService } from '../../../core/services/auth-state.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
     CommonModule,
+    IconComponent,
     Save,
     View,
     Delete,
@@ -35,10 +38,17 @@ export class Navbar implements OnInit {
   toggleMenu: boolean = false;
   moduleName = signal('MIT Open Credit Management System');
   currentPageName = signal('Dashboard');
+  showNotifDropdown = signal(false);
 
   private sidebarService = inject(SidebarService);
   private authState = inject(AuthStateService);
+  public notif = inject(NotificationService);
   private router = inject(Router);
+
+  toggleNotifDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showNotifDropdown.update(v => !v);
+  }
 
   ngOnInit(): void {
     this.sidebarService.selectedModuleName$.subscribe(name => {

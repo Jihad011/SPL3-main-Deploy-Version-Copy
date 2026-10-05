@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 public interface AdminService {
     UserResponse             createStudent(RegisterRequest request);
     UserResponse             createTeacher(RegisterRequest request);
+    UserResponse             updateTeacher(Long teacherId, com.iit.creditmanagement.model.dto.request.UserUpdateRequest request);
+    UserResponse             updateStudent(Long studentId, com.iit.creditmanagement.model.dto.request.UserUpdateRequest request);
     UserResponse             createAdmin(RegisterRequest request);
     Page<UserResponse>       getAllStudents(Pageable pageable);
     Page<UserResponse>       getAllTeachers(Pageable pageable);

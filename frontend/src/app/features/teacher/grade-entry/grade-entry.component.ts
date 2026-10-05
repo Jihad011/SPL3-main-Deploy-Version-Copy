@@ -307,8 +307,9 @@ function computeGradeLetter(total: number): string {
     [message]="'Are you sure you want to save marks for ' + dirtyCount() + ' student(s)?'"
     variant="primary"
     (close)="showSaveConfirm.set(false)"
-    (buttonClick)="confirmSaveAll()"
+    (buttonClick)="confirmSaveAll($event)"
   />
+
 </div>
   `,
   styles: [`
@@ -647,10 +648,13 @@ export class GradeEntryComponent implements OnInit {
     });
   }
 
-  confirmSaveAll(): void {
+  confirmSaveAll(event?: any): void {
     this.showSaveConfirm.set(false);
-    this.saveAll();
+    if (!event || event.action === 'confirm' || event.action === 'save') {
+      this.saveAll();
+    }
   }
+
 
   saveAll(): void {
     const dirty = this.rows().filter(r => r.dirty && !this.isInvalid(r));

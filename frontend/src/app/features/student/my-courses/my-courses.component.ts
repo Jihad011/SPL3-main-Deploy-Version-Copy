@@ -179,9 +179,10 @@ import {
     title="Confirm Drop Course"
     [message]="confirmMessage()"
     variant="danger"
-    (close)="showConfirmDialogue.set(false)"
-    (buttonClick)="executeDrop()"
+    (close)="onCancelDrop()"
+    (buttonClick)="onConfirmDropModalAction($event)"
   />
+
 </div>
   `,
   styles: [`
@@ -355,11 +356,25 @@ export class MyCoursesComponent implements OnInit {
     this.showConfirmDialogue.set(true);
   }
 
+  onCancelDrop(): void {
+    this.showConfirmDialogue.set(false);
+    this.enrollmentToDrop.set(null);
+  }
+
+  onConfirmDropModalAction(event: any): void {
+    this.showConfirmDialogue.set(false);
+    if (event && (event.action === 'confirm' || event.action === 'delete')) {
+      this.executeDrop();
+    } else {
+      this.enrollmentToDrop.set(null);
+    }
+  }
+
   executeDrop(): void {
     const e = this.enrollmentToDrop();
     if (!e) return;
 
-    this.showConfirmDialogue.set(false);
+    this.enrollmentToDrop.set(null);
     this.droppingId.set(e.id);
 
     this.api.dropCourse(e.id).subscribe({
@@ -375,4 +390,5 @@ export class MyCoursesComponent implements OnInit {
       }
     });
   }
+
 }

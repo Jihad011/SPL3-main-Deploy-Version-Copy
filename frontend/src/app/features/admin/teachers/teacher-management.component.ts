@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, effect, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, effect, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
@@ -9,9 +9,11 @@ import { ToastService } from '../../../core/services/toast.service';
 import {
   ExpansionPanelHeader,
   InputTextBox,
+  InputSelectOptionField,
   GenericSwitch,
   GenericModal,
-  GenericButton
+  GenericButton,
+  SelectOptionsModel
 } from '../../../shared';
 
 import {
@@ -33,6 +35,7 @@ import { TeacherManagementListComponent } from './teacher-management-list.compon
     ReactiveFormsModule,
     ExpansionPanelHeader,
     InputTextBox,
+    InputSelectOptionField,
     GenericSwitch,
     GenericModal,
     GenericButton,
@@ -46,7 +49,7 @@ import { TeacherManagementListComponent } from './teacher-management-list.compon
       <section class="header-section">
         <app-expansion-panel-header
           [isOpenSignal]="teacherSetupPanel"
-          [panelTitle]="isEdit ? 'Update Faculty Profile' : 'Register New Faculty Member'"
+          [panelTitle]="isViewMode ? 'Faculty Member Profile Details' : isEdit ? 'Update Faculty Profile' : 'Register New Faculty Member'"
         />
 
         <div *ngIf="teacherSetupPanel()" style="padding: 1.25rem 0.5rem;">
@@ -55,27 +58,39 @@ import { TeacherManagementListComponent } from './teacher-management-list.compon
               <input-text-box
                 [frmGroup]="frmGroup"
                 controlName="name"
-                label="Full Legal Name *"
+                label="Full Legal Name"
                 placeholder="e.g. Dr. Kazi Sakib"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
               <input-text-box
                 [frmGroup]="frmGroup"
                 controlName="email"
-                label="Institutional Email *"
+                label="Institutional Email"
                 placeholder="e.g. sakib@iit.du.ac.bd"
                 type="email"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
             </div>
 
             <div class="grid-row-3" style="margin-top: 1rem;">
-              <input-text-box
+              <input-select-option-field
                 [frmGroup]="frmGroup"
                 controlName="designation"
-                label="Academic Designation *"
-                placeholder="e.g. Professor / Associate Professor"
+                label="Academic Designation"
+                [options]="designationOptions"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="department"
+                label="Department"
+                placeholder="e.g. Software Engineering"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
@@ -84,14 +99,15 @@ import { TeacherManagementListComponent } from './teacher-management-list.compon
                 controlName="phone"
                 label="Contact Number"
                 placeholder="e.g. +880 1711 000000"
+                [isReadonly]="isViewMode"
                 displayMode="vertical"
               />
 
               <input-text-box
-                *ngIf="!isEdit"
+                *ngIf="!isEdit && !isViewMode"
                 [frmGroup]="frmGroup"
                 controlName="password"
-                label="Initial Password (min 6 chars) *"
+                label="Initial Password (min 8 chars)"
                 placeholder="••••••••"
                 type="password"
                 displayMode="vertical"
@@ -143,10 +159,28 @@ import { TeacherManagementListComponent } from './teacher-management-list.compon
   `]
 })
 export class TeacherManagementComponent implements OnInit, OnDestroy {
+  @ViewChild(TeacherManagementListComponent) listComponent?: TeacherManagementListComponent;
+
   teacherSetupPanel = signal(true);
   isModalShow = false;
   isEdit = false;
+  isViewMode = false;
   editTeacherId: number | null = null;
+
+  readonly designationOptions: SelectOptionsModel[] = [
+    { key: 'Director', value: 'Director' },
+    { key: 'Professor', value: 'Professor' },
+    { key: 'Associate Professor', value: 'Associate Professor' },
+    { key: 'Assistant Professor', value: 'Assistant Professor' },
+    { key: 'Lecturer', value: 'Lecturer' }
+    // { key: 'Senior Lecturer', value: 'Senior Lecturer' },
+    // { key: 'Junior Lecturer', value: 'Junior Lecturer' },
+    // { key: 'Teaching Assistant', value: 'Teaching Assistant' },
+    // { key: 'Research Fellow', value: 'Research Fellow' },
+    // { key: 'Visiting Faculty', value: 'Visiting Faculty' },
+    // { key: 'Adjunct Faculty', value: 'Adjunct Faculty' },
+    // { key: 'Professor Emeritus', value: 'Professor Emeritus' }
+  ];
 
   frmGroup: FormGroup;
 
@@ -158,9 +192,10 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     this.frmGroup = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      designation: ['Professor', Validators.required],
+      designation: ['Lecturer', Validators.required],
+      department: ['Institute of Information Technology'],
       phone: [''],
-      password: ['123456', [Validators.required, Validators.minLength(6)]]
+      password: ['password123', [Validators.required, Validators.minLength(8)]]
     });
 
     // Wire up Navbar Action signals
@@ -188,6 +223,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     effect(() => {
       if (ONCLICK_VIEW()) {
         this.isModalShow = true;
+        setTimeout(() => this.listComponent?.loadData(), 0);
         ONCLICK_VIEW.set(false);
       }
     }, { allowSignalWrites: true });
@@ -219,6 +255,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.toast.success(`Faculty member ${res.name} registered successfully!`);
         this.resetForm();
+        setTimeout(() => this.listComponent?.loadData(), 0);
       },
       error: (err) => {
         const msg = err.error?.detail || err.error?.message || 'Failed to register faculty.';
@@ -228,19 +265,34 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
   }
 
   submitUpdate(): void {
+    if (!this.editTeacherId) return;
     if (this.frmGroup.invalid) {
       this.frmGroup.markAllAsTouched();
+      this.toast.error('Please fix form validation errors.');
       return;
     }
-    this.toast.success('Faculty profile updated.');
-    this.resetForm();
+    this.api.updateTeacher(this.editTeacherId, this.frmGroup.value).subscribe({
+      next: (res) => {
+        this.toast.success(`Faculty profile for ${res.name} updated successfully.`);
+        this.resetForm();
+        setTimeout(() => this.listComponent?.loadData(), 0);
+      },
+      error: (err) => {
+        const msg = err.error?.detail || err.error?.message || 'Failed to update faculty profile.';
+        this.toast.error(msg);
+      }
+    });
   }
 
   resetForm(): void {
     this.isEdit = false;
+    this.isViewMode = false;
     this.editTeacherId = null;
+    this.frmGroup.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
+    this.frmGroup.get('password')?.updateValueAndValidity();
     this.frmGroup.reset({
-      designation: 'Professor',
+      designation: 'Lecturer',
+      department: 'Institute of Information Technology',
       password: 'password123'
     });
     ButtonUtils.setPageButtons({
@@ -255,15 +307,21 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
   onModalResult(result: any): void {
     if (result.data) {
       const t: UserResponse = result.data;
+      this.frmGroup.get('password')?.clearValidators();
+      this.frmGroup.get('password')?.updateValueAndValidity();
+
+      this.frmGroup.patchValue({
+        name: t.name || '',
+        email: t.email || '',
+        designation: t.designation || 'Faculty Member',
+        department: t.department || 'Institute of Information Technology',
+        phone: t.phone || ''
+      });
+
       if (result.isEdit) {
         this.isEdit = true;
+        this.isViewMode = false;
         this.editTeacherId = t.id;
-        this.frmGroup.patchValue({
-          name: t.name,
-          email: t.email,
-          designation: t.designation || 'Faculty Member',
-          phone: t.phone
-        });
         ButtonUtils.setPageButtons({
           save: false,
           update: true,
@@ -272,9 +330,20 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
           exit: true
         });
         this.isModalShow = false;
-        this.toast.info(`Editing faculty: ${t.name}`);
+        this.toast.info(`Editing faculty profile: ${t.name}`);
       } else if (result.viewMode) {
+        this.isViewMode = true;
+        this.isEdit = false;
+        this.editTeacherId = t.id;
+        ButtonUtils.setPageButtons({
+          save: false,
+          update: false,
+          view: true,
+          reset: true,
+          exit: true
+        });
         this.isModalShow = false;
+        this.toast.info(`Viewing faculty profile: ${t.name}`);
       }
     }
   }

@@ -1,7 +1,10 @@
 <div class="page">
-  <div class="page-header">
-    <h1 class="page-title text-gradient-flow">Dashboard</h1>
-    <span class="semester-badge" *ngIf="dashboard()">{{ dashboard()!.currentSemester }}</span>
+  <div class="page-header flex justify-between items-center mb-4">
+    <h1 class="page-title text-gradient-flow" style="font-size: 1.6rem; font-weight: 800;">Academic Dashboard</h1>
+    <span class="semester-badge" *ngIf="dashboard()">
+      <span class="status-dot status-dot--blue"></span>
+      {{ dashboard()!.currentSemester }}
+    </span>
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
@@ -10,44 +13,58 @@
   <ng-container *ngIf="dashboard() as d">
     <!-- Stat Cards -->
     <div class="stats-grid">
-      <div class="stat-card stat-card--blue">
+      <div class="stat-card stat-card--blue glass-card">
         <div class="stat-icon">📖</div>
         <div class="stat-value">{{ d.currentSemesterCredits }}<span class="stat-max">/{{ d.maxCreditsPerSemester }}</span></div>
-        <div class="stat-label">Credits This Semester</div>
+        <div class="stat-label">Credits Enrolled</div>
         <div class="progress-bar">
           <div class="progress-fill" [style.width.%]="creditPercent"></div>
         </div>
-        <div class="stat-sub">{{ d.remainingCredits }} credits remaining</div>
+        <div class="stat-sub">{{ d.remainingCredits }} credits available</div>
       </div>
 
-      <div class="stat-card stat-card--green">
+      <div class="stat-card stat-card--green glass-card">
         <div class="stat-icon">⭐</div>
         <div class="stat-value">{{ d.cgpa | number:'1.2-2' }}</div>
-        <div class="stat-label">CGPA</div>
-        <div class="stat-sub">{{ d.totalCreditsEarned }} credits · {{ d.totalCoursesCompleted }} courses</div>
+        <div class="stat-label">Cumulative GPA</div>
+        <div class="stat-sub">
+          <span class="status-dot status-dot--green"></span>
+          {{ d.totalCreditsEarned }} credits · {{ d.totalCoursesCompleted }} completed
+        </div>
       </div>
 
-      <div class="stat-card" [class.stat-card--red]="d.unpaidFeeCount > 0" [class.stat-card--gray]="d.unpaidFeeCount === 0">
+      <div class="stat-card glass-card" [class.stat-card--red]="d.unpaidFeeCount > 0" [class.stat-card--green]="d.unpaidFeeCount === 0">
         <div class="stat-icon">💳</div>
         <div class="stat-value">৳{{ d.totalDues | number:'1.0-0' }}</div>
-        <div class="stat-label">Total Dues</div>
-        <div class="stat-sub">{{ d.unpaidFeeCount }} unpaid fee(s)</div>
-        <a routerLink="../dues" class="stat-link" *ngIf="d.unpaidFeeCount > 0">View dues →</a>
+        <div class="stat-label">Outstanding Dues</div>
+        <div class="stat-sub">
+          <span class="status-dot" [class.status-dot--red]="d.unpaidFeeCount > 0" [class.status-dot--green]="d.unpaidFeeCount === 0"></span>
+          {{ d.unpaidFeeCount }} unpaid fee invoice(s)
+        </div>
+        <a routerLink="../dues" class="stat-link" *ngIf="d.unpaidFeeCount > 0">Pay dues now →</a>
       </div>
 
-      <div class="stat-card stat-card--purple">
+      <div class="stat-card stat-card--purple glass-card">
         <div class="stat-icon">📋</div>
         <div class="stat-value">{{ d.currentEnrollments.length }}</div>
-        <div class="stat-label">Active Courses</div>
-        <div class="stat-sub">This semester</div>
-        <a routerLink="../courses" class="stat-link">Register more →</a>
+        <div class="stat-label">Registered Courses</div>
+        <div class="stat-sub">
+          <span class="status-dot status-dot--blue"></span>
+          Current active term
+        </div>
+        <a routerLink="../courses" class="stat-link">Course Registration →</a>
       </div>
     </div>
 
     <!-- Current Enrollments Table -->
-    <div class="card card-glow-border" *ngIf="d.currentEnrollments.length > 0">
-      <div class="card-header card-glow-border">
-        <h2 class="card-title card-glow-border">Current Semester Courses</h2>
+    <div class="glass-panel" style="border-radius: 16px; padding: 1.2rem; margin-top: 1rem;" *ngIf="d.currentEnrollments.length > 0">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+        <h2 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <span>📚</span> Current Semester Enrolled Courses
+        </h2>
+        <span style="font-size: 0.78rem; font-weight: 600; color: #64748b;">
+          Total {{ d.currentEnrollments.length }} Course(s)
+        </span>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
@@ -57,26 +74,35 @@
               <th>Course Name</th>
               <th>Credits</th>
               <th>Status</th>
-              <th>Retake</th>
+              <th>Retake Status</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of d.currentEnrollments">
               <td><span class="code-badge">{{ e.courseCode }}</span></td>
-              <td>{{ e.courseName }}</td>
-              <td>{{ e.creditHours }}</td>
-              <td><span class="status-badge" [class]="'status-' + e.status.toLowerCase()">{{ e.status }}</span></td>
-              <td><span *ngIf="e.isRetake" class="retake-badge">Retake</span><span *ngIf="!e.isRetake">—</span></td>
+              <td style="font-weight: 600; color: #0f172a;">{{ e.courseName }}</td>
+              <td style="font-weight: 700; color: #086ad8;">{{ e.creditHours }} CH</td>
+              <td>
+                <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
+                  <span class="status-dot status-dot--green"></span>
+                  {{ e.status }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="e.isRetake" class="retake-badge">⚠️ Retake</span>
+                <span *ngIf="!e.isRetake" style="color: #94a3b8; font-size: 0.8rem;">Regular</span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="empty-state" *ngIf="d.currentEnrollments.length === 0">
-      <div class="empty-icon">📚</div>
-      <h3>No courses enrolled this semester</h3>
-      <p>Go to <a routerLink="../courses">Course Registration</a> to enroll.</p>
+    <div class="empty-state glass-panel" style="border-radius: 16px; padding: 3rem 1.5rem; text-align: center; margin-top: 1rem;" *ngIf="d.currentEnrollments.length === 0">
+      <div class="empty-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">📚</div>
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">No courses enrolled this semester</h3>
+      <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.3rem;">Navigate to <a routerLink="../courses" style="color: #086ad8; font-weight: 600;">Course Registration</a> to enroll in upcoming classes.</p>
     </div>
   </ng-container>
 </div>
+

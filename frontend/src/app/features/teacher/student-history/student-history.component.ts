@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { PdfService } from '../../../core/services/pdf.service';
 import { StudentHistoryResponse, UserResponse } from '../../../core/models/models';
@@ -25,11 +26,22 @@ export class StudentHistoryComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private pdfService: PdfService
+    private pdfService: PdfService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadSuggestions();
+
+    // Subscribe to query parameters to support GET by ID and persistence across URL refresh
+    this.route.queryParams.subscribe(params => {
+      const q = params['id'] || params['q'] || params['roll'];
+      if (q && q.trim() && q.trim() !== this.searchQuery) {
+        this.searchQuery = q.trim();
+        this.fetchStudentHistory(this.searchQuery);
+      }
+    });
   }
 
   loadSuggestions(): void {
@@ -46,12 +58,37 @@ export class StudentHistoryComponent implements OnInit {
   }
 
   searchStudent(): void {
-    if (!this.searchQuery.trim()) return;
+    const q = this.searchQuery.trim();
+    if (!q) return;
+
+    // Update URL query parameters so data persists on URL refresh
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { id: q },
+      queryParamsHandling: 'merge'
+    });
+
+    this.fetchStudentHistory(q);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.selectedStudent.set(null);
+    this.errorMessage.set(null);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { id: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  private fetchStudentHistory(query: string): void {
+    if (!query) return;
 
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.api.getStudentHistory(this.searchQuery.trim()).subscribe({
+    this.api.getStudentHistory(query).subscribe({
       next: (data) => {
         this.selectedStudent.set(data);
         this.loading.set(false);
@@ -59,7 +96,7 @@ export class StudentHistoryComponent implements OnInit {
       error: (err) => {
         this.loading.set(false);
         this.selectedStudent.set(null);
-        this.errorMessage.set(err?.error?.detail || err?.error?.message || `No student record found matching '${this.searchQuery}'`);
+        this.errorMessage.set(err?.error?.detail || err?.error?.message || `No student record found matching '${query}'`);
       }
     });
   }

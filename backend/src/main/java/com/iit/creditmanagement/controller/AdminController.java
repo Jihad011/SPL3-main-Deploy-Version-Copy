@@ -80,12 +80,24 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getStudentFees(studentId));
     }
 
+    @RequestMapping(value = "/students/{studentId}", method = {RequestMethod.PUT, RequestMethod.PATCH})
+    @Operation(summary = "Update student profile")
+    public ResponseEntity<UserResponse> updateStudent(@PathVariable Long studentId, @RequestBody com.iit.creditmanagement.model.dto.request.UserUpdateRequest request) {
+        return ResponseEntity.ok(adminService.updateStudent(studentId, request));
+    }
+
     // ── Teachers ─────────────────────────────────────────────
 
     @PostMapping("/teachers")
     @Operation(summary = "Create a new teacher account")
     public ResponseEntity<UserResponse> createTeacher(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createTeacher(request));
+    }
+
+    @RequestMapping(value = "/teachers/{teacherId}", method = {RequestMethod.PUT, RequestMethod.PATCH})
+    @Operation(summary = "Update teacher profile")
+    public ResponseEntity<UserResponse> updateTeacher(@PathVariable Long teacherId, @RequestBody com.iit.creditmanagement.model.dto.request.UserUpdateRequest request) {
+        return ResponseEntity.ok(adminService.updateTeacher(teacherId, request));
     }
 
     @GetMapping("/teachers")
