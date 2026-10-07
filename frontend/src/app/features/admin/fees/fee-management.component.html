@@ -1,0 +1,106 @@
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="feeSetupPanel"
+          [panelTitle]="'Issue Student Fee Invoice & Assessment Demand'"
+        />
+
+        <div *ngIf="feeSetupPanel()" style="padding: 1.25rem 0.5rem 0.5rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <!-- Row 1: Core Invoice Specifications -->
+            <div class="grid-row-3">
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="studentId"
+                label="Target Student"
+                [options]="studentOptions()"
+                displayMode="vertical"
+              />
+
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="feeType"
+                label="Fee Classification"
+                [options]="feeTypeOptions"
+                displayMode="vertical"
+              />
+
+              <input-amount-in-word
+                [frmGroup]="frmGroup"
+                controlName="amount"
+                label="Invoice Amount"
+                currency="BDT"
+                displayMode="vertical"
+              />
+            </div>
+
+            <!-- Row 2: Term, Due Date & Remarks -->
+            <div class="grid-row-3" style="margin-top: 1rem;">
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="semesterId"
+                label="Academic Semester"
+                [options]="semesterOptions()"
+                displayMode="vertical"
+              />
+
+              <input-date
+                [frmGroup]="frmGroup"
+                controlName="dueDate"
+                label="Payment Due Date"
+                dateFormat="YYYY-MM-DD"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="description"
+                label="Invoice Remarks / Reference"
+                placeholder="e.g. Assessment fee for course retake or term gap"
+                displayMode="vertical"
+              />
+            </div>
+
+            <!-- Automated System Assessment Tool Banner -->
+            <div class="utility-card-banner">
+              <div class="utility-banner-left">
+                <div class="utility-icon-box">
+                  <app-icon name="calendar" [size]="20"></app-icon>
+                </div>
+                <div>
+                  <div class="utility-title">Automated Semester Gap Assessment</div>
+                  <div class="utility-desc">Scan student academic progression histories and calculate unassessed semester gap penalty invoices.</div>
+                </div>
+              </div>
+              <div class="utility-banner-right">
+                <generic-button
+                  label="Audit Gap Fines"
+                  icon="calendar"
+                  styles="background: #ffffff; color: var(--theme-primary, #086AD8); border: 1px solid #cbd5e1; font-weight: 600;"
+                  (onClick)="auditGapFines()"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- CenterPoint Generic Modal for Fee List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Student Fee Invoices & Records"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-fee-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
+</div>

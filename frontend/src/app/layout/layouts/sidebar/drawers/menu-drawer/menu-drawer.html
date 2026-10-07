@@ -1,0 +1,37 @@
+<div class="menu-drawer-body">
+      <div *ngFor="let section of visibleSections()" class="menu-section">
+        <!-- Section Header -->
+        <div class="menu-section-header" (click)="toggleSection(section.key)">
+          <div class="menu-section-left">
+            <div class="menu-section-icon-box">
+              <mat-icon class="section-icon">{{ section.icon }}</mat-icon>
+            </div>
+            <span class="menu-section-label">{{ section.label }}</span>
+          </div>
+          <mat-icon class="menu-chevron">{{ isSectionOpen(section.key) ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </div>
+
+        <!-- Section Items -->
+        <div class="menu-items-wrap" [style.display]="isSectionOpen(section.key) ? 'block' : 'none'">
+          <div class="menu-items-list">
+            <div
+              *ngFor="let item of section.items"
+              [routerLink]="item.AppRoute"
+              routerLinkActive="menu-item-active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              (click)="onMenuItemClick(item)"
+              class="menu-item"
+            >
+              <span class="menu-item-arrow">›</span>
+              <div class="menu-item-content">
+                <div class="menu-item-top-row">
+                  <span class="menu-item-name">{{ item.FunctionName }}</span>
+                  <span *ngIf="item.QuickRouteNo" class="menu-item-shortcut">{{ item.QuickRouteNo }}</span>
+                </div>
+                <span class="menu-item-module">{{ item.ModuleName }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,142 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <p class="page-eyebrow">Faculty Academic Workspace</p>
+      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
+      <p class="page-subtitle">Review assigned academic courses and manage student assessment grade sheets.</p>
+    </div>
+    <div class="header-actions">
+      <div *ngIf="teacherId" class="metric-chip font-mono" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.25);">
+        <app-icon name="user" [size]="14" />
+        Teacher ID: {{ teacherId }}
+      </div>
+      <div *ngIf="!loading()" class="metric-chip metric-chip--green font-mono">
+        <app-icon name="book-open" [size]="14" />
+        {{ courses().length }} Course(s) Assigned
+      </div>
+    </div>
+  </div>
+
+  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+
+  <!-- CenterPoint Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && courses().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
+  </div>
+
+  <app-toolbar
+    *ngIf="!loading() && courses().length > 0"
+    searchPlaceholder="Search by course name or code…"
+    [showViewToggle]="true"
+    [defaultView]="'grid'"
+    [resultCount]="filtered().length"
+    (searchChange)="search.set($event)"
+    (viewChange)="view.set($event)"
+  />
+
+  <!-- Enrollment Statistics Card -->
+  <div class="card" *ngIf="!loading() && courses().length > 0" style="margin: 1.25rem 0;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Enrollment Statistics & Seat Utilization</div>
+        <div class="card-sub">Current capacity vs max seats across assigned academic courses</div>
+      </div>
+    </div>
+    <div class="stats-split-layout">
+      <div class="chart-container" style="position: relative; height: 240px; width:100%;">
+        <canvas baseChart
+          [data]="enrollmentChartData"
+          [options]="chartOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+      <div class="stats-data-table" *ngIf="stats() as s">
+        <div class="s-row"><span class="s-label">Total Enrollment</span><span class="s-val font-mono">{{ s.totalEnrolled }} / {{ s.totalCapacity }}</span></div>
+        <div class="s-row"><span class="s-label">Available Seats</span><span class="s-val s-val--highlight font-mono">{{ s.totalCapacity - s.totalEnrolled }}</span></div>
+        <div class="s-row"><span class="s-label">Seat Utilization</span>
+          <div class="s-val-group">
+            <div class="s-mini-track"><div class="s-mini-fill" [style.width.%]="s.utilization"></div></div>
+            <span class="s-val font-mono">{{ s.utilization | number:'1.1-1' }}%</span>
+          </div>
+        </div>
+        <div class="s-row"><span class="s-label">Mean Class Size (&mu;)</span><span class="s-val font-mono">{{ s.mean | number:'1.1-1' }}</span></div>
+        <div class="s-row"><span class="s-label">Standard Deviation (&sigma;)</span><span class="s-val font-mono">{{ s.stdDev | number:'1.2-2' }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid View -->
+  <div class="courses-grid" *ngIf="!loading() && view() === 'grid'" [@listAnimation]="filtered().length">
+    <div class="course-card" *ngFor="let c of filtered()">
+      <div class="course-card-header">
+        <span class="code-badge font-mono">{{ c.code }}</span>
+        <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span>
+      </div>
+
+      <h3 class="course-name">{{ c.name }}</h3>
+      <p class="course-desc" *ngIf="c.description">{{ c.description }}</p>
+
+      <div class="seat-info">
+        <div class="seat-bar">
+          <div class="seat-fill"
+               [style.width.%]="(c.currentEnrollment / c.maxSeats) * 100"
+               [style.background]="c.isFull ? '#ef4444' : '#22d3ee'">
+          </div>
+        </div>
+        <div class="seat-text-row">
+          <span>Enrolled Students</span>
+          <span class="font-mono font-bold">{{ c.currentEnrollment }} / {{ c.maxSeats }}</span>
+        </div>
+      </div>
+
+      <div class="course-card-footer">
+        <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn-grade font-mono font-semibold">
+          <app-icon name="edit" [size]="14" />
+          <span>Enter Marks & Grades</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="card" *ngIf="!loading() && view() === 'list' && filtered().length > 0">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Type</th>
+            <th>Credits</th>
+            <th>Enrolled Students</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of filtered()">
+            <td><span class="code-badge font-mono">{{ c.code }}</span></td>
+            <td><strong>{{ c.name }}</strong></td>
+            <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
+            <td>{{ c.creditHours }} Cr</td>
+            <td>
+              <span class="font-mono font-semibold" [style.color]="c.isFull ? '#ef4444' : '#10b981'">
+                {{ c.currentEnrollment }} / {{ c.maxSeats }}
+              </span>
+            </td>
+            <td>
+              <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn btn-primary btn-sm">
+                <app-icon name="edit" [size]="14" /> Enter Grades
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading() && filtered().length === 0">
+    <div class="empty-icon"><app-icon name="book-open" [size]="28" /></div>
+    <h3>No courses assigned</h3>
+    <p>You currently do not have courses assigned for this active academic term.</p>
+  </div>
+</div>

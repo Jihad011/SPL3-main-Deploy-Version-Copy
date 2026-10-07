@@ -1,0 +1,91 @@
+<div class="theme-picker-container" #themePickerContainer>
+      <!-- Theme Picker Button -->
+      <button
+        #themePickerBtn
+        class="theme-picker-btn"
+        [class.active]="isOpen"
+        (click)="togglePicker($event)"
+        [attr.aria-expanded]="isOpen"
+        [attr.aria-haspopup]="true"
+        aria-label="Open theme picker"
+        matRipple>
+        <mat-icon>palette</mat-icon>
+        <span class="btn-text">Theme</span>
+        <mat-icon class="dropdown-arrow" [class.rotated]="isOpen">
+          keyboard_arrow_down
+        </mat-icon>
+      </button>
+
+      <!-- Theme Picker Dropdown -->
+      <div
+        #dropdown
+        class="theme-picker-dropdown"
+        [class.visible]="isOpen"
+        [@slideInOut]="isOpen ? 'in' : 'out'"
+        [attr.aria-hidden]="!isOpen"
+        role="menu">
+
+        <div class="dropdown-header">
+          <h3>Choose Theme</h3>
+          <button
+            (click)="closePicker()"
+            class="close-btn"
+            aria-label="Close theme picker"
+            tabindex="0">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="themes-grid" role="group" aria-label="Theme options">
+          <button
+            *ngFor="let theme of themes; trackBy: trackByThemeId"
+            class="theme-option"
+            [class.selected]="selectedTheme === theme.id"
+            (click)="selectTheme(theme)"
+            [attr.aria-pressed]="selectedTheme === theme.id"
+            [attr.aria-label]="'Select ' + theme.name + ' theme'"
+            role="menuitem"
+            type="button">
+
+            <div class="theme-preview" [style.background]="getThemeGradient(theme)">
+              <div class="preview-circles">
+                <div class="circle primary" [style.background]="theme.primary"></div>
+                <div class="circle secondary" [style.background]="theme.secondary"></div>
+                <div class="circle accent" [style.background]="theme.accent"></div>
+              </div>
+
+              <mat-icon
+                *ngIf="selectedTheme === theme.id"
+                class="selected-icon"
+                aria-hidden="true">
+                check_circle
+              </mat-icon>
+            </div>
+
+            <div class="theme-info flex flex-wrap lg:flex-nowrap items-center">
+              <mat-icon class="theme-icon" [attr.aria-hidden]="true">{{ theme.icon }}</mat-icon>
+              <span class="theme-name ml-2">{{ theme.name }}</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="dropdown-footer">
+          <button
+            class="reset-btn"
+            (click)="resetToDefault()"
+            type="button"
+            aria-label="Reset theme to default">
+            <mat-icon>refresh</mat-icon>
+            Reset to Default
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div
+      class="backdrop"
+      *ngIf="isOpen"
+      (click)="closePicker()"
+      [@fadeInOut]="isOpen ? 'in' : 'out'">
+    </div>

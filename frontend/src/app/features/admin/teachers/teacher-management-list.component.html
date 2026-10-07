@@ -1,0 +1,34 @@
+<div class="page-wrapper" style="padding: 0.5rem;">
+      <app-expansion-sub-panel-header
+        [isOpenSignal]="listPanel"
+        [subPanelTitle]="'Faculty Member Directory'"
+      />
+
+      <div *ngIf="listPanel()" style="margin-top: 0.5rem;">
+        <generic-data-grid
+          [dataSource]="teachers()"
+          [selectedColumns]="selectedColumns"
+          [customColumnNames]="customColumnNames"
+          [actionVisibility]="getActionVisibilityForRow"
+          [showEditButton]="true"
+          [showDeleteButton]="true"
+          [showViewButton]="true"
+          [searchEnabled]="true"
+          [useInlineEdit]="false"
+          (onFHViewClick)="onViewClick($event)"
+          (onFHEditClick)="onEditClick($event)"
+          (onFHDeleteClick)="onDeleteClick($event)"
+        />
+      </div>
+    </div>
+
+    <!-- Confirmation Dialogue -->
+    <confirmation-dialogue
+      *ngIf="showDeleteConfirm()"
+      [isOpen]="true"
+      [title]="'Deactivate Faculty Account'"
+      [message]="'Are you sure you want to deactivate faculty member ' + (deleteTarget()?.name || '') + '?'"
+      variant="danger"
+      (close)="showDeleteConfirm.set(false)"
+      (buttonClick)="onDeleteConfirm($event)"
+    />

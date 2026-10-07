@@ -1,0 +1,103 @@
+<div class="toolbar">
+  <!-- Search -->
+  <div class="toolbar-search" *ngIf="showSearch">
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        #searchInput
+        type="text"
+        class="search-input"
+        [placeholder]="searchPlaceholder"
+        [(ngModel)]="searchValue"
+        (ngModelChange)="onSearchInput($event)"
+        [attr.aria-label]="searchPlaceholder"
+        id="toolbar-search-input"
+      />
+      <button *ngIf="searchValue" class="search-clear" (click)="clearSearch()" aria-label="Clear search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <span class="search-shortcut" *ngIf="!searchValue">⌃K</span>
+    </div>
+  </div>
+
+  <!-- Sort Dropdown -->
+  <div class="toolbar-dropdown" *ngIf="sortOptions.length > 0">
+    <button class="toolbar-btn" (click)="toggleSort()" [class.active]="sortOpen()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18M7 12h10M11 18h2"/>
+      </svg>
+      Sort
+      <span class="active-badge" *ngIf="selectedSort">1</span>
+    </button>
+    <div class="dropdown-panel" *ngIf="sortOpen()">
+      <button class="dropdown-item" *ngFor="let opt of sortOptions"
+              [class.selected]="selectedSort === opt.value"
+              (click)="selectSort(opt.value)">
+        {{ opt.label }}
+        <svg *ngIf="selectedSort === opt.value" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Dropdown -->
+  <div class="toolbar-dropdown" *ngIf="filterOptions.length > 0">
+    <button class="toolbar-btn" (click)="toggleFilter()" [class.active]="filterOpen()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filter
+      <span class="active-badge" *ngIf="selectedFilters.size > 0">{{ selectedFilters.size }}</span>
+    </button>
+    <div class="dropdown-panel filter-panel" *ngIf="filterOpen()">
+      <button class="dropdown-item" *ngFor="let opt of filterOptions"
+              [class.selected]="selectedFilters.has(opt.value)"
+              (click)="toggleFilterItem(opt.value)">
+        <span class="filter-check">
+          <svg *ngIf="selectedFilters.has(opt.value)" width="12" height="12" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        {{ opt.label }}
+      </button>
+      <div class="dropdown-footer" *ngIf="selectedFilters.size > 0">
+        <button class="clear-filters-btn" (click)="clearFilters()">Clear filters</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar-spacer"></div>
+
+  <!-- Result count -->
+  <span class="toolbar-count" *ngIf="resultCount >= 0">
+    {{ resultCount }} result{{ resultCount !== 1 ? 's' : '' }}
+  </span>
+
+  <!-- View Toggle -->
+  <div class="view-toggle" *ngIf="showViewToggle">
+    <button class="view-btn" [class.active]="currentView() === 'grid'"
+            (click)="setView('grid')" title="Grid view" aria-label="Grid view">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </button>
+    <button class="view-btn" [class.active]="currentView() === 'list'"
+            (click)="setView('list')" title="List view" aria-label="List view">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+    </button>
+  </div>
+</div>

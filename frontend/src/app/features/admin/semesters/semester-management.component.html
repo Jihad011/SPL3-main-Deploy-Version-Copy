@@ -1,0 +1,76 @@
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="semSetupPanel"
+          [panelTitle]="'Academic Semester Term Setup'"
+        />
+
+        <div *ngIf="semSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-2">
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Academic Term *"
+                [options]="termOptions"
+                displayMode="vertical"
+              />
+
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="year"
+                label="Academic Year *"
+                placeholder="2026"
+                [minValue]="2020"
+                [maxValue]="2035"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-2" style="margin-top: 1rem;">
+              <input-date
+                [frmGroup]="frmGroup"
+                controlName="startDate"
+                label="Term Start Date *"
+                displayMode="vertical"
+              />
+
+              <input-date
+                [frmGroup]="frmGroup"
+                controlName="endDate"
+                label="Term End Date *"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <generic-switch
+                [frmGroup]="frmGroup"
+                controlName="isActive"
+                label="Open Registration & Activate Term Immediately"
+                displayMode="horizontal"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- CenterPoint Generic Modal for Semester List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Academic Semester Sessions"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-semester-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
+</div>

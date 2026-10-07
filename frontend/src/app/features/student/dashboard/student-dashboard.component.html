@@ -1,108 +1,363 @@
-<div class="page">
-  <div class="page-header flex justify-between items-center mb-4">
-    <h1 class="page-title text-gradient-flow" style="font-size: 1.6rem; font-weight: 800;">Academic Dashboard</h1>
-    <span class="semester-badge" *ngIf="dashboard()">
-      <span class="status-dot status-dot--blue"></span>
-      {{ dashboard()!.currentSemester }}
-    </span>
-  </div>
-
-  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
-  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
-
-  <ng-container *ngIf="dashboard() as d">
-    <!-- Stat Cards -->
-    <div class="stats-grid">
-      <div class="stat-card stat-card--blue glass-card">
-        <div class="stat-icon">📖</div>
-        <div class="stat-value">{{ d.currentSemesterCredits }}<span class="stat-max">/{{ d.maxCreditsPerSemester }}</span></div>
-        <div class="stat-label">Credits Enrolled</div>
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="creditPercent"></div>
-        </div>
-        <div class="stat-sub">{{ d.remainingCredits }} credits available</div>
+<div class="page student-dashboard-page">
+  <!-- Header & Profile Strip -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-eyebrow">
+        <app-icon name="user" [size]="13" />
+        <span>Academic Workspace · Student Portal</span>
       </div>
-
-      <div class="stat-card stat-card--green glass-card">
-        <div class="stat-icon">⭐</div>
-        <div class="stat-value">{{ d.cgpa | number:'1.2-2' }}</div>
-        <div class="stat-label">Cumulative GPA</div>
-        <div class="stat-sub">
-          <span class="status-dot status-dot--green"></span>
-          {{ d.totalCreditsEarned }} credits · {{ d.totalCoursesCompleted }} completed
-        </div>
-      </div>
-
-      <div class="stat-card glass-card" [class.stat-card--red]="d.unpaidFeeCount > 0" [class.stat-card--green]="d.unpaidFeeCount === 0">
-        <div class="stat-icon">💳</div>
-        <div class="stat-value">৳{{ d.totalDues | number:'1.0-0' }}</div>
-        <div class="stat-label">Outstanding Dues</div>
-        <div class="stat-sub">
-          <span class="status-dot" [class.status-dot--red]="d.unpaidFeeCount > 0" [class.status-dot--green]="d.unpaidFeeCount === 0"></span>
-          {{ d.unpaidFeeCount }} unpaid fee invoice(s)
-        </div>
-        <a routerLink="../dues" class="stat-link" *ngIf="d.unpaidFeeCount > 0">Pay dues now →</a>
-      </div>
-
-      <div class="stat-card stat-card--purple glass-card">
-        <div class="stat-icon">📋</div>
-        <div class="stat-value">{{ d.currentEnrollments.length }}</div>
-        <div class="stat-label">Registered Courses</div>
-        <div class="stat-sub">
-          <span class="status-dot status-dot--blue"></span>
-          Current active term
-        </div>
-        <a routerLink="../courses" class="stat-link">Course Registration →</a>
-      </div>
-    </div>
-
-    <!-- Current Enrollments Table -->
-    <div class="glass-panel" style="border-radius: 16px; padding: 1.2rem; margin-top: 1rem;" *ngIf="d.currentEnrollments.length > 0">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
-        <h2 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-          <span>📚</span> Current Semester Enrolled Courses
-        </h2>
-        <span style="font-size: 0.78rem; font-weight: 600; color: #64748b;">
-          Total {{ d.currentEnrollments.length }} Course(s)
+      <h1 class="page-title">Welcome back, {{ displayName }}</h1>
+      <div class="student-meta-strip" *ngIf="dashboard() as d">
+        <span class="meta-pill font-mono" *ngIf="d.studentId">
+          <strong>Student ID:</strong> {{ d.studentId }}
+        </span>
+        <span class="meta-pill font-mono">
+          <strong>Roll:</strong> {{ d.rollNumber }}
+        </span>
+        <span class="meta-pill font-mono" *ngIf="d.registrationNumber">
+          <strong>Reg:</strong> {{ d.registrationNumber }}
+        </span>
+        <span class="meta-pill" *ngIf="d.currentSemester">
+          <app-icon name="calendar" [size]="13" /> {{ d.currentSemester }}
+        </span>
+        <span class="meta-pill meta-pill--status">
+          <span class="status-dot"></span> Active Student
         </span>
       </div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Course Code</th>
-              <th>Course Name</th>
-              <th>Credits</th>
-              <th>Status</th>
-              <th>Retake Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let e of d.currentEnrollments">
-              <td><span class="code-badge">{{ e.courseCode }}</span></td>
-              <td style="font-weight: 600; color: #0f172a;">{{ e.courseName }}</td>
-              <td style="font-weight: 700; color: #086ad8;">{{ e.creditHours }} CH</td>
-              <td>
-                <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
-                  <span class="status-dot status-dot--green"></span>
-                  {{ e.status }}
-                </span>
-              </td>
-              <td>
-                <span *ngIf="e.isRetake" class="retake-badge">⚠️ Retake</span>
-                <span *ngIf="!e.isRetake" style="color: #94a3b8; font-size: 0.8rem;">Regular</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    </div>
+    <div class="page-header-actions" *ngIf="dashboard() as d">
+      <a routerLink="../dues" class="btn btn-secondary" [class.btn-due-highlight]="d.unpaidFeeCount > 0">
+        <app-icon name="credit-card" [size]="15" />
+        Pay Fees <span class="header-due-badge" *ngIf="d.unpaidFeeCount > 0">৳{{ d.totalDues | number:'1.0-0' }}</span>
+      </a>
+      <a routerLink="../courses" class="btn btn-primary">
+        <app-icon name="plus" [size]="15" /> Enroll in Courses
+      </a>
+      <a routerLink="../history" class="btn btn-secondary" title="View Academic History">
+        <app-icon name="history" [size]="15" /> Records
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="skeleton-dashboard" *ngIf="loading()">
+    <div class="stats-grid" style="margin-bottom: 1.5rem;">
+      <app-skeleton height="130px" borderRadius="8px"></app-skeleton>
+      <app-skeleton height="130px" borderRadius="8px"></app-skeleton>
+      <app-skeleton height="130px" borderRadius="8px"></app-skeleton>
+      <app-skeleton height="130px" borderRadius="8px"></app-skeleton>
+    </div>
+    <div class="bento-grid">
+      <app-skeleton height="380px" borderRadius="8px"></app-skeleton>
+      <app-skeleton height="380px" borderRadius="8px"></app-skeleton>
+    </div>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">
+    <app-icon name="alert-triangle" [size]="16" /> {{ error() }}
+  </div>
+
+  <ng-container *ngIf="dashboard() as d">
+
+    <!-- ── Row 1: Executive 4-Card KPI Grid ─────────────────── -->
+    <div class="stats-grid kpi-dashboard-grid">
+      <!-- Card 1: CGPA & Academic Standing -->
+      <div class="stat-card stat-card--kpi-cgpa">
+        <div class="kpi-cgpa-row">
+          <div class="cgpa-ring-mini">
+            <svg class="cgpa-svg-mini" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" class="cgpa-track-mini" />
+              <circle cx="40" cy="40" r="32" class="cgpa-fill-mini"
+                [style.stroke]="cgpaColor(d.cgpa)"
+                [style.stroke-dashoffset]="cgpaMiniDashOffset(d.cgpa)"
+              />
+            </svg>
+            <div class="cgpa-mini-text font-mono">{{ d.cgpa | number:'1.2-2' }}</div>
+          </div>
+          <div class="kpi-cgpa-info">
+            <div class="kpi-title">Cumulative GPA</div>
+            <div class="standing-chip" [style.color]="cgpaColor(d.cgpa)" [style.background]="cgpaColor(d.cgpa) + '15'">
+              Standing: {{ cgpaGradeLabel(d.cgpa) }}
+            </div>
+            <div class="kpi-sub-text">
+              <strong>{{ d.totalCreditsEarned }}</strong> cr earned · <strong>{{ d.totalCoursesCompleted }}</strong> done
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Term Credits Utilization -->
+      <div class="stat-card stat-card--blue">
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="book-open" [size]="20" /></div>
+          <div class="stat-content">
+            <div class="stat-value font-mono">
+              {{ d.currentSemesterCredits }}<span class="stat-max">/{{ d.maxCreditsPerSemester }}</span>
+            </div>
+            <div class="stat-label">Term Credit Limit</div>
+            <div class="progress-bar" style="margin-top:0.45rem">
+              <div class="progress-fill" [style.width.%]="creditPercent" [class.fill-warning]="creditPercent >= 100"></div>
+            </div>
+            <div class="stat-sub">
+              {{ d.remainingCredits > 0 ? (d.remainingCredits + ' credits remaining') : 'Maximum term cap reached' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Financial Standing -->
+      <div class="stat-card" [class.stat-card--red]="d.unpaidFeeCount > 0" [class.stat-card--green]="d.unpaidFeeCount === 0">
+        <div class="stat-card-inner">
+          <div class="stat-icon">
+            <app-icon [name]="d.unpaidFeeCount > 0 ? 'alert-triangle' : 'check-circle'" [size]="20" />
+          </div>
+          <div class="stat-content">
+            <div class="stat-value font-mono">
+              {{ d.unpaidFeeCount > 0 ? ('৳' + (d.totalDues | number:'1.0-0')) : '৳0' }}
+            </div>
+            <div class="stat-label">{{ d.unpaidFeeCount > 0 ? 'Outstanding Dues' : 'Financial Standing' }}</div>
+            <div class="stat-sub">
+              {{ d.unpaidFeeCount > 0 ? (d.unpaidFeeCount + ' invoice(s) pending payment') : 'All semester fees cleared' }}
+            </div>
+            <a routerLink="../dues" class="stat-link" *ngIf="d.unpaidFeeCount > 0">
+              Pay dues <app-icon name="arrow-right" [size]="13" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Enrolled Courses -->
+      <div class="stat-card stat-card--purple">
+        <div class="stat-card-inner">
+          <div class="stat-icon"><app-icon name="list-check" [size]="20" /></div>
+          <div class="stat-content">
+            <div class="stat-value font-mono">{{ d.currentEnrollments.length }}</div>
+            <div class="stat-label">Active Courses</div>
+            <div class="stat-sub">{{ d.currentSemester || 'Current term' }}</div>
+            <a routerLink="../my-courses" class="stat-link">
+              My courses <app-icon name="arrow-right" [size]="13" />
+            </a>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="empty-state glass-panel" style="border-radius: 16px; padding: 3rem 1.5rem; text-align: center; margin-top: 1rem;" *ngIf="d.currentEnrollments.length === 0">
-      <div class="empty-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem;">📚</div>
-      <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">No courses enrolled this semester</h3>
-      <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.3rem;">Navigate to <a routerLink="../courses" style="color: #086ad8; font-weight: 600;">Course Registration</a> to enroll in upcoming classes.</p>
+    <!-- ── Row 2: Balanced 2-Column Bento Grid ──────────────── -->
+    <div class="dashboard-bento-grid">
+      <!-- ═══════════════════════════════════════════════════════
+           LEFT COLUMN: Primary Academic Data (60% width)
+           ═══════════════════════════════════════════════════════ -->
+      <div class="bento-col-main">
+        <!-- 1. Current Semester Courses Table -->
+        <div class="card bento-card">
+          <div class="card-header">
+            <div class="card-header-titles">
+              <h2 class="card-title">Enrolled Courses & Timetable</h2>
+              <div class="card-sub">{{ d.currentSemester || 'Active semester offerings' }}</div>
+            </div>
+            <div class="card-header-actions">
+              <a routerLink="../my-courses" class="btn-table-action">
+                View All <app-icon name="arrow-right" [size]="13" />
+              </a>
+            </div>
+          </div>
+
+          <div class="table-wrapper" *ngIf="d.currentEnrollments.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">Code</th>
+                  <th>Course Name</th>
+                  <th style="width: 80px;">Credits</th>
+                  <th style="width: 90px;">Type</th>
+                  <th style="width: 100px;">Status</th>
+                </tr>
+              </thead>
+              <tbody [@listAnimation]="d.currentEnrollments.length">
+                <tr *ngFor="let e of d.currentEnrollments">
+                  <td><span class="code-badge">{{ e.courseCode }}</span></td>
+                  <td>
+                    <div class="course-name-cell">
+                      <strong class="course-cell-title">{{ e.courseName }}</strong>
+                      <span *ngIf="e.isRetake" class="retake-mini-tag">Retake</span>
+                    </div>
+                  </td>
+                  <td class="font-mono text-center">{{ e.creditHours }} cr</td>
+                  <td>
+                    <span class="course-type-badge" [class]="'type-' + (e.courseType ?? 'core').toLowerCase()">
+                      {{ e.courseType ?? 'CORE' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
+                      {{ e.status }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state-compact" *ngIf="d.currentEnrollments.length === 0">
+            <app-icon name="book-open" [size]="28" class="text-muted" />
+            <p>No courses registered for {{ d.currentSemester || 'this term' }}.</p>
+            <a routerLink="../courses" class="btn btn-primary btn-sm">
+              <app-icon name="plus" [size]="14" /> Enroll in Courses
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. Academic CGPA Progression Trend -->
+        <div class="card bento-card">
+          <div class="card-header">
+            <div class="card-header-titles">
+              <h2 class="card-title">Academic CGPA Progression</h2>
+              <div class="card-sub">Cumulative grade point average trajectory across completed terms</div>
+            </div>
+            <div class="cgpa-trend-badge" [style.color]="cgpaColor(d.cgpa)">
+              Current: <strong>{{ d.cgpa | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+          <div class="chart-container-dashboard">
+            <canvas baseChart
+              [data]="cgpaTrendChartData"
+              [options]="cgpaTrendChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════
+           RIGHT COLUMN: Actions, Invoices & Goal Simulator (40% width)
+           ═══════════════════════════════════════════════════════ -->
+      <div class="bento-col-side">
+        <!-- 1. Payable Invoices (High Priority) -->
+        <div class="card bento-card payable-card" *ngIf="unpaidFees().length > 0">
+          <div class="card-header">
+            <div class="payable-header-title">
+              <span class="pulse-dot-red"></span>
+              <div>
+                <h2 class="card-title">Outstanding Invoices</h2>
+                <div class="card-sub">{{ unpaidFees().length }} payment(s) requiring immediate settlement</div>
+              </div>
+            </div>
+            <a routerLink="../dues" class="btn-table-action">
+              History <app-icon name="arrow-right" [size]="13" />
+            </a>
+          </div>
+
+          <div class="payable-fee-list" [@listAnimation]="unpaidFees().length">
+            <div class="payable-fee-item" *ngFor="let f of unpaidFees()">
+              <div class="fee-icon-box">
+                <app-icon name="credit-card" [size]="18" />
+              </div>
+              <div class="fee-main-info">
+                <div class="fee-title-row">
+                  <strong class="fee-type-name">{{ f.feeTypeDisplay }}</strong>
+                  <span class="fee-sem-label" *ngIf="f.semesterLabel">{{ f.semesterLabel }}</span>
+                </div>
+                <div class="fee-due-date" *ngIf="f.dueDate">Due: {{ f.dueDate | date:'mediumDate' }}</div>
+              </div>
+              <div class="fee-pay-action-col">
+                <div class="fee-amount-value font-mono">৳{{ f.amount | number:'1.0-0' }}</div>
+                <button class="btn-pay-now-mini" [disabled]="payingFeeId() === f.id" (click)="payFee(f)">
+                  <span *ngIf="payingFeeId() !== f.id">Pay Now</span>
+                  <span *ngIf="payingFeeId() === f.id" class="spinner-sm"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Degree Milestone & Academic Standing Card -->
+        <div class="card bento-card degree-milestone-card" appCardGlow>
+          <div class="card-header">
+            <div class="card-header-titles">
+              <h2 class="card-title">Degree Milestone & Standing</h2>
+              <div class="card-sub">Master in Information Technology (MIT)</div>
+            </div>
+            <div class="degree-completion-badge">
+              <span class="pct-val font-mono">{{ ((d.totalCreditsEarned / 36) * 100) | number:'1.0-0' }}%</span>
+              <span class="pct-lbl">Done</span>
+            </div>
+          </div>
+
+          <div class="milestone-content">
+            <!-- Progress Bar -->
+            <div class="milestone-progress-box">
+              <div class="milestone-labels">
+                <span class="m-label">Program Credits Earned</span>
+                <span class="m-val font-mono"><strong>{{ d.totalCreditsEarned }}</strong> / 36 Credits</span>
+              </div>
+              <div class="milestone-track">
+                <div class="milestone-fill" [style.width.%]="Math.min(100, (d.totalCreditsEarned / 36) * 100)"></div>
+              </div>
+              <div class="milestone-ticks">
+                <span [class.tick-reached]="d.totalCreditsEarned >= 12">12 cr (Foundation)</span>
+                <span [class.tick-reached]="d.totalCreditsEarned >= 24">24 cr (Advanced)</span>
+                <span [class.tick-reached]="d.totalCreditsEarned >= 36">36 cr (Degree)</span>
+              </div>
+            </div>
+
+            <!-- Standing & Status Card -->
+            <div class="standing-banner" [style.border-color]="cgpaColor(d.cgpa) + '40'" [style.background]="cgpaColor(d.cgpa) + '0D'">
+              <div class="standing-banner-icon" [style.color]="cgpaColor(d.cgpa)" [style.background]="cgpaColor(d.cgpa) + '20'">
+                <app-icon name="graduation-cap" [size]="18" />
+              </div>
+              <div class="standing-banner-info">
+                <div class="standing-banner-title">
+                  {{ standingTitle(d.cgpa) }}
+                </div>
+                <div class="standing-banner-desc">
+                  Cumulative CGPA: <strong class="font-mono" [style.color]="cgpaColor(d.cgpa)">{{ d.cgpa | number:'1.2-2' }}</strong> · {{ d.totalCoursesCompleted }} Course(s) Completed
+                </div>
+              </div>
+            </div>
+
+            <!-- Term Load Strip -->
+            <div class="term-load-strip">
+              <div class="term-load-item">
+                <span class="tl-k">Current Term Load</span>
+                <span class="tl-v font-mono">{{ d.currentSemesterCredits }} Credits ({{ d.currentEnrollments.length }} Courses)</span>
+              </div>
+              <a routerLink="../history" class="btn-history-link">
+                View Dossier <app-icon name="arrow-right" [size]="12" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Quick Academic Shortcuts -->
+        <div class="card bento-card shortcuts-card">
+          <div class="card-header">
+            <h2 class="card-title">Quick Actions</h2>
+          </div>
+          <div class="shortcuts-grid">
+            <a routerLink="../courses" class="shortcut-item">
+              <div class="shortcut-icon icon-blue"><app-icon name="plus" [size]="18" /></div>
+              <div class="shortcut-info">
+                <div class="shortcut-title">Course Enrollment</div>
+                <div class="shortcut-desc">Browse and enroll in term offerings</div>
+              </div>
+            </a>
+            <a routerLink="../history" class="shortcut-item">
+              <div class="shortcut-icon icon-purple"><app-icon name="history" [size]="18" /></div>
+              <div class="shortcut-info">
+                <div class="shortcut-title">Academic History</div>
+                <div class="shortcut-desc">Download official transcript PDF</div>
+              </div>
+            </a>
+            <a routerLink="../dues" class="shortcut-item">
+              <div class="shortcut-icon icon-green"><app-icon name="wallet" [size]="18" /></div>
+              <div class="shortcut-info">
+                <div class="shortcut-title">Fee Ledger & Receipts</div>
+                <div class="shortcut-desc">Review payments & invoices</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </ng-container>
 </div>
-

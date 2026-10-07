@@ -1,0 +1,21 @@
+<div class="page-wrapper" style="padding: 0.5rem;">
+      <app-expansion-sub-panel-header
+        [isOpenSignal]="listPanel"
+        [subPanelTitle]="'Academic Semester Sessions'"
+      />
+
+      <div *ngIf="listPanel()" style="margin-top: 0.5rem;">
+        <generic-data-grid
+          [dataSource]="semesters()"
+          [selectedColumns]="selectedColumns"
+          [customColumnNames]="customColumnNames"
+          [actionVisibility]="getActionVisibilityForRow"
+          [showEditButton]="false"
+          [showDeleteButton]="false"
+          [showViewButton]="true"
+          [searchEnabled]="true"
+          [useInlineEdit]="false"
+          (onFHViewClick)="onViewClick($event)"
+        />
+      </div>
+    </div>

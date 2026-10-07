@@ -1,0 +1,19 @@
+<div [class.blur-screen]="isBlurred" class="app-layout-root">
+      <!-- Top Global Navbar -->
+      <div class="app-navbar-slot">
+        <app-navbar></app-navbar>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="app-content-area">
+        <!-- Sidebar Icon Dock -->
+        <div class="app-sidebar-slot">
+          <app-sidebar></app-sidebar>
+        </div>
+
+        <!-- Routed Content Canvas -->
+        <div class="app-canvas">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>

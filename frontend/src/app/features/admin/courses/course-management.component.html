@@ -1,0 +1,98 @@
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="courseSetupPanel"
+          [panelTitle]="isEdit ? 'Update Course Offering' : 'Course Offering & Curriculum Setup'"
+        />
+
+        <div *ngIf="courseSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-3">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="code"
+                label="Course Code"
+                placeholder="e.g. MIT-501"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Course Title"
+                placeholder="e.g. Advanced Software Architecture"
+                displayMode="vertical"
+              />
+
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="courseType"
+                label="Course Classification"
+                [options]="typeOptions"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-3" style="margin-top: 1rem;">
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="creditHours"
+                label="Credit Units"
+                placeholder="3"
+                [minValue]="1"
+                [maxValue]="6"
+                displayMode="vertical"
+              />
+
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="maxSeats"
+                label="Max Student Capacity"
+                placeholder="40"
+                [minValue]="5"
+                [maxValue]="200"
+                displayMode="vertical"
+              />
+
+              <input-select-option-field
+                [frmGroup]="frmGroup"
+                controlName="teacherId"
+                label="Assigned Lead Faculty"
+                [options]="facultyOptions()"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <input-text-area
+                [frmGroup]="frmGroup"
+                controlName="description"
+                label="Course Syllabus & Learning Outcomes"
+                placeholder="Describe course objectives, prerequisites, and evaluation scheme..."
+                [rows]="3"
+                displayMode="vertical"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- CenterPoint Generic Modal for Course List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Course Catalog Offerings"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-course-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
+</div>

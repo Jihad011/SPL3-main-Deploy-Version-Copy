@@ -1,0 +1,107 @@
+<div class="modal-overlay" *ngIf="isOpen()" (click)="close()">
+      <div class="modal-container" [ngClass]="getThemeClass()" (click)="$event.stopPropagation()">
+        
+        <!-- Header -->
+        <div class="modal-header">
+          <div class="brand-logo">
+            <app-icon [name]="getBrandIcon()" [size]="28"></app-icon>
+          </div>
+          <div class="brand-info">
+            <h2>{{ getBrandName() }} Checkout</h2>
+            <p>Secure SSL Gateway</p>
+          </div>
+          <button class="close-btn" (click)="close()">
+            <app-icon name="x" [size]="20"></app-icon>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <div class="amount-display">
+            <div class="amount-label">Total Amount to Pay</div>
+            <div class="amount-value">৳{{ amount() | number:'1.0-0' }}</div>
+          </div>
+
+          <!-- Simulation Steps -->
+          <div class="simulation-area">
+            <!-- Step 1: Input Details -->
+            <div class="step-input" *ngIf="step() === 'INPUT'">
+              <!-- Mobile Wallet Form -->
+              <div *ngIf="isMobileWallet()">
+                <div class="form-group">
+                  <label>Your {{ getBrandName() }} Account Number</label>
+                  <input type="text" placeholder="e.g 01XXXXXXXXX" [(ngModel)]="accountNumber" maxlength="11">
+                </div>
+              </div>
+              
+              <!-- Card Form -->
+              <div *ngIf="isCard()">
+                <div class="form-group">
+                  <label>Card Number</label>
+                  <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" [(ngModel)]="cardNumber" maxlength="19">
+                </div>
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label>Expiry (MM/YY)</label>
+                    <input type="text" placeholder="MM/YY" maxlength="5">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label>CVV</label>
+                    <input type="password" placeholder="***" maxlength="3">
+                  </div>
+                </div>
+              </div>
+
+                <!-- Cash Form -->
+              <div *ngIf="isCash()">
+                <div class="cash-info">
+                  <app-icon name="alert-triangle" [size]="24"></app-icon>
+                  <p>You have selected Cash Payment. Please pay at the University Accounts office to complete the transaction.</p>
+                </div>
+              </div>
+
+              <!-- Generic Bank Transfer -->
+              <div *ngIf="isBankTransfer()">
+                <div class="form-group">
+                  <label>Bank Account Number</label>
+                  <input type="text" placeholder="Enter 13-digit account number" [(ngModel)]="accountNumber" maxlength="20">
+                </div>
+              </div>
+
+              <button class="action-btn" [disabled]="!canProceed()" (click)="proceedToOtp()">
+                {{ isCash() ? 'Confirm Intent to Pay' : 'Proceed' }}
+              </button>
+            </div>
+
+            <!-- Step 2: OTP (Only for Digital) -->
+            <div class="step-otp" *ngIf="step() === 'OTP' && !isCash()">
+              <h3>Verification Code</h3>
+              <p>An OTP has been sent to your {{ isMobileWallet() ? 'number' : 'registered phone' }}.</p>
+              <div class="otp-inputs">
+                <input type="text" maxlength="1" class="otp-box">
+                <input type="text" maxlength="1" class="otp-box">
+                <input type="text" maxlength="1" class="otp-box">
+                <input type="text" maxlength="1" class="otp-box">
+              </div>
+              <button class="action-btn mt-3" (click)="verifyOtp()">Verify & Pay</button>
+            </div>
+
+            <!-- Step 3: Processing -->
+            <div class="step-processing" *ngIf="step() === 'PROCESSING'">
+              <div class="spinner-ring"></div>
+              <h3>Processing Transaction...</h3>
+              <p>Please do not close this window or press back.</p>
+            </div>
+            
+            <!-- Step 4: Success -->
+            <div class="step-success" *ngIf="step() === 'SUCCESS'">
+              <div class="success-check">
+                <app-icon name="check-circle" [size]="32"></app-icon>
+              </div>
+              <h3>Payment Successful!</h3>
+              <p>Redirecting back to dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

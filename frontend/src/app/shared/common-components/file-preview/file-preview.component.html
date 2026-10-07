@@ -1,108 +1,226 @@
 <div class="file-preview-container" [style.width]="width()" [style.height]="height()">
 
-  <!-- Loading State -->
-  @if (isLoading() || loading()) {
-    <div class="preview-loading">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Loading preview...</p>
-    </div>
-  }
+      <!-- Debug Info -->
+      @if (showDebug()) {
+        <div class="debug-info">
+          <h4>Debug Information:</h4>
+          <p><strong>File Type:</strong> {{ fileType() }}</p>
+          <p><strong>MIME Type:</strong> {{ fileData()?.mimeType || 'Not specified' }}</p>
+          <p><strong>File Name:</strong> {{ fileData()?.fileName || 'Not specified' }}</p>
+          <p><strong>Has Base64:</strong> {{ !!fileData()?.base64 }}</p>
+          <p><strong>Has URL:</strong> {{ !!fileData()?.url }}</p>
+          <p><strong>Can Preview:</strong> {{ canPreview() }}</p>
+          @if (debugMessage()) {
+            <p><strong>Debug:</strong> {{ debugMessage() }}</p>
+          }
+        </div>
+      }
 
-  <!-- Error State -->
-  @else if (error()) {
-    <div class="preview-error">
-      <mat-icon class="error-icon">error_outline</mat-icon>
-      <h3>Preview Error</h3>
-      <p>{{ error() }}</p>
-      <button mat-raised-button color="primary" (click)="retry()">
-        <mat-icon>refresh</mat-icon>
-        Retry
-      </button>
-    </div>
-  }
+      <!-- Loading State -->
+      @if (isLoading() || loading()) {
+        <div class="preview-loading">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Loading {{ fileType() }} preview...</p>
+        </div>
+      }
 
-  <!-- No File State -->
-  @else if (!fileData()) {
-    <div class="preview-placeholder">
-      <mat-icon class="placeholder-icon">insert_drive_file</mat-icon>
-      <p>{{ placeholder() }}</p>
-    </div>
-  }
+      <!-- Error State -->
+      @else if (error()) {
+        <div class="preview-error">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h3>Preview Error</h3>
+          <p>{{ error() }}</p>
 
-  <!-- File Preview -->
-  @else {
-    <div class="preview-content">
-
-      <!-- Controls -->
-      @if (showControls()) {
-        <div class="preview-controls">
-          <div class="file-info">
-            <mat-icon>{{ fileIcon() }}</mat-icon>
-            <span class="file-name">{{ fileData()?.fileName || 'Unknown file' }}</span>
-          </div>
-
-          <div class="control-buttons">
-            @if (showDownload()) {
-              <button mat-icon-button
-                      matTooltip="Download"
-                      (click)="downloadFile()">
-                <mat-icon>download</mat-icon>
-              </button>
-            }
-
-            @if (showFullscreen() && canPreview()) {
-              <button mat-icon-button
-                      matTooltip="Open in fullscreen"
-                      (click)="openFullscreen()">
-                <mat-icon>fullscreen</mat-icon>
-              </button>
-            }
+          <div class="error-actions">
+            <button mat-raised-button color="primary" (click)="retry()">
+              <mat-icon>refresh</mat-icon>
+              Retry
+            </button>
+            <button mat-raised-button color="accent" (click)="downloadFile()">
+              <mat-icon>download</mat-icon>
+              Download File
+            </button>
           </div>
         </div>
       }
 
-      <!-- Preview Area -->
-      <div class="preview-area">
-        @if (canPreview() && previewUrl()) {
+      <!-- No File State -->
+      @else if (!fileData()) {
+        <div class="preview-placeholder">
+          <mat-icon class="placeholder-icon">insert_drive_file</mat-icon>
+          <p>{{ placeholder() }}</p>
+        </div>
+      }
 
-          <!-- PDF Preview -->
-          @if (fileType() === 'pdf') {
-            <iframe
-              [src]="previewUrl()"
-              class="pdf-preview"
-              frameborder="0"
-              width="100%"
-              height="100%">
-            </iframe>
+      <!-- File Preview Content -->
+      @else {
+        <div class="preview-content">
+
+          <!-- Controls -->
+          @if (showControls()) {
+            <div class="preview-controls">
+              <div class="file-info">
+                <mat-icon>{{ fileIcon() }}</mat-icon>
+                <div class="file-details">
+                  <span class="file-name">{{ fileData()?.fileName || 'Unknown file' }}</span>
+                  <span class="file-type">{{ fileType().toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <div class="control-buttons">
+                @if (fileType() === 'image') {
+                  <button mat-icon-button matTooltip="Zoom In" (click)="zoomIn()">
+                    <mat-icon>zoom_in</mat-icon>
+                  </button>
+                  <button mat-icon-button matTooltip="Zoom Out" (click)="zoomOut()">
+                    <mat-icon>zoom_out</mat-icon>
+                  </button>
+                  <button mat-icon-button matTooltip="Reset Zoom" (click)="resetZoom()">
+                    <mat-icon>fit_screen</mat-icon>
+                  </button>
+                }
+
+                @if (showDownload()) {
+                  <button mat-icon-button matTooltip="Download" (click)="downloadFile()">
+                    <mat-icon>download</mat-icon>
+                  </button>
+                }
+
+                @if (showFullscreen()) {
+                  <button mat-icon-button matTooltip="Open in modal" (click)="openFullscreen()">
+                    <mat-icon>fullscreen</mat-icon>
+                  </button>
+                }
+
+                <button mat-icon-button matTooltip="Toggle debug" (click)="toggleDebug()">
+                  <mat-icon>bug_report</mat-icon>
+                </button>
+              </div>
+            </div>
           }
 
-          <!-- Image Preview -->
-          @else if (fileType() === 'image') {
-            <img
-              [src]="previewUrl()"
-              class="image-preview"
-              alt="File preview"
-              (load)="onLoad.emit()"
-              (error)="error.set('Failed to load image')" />
-          }
+          <!-- Preview Area -->
+          <div class="preview-area" [class.scrollable]="fileType() === 'excel'">
 
-        } @else {
-          <!-- Non-previewable file -->
-          <div class="no-preview">
-            <mat-icon class="large-icon">{{ fileIcon() }}</mat-icon>
-            <h3>{{ fileData()?.fileName || 'File' }}</h3>
-            <p>Preview not available for this file type</p>
-
-            @if (showDownload()) {
-              <button mat-raised-button color="primary" (click)="downloadFile()">
-                <mat-icon>download</mat-icon>
-                Download File
-              </button>
+            <!-- PDF Preview -->
+            @if (fileType() === 'pdf' && previewUrl()) {
+              <iframe
+                [src]="previewUrl()"
+                class="pdf-preview"
+                frameborder="0"
+                width="100%"
+                height="100%"
+                (load)="onFileLoad()"
+                (error)="onFileError('PDF failed to load')">
+              </iframe>
             }
-          </div>
-        }
-      </div>
 
+            <!-- Excel Preview -->
+            @else if (fileType() === 'excel' && excelSheets().length > 0) {
+              <div class="excel-preview">
+                @if (excelSheets().length > 1) {
+                  <mat-tab-group class="excel-tabs">
+                    @for (sheet of excelSheets(); track sheet.name) {
+                      <mat-tab [label]="sheet.name">
+                        <div class="sheet-content">
+                          <div class="sheet-info">
+                            <span>{{ sheet.data.length }} rows × {{ sheet.headers.length }} columns</span>
+                          </div>
+                          <div class="table-container">
+                            <table class="excel-table">
+                              <thead>
+                                <tr>
+                                  @for (header of sheet.headers; track $index) {
+                                    <th>{{ header }}</th>
+                                  }
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (row of sheet.data; track $index) {
+                                  <tr>
+                                    @for (cell of row; track $index) {
+                                      <td [title]="cell">{{ cell }}</td>
+                                    }
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </mat-tab>
+                    }
+                  </mat-tab-group>
+                } @else {
+                  <!-- Single sheet -->
+                  <div class="sheet-content">
+                    <div class="sheet-info">
+                      <h4>{{ excelSheets()[0].name }}</h4>
+                      <span>{{ excelSheets()[0].data.length }} rows × {{ excelSheets()[0].headers.length }}
+                        columns</span>
+                    </div>
+                    <div class="table-container">
+                      <table class="excel-table">
+                        <thead>
+                          <tr>
+                            @for (header of excelSheets()[0].headers; track $index) {
+                              <th>{{ header }}</th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of excelSheets()[0].data; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td [title]="cell">{{ cell }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Image Preview -->
+            @else if (fileType() === 'image' && previewUrl()) {
+              <div class="image-preview-container" #imageContainer>
+                <img
+                  [src]="previewUrl()"
+                  class="image-preview"
+                  [style.transform]="'scale(' + imageZoom() + ')'"
+                  alt="File preview"
+                  (load)="onFileLoad()"
+                  (error)="onFileError('Image failed to load')"
+                  #imageElement />
+              </div>
+            }
+
+            <!-- Text Preview -->
+            @else if (fileType() === 'text' && textContent()) {
+              <div class="text-preview">
+                <pre>{{ textContent() }}</pre>
+              </div>
+            }
+
+            <!-- Unsupported File Type -->
+            @else {
+              <div class="no-preview">
+                <mat-icon class="large-icon">{{ fileIcon() }}</mat-icon>
+                <h3>{{ fileData()?.fileName || 'File' }}</h3>
+                <p>Preview not available for this file type</p>
+
+                @if (showDownload()) {
+                  <button mat-raised-button color="primary" (click)="downloadFile()">
+                    <mat-icon>download</mat-icon>
+                    Download File
+                  </button>
+                }
+              </div>
+            }
+
+          </div>
+        </div>
+      }
     </div>
-  }
-</div>

@@ -1,0 +1,112 @@
+<div class="page-wrapper">
+  <!-- CenterPoint Panel Form Container -->
+  <div class="panel">
+    <div class="transaction-grid-container">
+      <section class="header-section">
+        <app-expansion-panel-header
+          [isOpenSignal]="studentSetupPanel"
+          [panelTitle]="isViewMode ? 'Student Profile Details' : isEdit ? 'Update Student Profile' : 'Register New Student Profile'"
+        />
+
+        <div *ngIf="studentSetupPanel()" style="padding: 1.25rem 0.5rem;">
+          <form [formGroup]="frmGroup" class="form-grid-appraisal">
+            <div class="grid-row-4">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="name"
+                label="Full Legal Name"
+                placeholder="e.g. Md. Jihad Hossain"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="email"
+                label="Institutional Email"
+                placeholder="e.g. jihad@iit.du.ac.bd"
+                type="email"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="rollNumber"
+                label="Academic Roll Number"
+                placeholder="e.g. 1413 / BSSE1413"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-number
+                [frmGroup]="frmGroup"
+                controlName="batch"
+                label="Graduation Batch"
+                placeholder="2021"
+                [minValue]="2015"
+                [maxValue]="2035"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div class="grid-row-3" style="margin-top: 1rem;">
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="registrationNumber"
+                label="University Registration Number"
+                placeholder="e.g. REG-2021-1413"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                [frmGroup]="frmGroup"
+                controlName="phone"
+                label="Contact Mobile"
+                placeholder="e.g. +880 1700 000000"
+                [isReadonly]="isViewMode"
+                displayMode="vertical"
+              />
+
+              <input-text-box
+                *ngIf="!isEdit && !isViewMode"
+                [frmGroup]="frmGroup"
+                controlName="password"
+                label="Initial Password (min 8 characters)"
+                placeholder="••••••••"
+                type="password"
+                displayMode="vertical"
+              />
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+              <generic-switch
+                [frmGroup]="frmGroup"
+                controlName="isActive"
+                label="Active Account Status"
+                [enable]="!isViewMode"
+                displayMode="horizontal"
+              />
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- CenterPoint Generic Modal for Student List Grid -->
+  <generic-modal
+    [isVisible]="isModalShow"
+    modalTitle="Student Directory Records"
+    [cssClass]="'modal-xl'"
+    (isVisibleChanged)="isModalShow = $event"
+    (modalClosed)="isModalShow = false"
+    [showDefaultFooter]="false"
+  >
+    <app-student-management-list
+      (modalResult)="onModalResult($event)"
+    />
+  </generic-modal>
+</div>

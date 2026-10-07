@@ -1,0 +1,116 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <p class="page-eyebrow">Academic administration hub</p>
+      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
+      <p class="page-subtitle">Monitor academic operations, faculty rosters, and jump into common administrative workflows.</p>
+    </div>
+    <div class="header-actions">
+      <div class="semester-badge status-summary" style="background: rgba(99, 102, 241, 0.12); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.25);" *ngIf="adminId">
+        <span class="status-dot"></span> <strong>Admin ID: {{ adminId }}</strong>
+      </div>
+      <div class="semester-badge status-summary status-summary--open" *ngIf="activeSemester()">
+        <span class="status-dot"></span> Enrollment Open · <strong>{{ activeSemester()!.label }}</strong>
+      </div>
+      <div class="semester-badge status-summary status-summary--closed" *ngIf="!activeSemester() && stats()">
+        <span class="status-dot"></span> Enrollment Closed
+      </div>
+    </div>
+  </div>
+
+  <!-- CenterPoint Summary Card Strip -->
+  <div style="margin-bottom: 1.75rem;" *ngIf="stats()">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
+  </div>
+
+  <div class="dashboard-columns" *ngIf="stats()">
+    <!-- Chart Column -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">System Distribution</div>
+          <div class="card-sub">Active academic entity breakdown</div>
+        </div>
+      </div>
+      <div class="chart-container" style="position: relative; height:250px; width:100%; display: flex; justify-content: center; align-items: center; padding: 1rem;">
+        <canvas baseChart
+          [data]="distributionChartData"
+          [options]="chartOptions"
+          [type]="'doughnut'">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Quick Actions Column -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Administrative Actions</div>
+          <div class="card-sub">Direct access to core workflows</div>
+        </div>
+      </div>
+      <div class="quick-actions-grid">
+        <a routerLink="../students" class="quick-action-card">
+          <span class="qa-icon qa-icon--blue"><app-icon name="users" [size]="20" /></span>
+          <div>
+            <div class="qa-title">Manage Students</div>
+            <div class="qa-sub">Dossiers & directories</div>
+          </div>
+          <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
+        </a>
+        <a routerLink="../courses" class="quick-action-card">
+          <span class="qa-icon qa-icon--purple"><app-icon name="book-open" [size]="20" /></span>
+          <div>
+            <div class="qa-title">Manage Courses</div>
+            <div class="qa-sub">Offerings & seats</div>
+          </div>
+          <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
+        </a>
+        <a routerLink="../fees" class="quick-action-card">
+          <span class="qa-icon qa-icon--green"><app-icon name="credit-card" [size]="20" /></span>
+          <div>
+            <div class="qa-title">Fee Management</div>
+            <div class="qa-sub">Ledgers & gap audits</div>
+          </div>
+          <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
+        </a>
+        <a routerLink="../semesters" class="quick-action-card">
+          <span class="qa-icon qa-icon--amber"><app-icon name="calendar" [size]="20" /></span>
+          <div>
+            <div class="qa-title">Semesters</div>
+            <div class="qa-sub">Session windows</div>
+          </div>
+          <span class="qa-arrow"><app-icon name="arrow-right" [size]="15" /></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Activity Feed Column -->
+    <div class="card activity-feed-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Activity Feed</div>
+          <div class="card-sub">Live audit trail</div>
+        </div>
+        <button class="refresh-btn" [class.spinning]="refreshingLogs()" [disabled]="refreshingLogs()" (click)="loadAuditLogs()">
+          <app-icon name="clock" [size]="15" />
+        </button>
+      </div>
+      <div class="activity-feed-list">
+        <div class="activity-item" *ngFor="let log of auditLogs()">
+          <div class="activity-icon" [ngClass]="getLogIconClass(log.actionType)">
+             <app-icon [name]="$any(getLogIcon(log.actionType))" [size]="14" />
+          </div>
+          <div class="activity-content">
+            <div class="activity-text"><strong>{{log.userName}}</strong> {{log.details}}</div>
+            <div class="activity-time font-mono">{{log.createdAt | date:'MMM d, h:mm a'}}</div>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="auditLogs().length === 0">
+          No recent activity found.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

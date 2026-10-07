@@ -1,0 +1,9 @@
+<button
+      (click)="update()"
+      [disabled]="disabled || frmGroup().invalid"
+      class="nav-action-btn nav-action-btn--update"
+      [attr.aria-label]="label"
+    >
+      <app-icon name="edit" [size]="16" class="nav-action-icon"></app-icon>
+      <span class="nav-action-label">{{ label }}</span>
+    </button>

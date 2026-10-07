@@ -1,0 +1,56 @@
+/* Header CGPA ring */
+    .header-cgpa-ring {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-cgpa-text {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .header-cgpa-val { font-size: 1.1rem; font-weight: 800; line-height: 1; color: var(--text-primary); }
+    .header-cgpa-lbl { font-size: 0.6rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em; }
+
+    /* Accordion */
+    .accordion-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 0.875rem;
+      transition: border-color .2s;
+    }
+    .accordion-card.accordion-open { border-color: var(--accent-primary); }
+    .accordion-header {
+      width: 100%; padding: 1.25rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; border: none; background: none;
+      cursor: pointer; transition: background .2s; font-family: inherit;
+      gap: 1rem;
+    }
+    .accordion-header:hover { background: var(--bg-card-hover, rgba(255,255,255,0.02)); }
+    .accordion-left { display: flex; align-items: center; gap: 1rem; }
+    .accordion-semester-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .accordion-title { font-weight: 700; font-size: 0.975rem; color: var(--text-primary); }
+    .accordion-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .accordion-chips { display: flex; align-items: center; gap: 0.75rem; }
+    .gpa-chip {
+      padding: 0.25rem 0.75rem; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 700;
+    }
+    .accordion-chevron {
+      color: var(--text-muted); transition: transform .3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+    }
+    .accordion-chevron.rotated { transform: rotate(180deg); }
+    .accordion-body { border-top: 1px solid var(--border); animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .result-row:hover td { background: rgba(34,211,238,0.02); }
+    .mark-denominator { color: var(--text-muted); font-size: 0.75rem; }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .grade-a { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .grade-a-minus { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .grade-b { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .grade-c { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .grade-f { background: rgba(239, 68, 68, 0.15); color: #ef4444; }

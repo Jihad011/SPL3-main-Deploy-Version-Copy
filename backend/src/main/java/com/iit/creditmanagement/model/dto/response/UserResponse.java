@@ -14,9 +14,15 @@ public record UserResponse(
         Integer batch,
         String designation,
         String department,
-        boolean isActive
+        boolean isActive,
+        Long   studentId,
+        Long   teacherId,
+        Long   adminId
 ) {
     public static UserResponse from(User u) {
+        Long sId = u.getRole() == Role.STUDENT ? u.getId() : null;
+        Long tId = u.getRole() == Role.TEACHER ? u.getId() : null;
+        Long aId = u.getRole() == Role.ADMIN   ? u.getId() : null;
         return new UserResponse(
                 u.getId(),
                 u.getName(),
@@ -28,7 +34,10 @@ public record UserResponse(
                 u.getBatch(),
                 u.getDesignation(),
                 u.getDepartment(),
-                u.isActive()
+                u.isActive(),
+                sId,
+                tId,
+                aId
         );
     }
 }

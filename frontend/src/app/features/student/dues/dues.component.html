@@ -1,0 +1,112 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-eyebrow">Student finance</div>
+      <h1 class="page-title">Fees & Dues</h1>
+      <p class="page-subtitle">Your complete fee history and online payment portal</p>
+    </div>
+    <div *ngIf="!loading()">
+      <div class="outstanding-amount" *ngIf="totalDues() > 0">
+        <div class="outstanding-label">Outstanding Balance</div>
+        <div class="outstanding-value font-mono">৳{{ totalDues() | number:'1.0-0' }}</div>
+      </div>
+      <div class="metric-chip metric-chip--green" *ngIf="totalDues() === 0">
+        <app-icon name="check-circle" [size]="17"></app-icon> All Clear — No Pending Dues
+      </div>
+    </div>
+  </div>
+
+  <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
+
+  <!-- Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && fees().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs-bar" *ngIf="!loading() && fees().length > 0">
+    <button class="filter-tab" [class.active]="filter() === 'ALL'" (click)="filter.set('ALL')">
+      All <span class="filter-count">{{ fees().length }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'UNPAID'" (click)="filter.set('UNPAID')">
+      <span class="dot-unpaid"></span>Unpaid <span class="filter-count">{{ unpaidCount() }}</span>
+    </button>
+    <button class="filter-tab" [class.active]="filter() === 'PAID'" (click)="filter.set('PAID')">
+      <span class="dot-paid"></span>Paid <span class="filter-count">{{ paidCount() }}</span>
+    </button>
+  </div>
+
+  <!-- Invoice Cards -->
+  <div class="invoice-grid" *ngIf="!loading()">
+    <div class="invoice-card" *ngFor="let f of filteredFees(); let i = index"
+         [style.animation-delay.ms]="i * 50"
+         [class.invoice-unpaid]="f.status === 'UNPAID'"
+         [class.invoice-paid]="f.status === 'PAID'"
+         [class.invoice-waived]="f.status === 'WAIVED'">
+
+      <!-- Card header -->
+      <div class="invoice-header">
+        <div class="invoice-type-icon">
+          <app-icon [name]="feeTypeIcon(f.feeType)" [size]="18"></app-icon>
+        </div>
+        <div class="invoice-type-info">
+          <div class="invoice-type-name">{{ f.feeTypeDisplay }}</div>
+          <div class="invoice-semester" *ngIf="f.semesterLabel">{{ f.semesterLabel }}</div>
+        </div>
+        <div class="invoice-status-badge"
+             [class.badge-unpaid]="f.status === 'UNPAID'"
+             [class.badge-paid]="f.status === 'PAID'"
+             [class.badge-waived]="f.status === 'WAIVED'">
+          <span class="badge-dot" *ngIf="f.status === 'UNPAID'"></span>
+          <svg *ngIf="f.status === 'PAID'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ f.status }}
+        </div>
+      </div>
+
+      <!-- Amount -->
+      <div class="invoice-amount font-mono">৳{{ f.amount | number:'1.0-0' }}</div>
+      <div class="invoice-desc" *ngIf="f.description">{{ f.description }}</div>
+
+      <!-- Dates -->
+      <div class="invoice-dates">
+        <div class="invoice-date-item" *ngIf="f.dueDate">
+          <span class="date-label">Due Date</span>
+          <span [class.overdue]="isOverdue(f)">{{ f.dueDate | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="invoice-date-item" *ngIf="f.paidAt">
+          <span class="date-label">Paid on</span>
+          <span>{{ f.paidAt | date:'dd MMM yyyy' }}</span>
+        </div>
+      </div>
+
+      <div class="invoice-paid-confirm" *ngIf="f.status === 'PAID'">
+        <div class="paid-content">
+          <app-icon name="check-circle" [size]="20" class="paid-icon"></app-icon>
+          <span>Payment confirmed via {{ f.paymentMethod ? f.paymentMethod.replace('_', ' ') : 'N/A' }}</span>
+        </div>
+        <button class="download-receipt-btn magnetic" (click)="downloadReceipt(f)">
+          <app-icon name="download" [size]="16"></app-icon> Download Receipt
+        </button>
+      </div>
+
+      <!-- Pay action -->
+      <div class="invoice-footer" *ngIf="f.status === 'UNPAID'">
+        <generic-button
+          label="Pay via SSLCommerz Gateway"
+          icon="credit-card"
+          [enable]="payingId() !== f.id"
+          styles="background: linear-gradient(135deg, #086AD8, #2563eb); color: white; width: 100%; font-weight: 600;"
+          (onClick)="payFee(f.id)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading() && filteredFees().length === 0">
+    <div class="empty-icon"><app-icon name="check-circle" [size]="28"></app-icon></div>
+    <h3>No invoices found</h3>
+    <p>You have no records under this filter view.</p>
+  </div>
+</div>

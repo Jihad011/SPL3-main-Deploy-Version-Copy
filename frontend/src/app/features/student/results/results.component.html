@@ -2,96 +2,113 @@
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-eyebrow">Academic performance</div>
-      <h1 class="page-title text-gradient-flow">Academic Results</h1>
-      <p class="page-subtitle">Your full academic transcript by semester</p>
+      <h1 class="page-title">Academic Results</h1>
+      <p class="page-subtitle">Your full academic transcript and term-by-term assessment breakdown</p>
     </div>
-    <div class="cgpa-badge" *ngIf="!loading() && grades().length > 0">
-      CGPA: <strong>{{ cgpa() | number:'1.2-2' }}</strong>
+    
+    <div class="header-actions" style="display:flex; align-items:center; gap: 1rem;">
+      <generic-button
+        *ngIf="!loading() && grades().length > 0"
+        [label]="downloading() ? 'Generating PDF...' : 'Download Official Transcript (PDF)'"
+        icon="download"
+        [enable]="!downloading()"
+        (onClick)="downloadTranscript()"
+      />
+
+      <!-- CGPA Ring in header -->
+      <div class="header-cgpa-ring" *ngIf="!loading() && grades().length > 0">
+        <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bg-elevated)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="32" fill="none"
+            [attr.stroke]="cgpaColor(cgpa())"
+            stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="201.1"
+            [attr.stroke-dashoffset]="201.1 * (1 - cgpa() / 4.0)"
+            style="transition: stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="header-cgpa-text">
+          <div class="header-cgpa-val font-mono">{{ cgpa() | number:'1.2-2' }}</div>
+          <div class="header-cgpa-lbl">CGPA</div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
   <div class="alert alert-error" *ngIf="error()">
-    <app-icon name="alert-triangle" [size]="18"></app-icon>{{ error() }}
+    <app-icon name="alert-triangle" [size]="16"></app-icon>{{ error() }}
   </div>
 
-  <div class="stats-grid" *ngIf="!loading() && grades().length > 0">
-    <div class="stat-card stat-card--blue">
-      <div class="stat-icon"><app-icon name="chart" [size]="22"></app-icon></div>
-      <div class="stat-value summary-value-sm">{{ cgpa() | number:'1.2-2' }}</div>
-      <div class="stat-label">Cumulative GPA</div>
-    </div>
-    <div class="stat-card stat-card--green">
-      <div class="stat-icon"><app-icon name="check-circle" [size]="22"></app-icon></div>
-      <div class="stat-value summary-value-sm">{{ completedCourses() }}</div>
-      <div class="stat-label">Graded Courses</div>
-    </div>
-    <div class="stat-card stat-card--purple">
-      <div class="stat-icon"><app-icon name="book-open" [size]="22"></app-icon></div>
-      <div class="stat-value summary-value-sm">{{ earnedCredits() }}</div>
-      <div class="stat-label">Completed Credits</div>
-    </div>
+  <!-- Summary Card Strip -->
+  <div style="margin-bottom: 1.5rem;" *ngIf="!loading() && grades().length > 0">
+    <app-summary-card-strip [items]="summaryItems()" displayMode="page" />
   </div>
 
-  <ng-container *ngFor="let sem of semesters()">
-    <div class="card semester-card semester-result-card card-glow-border">
-      <div class="card-header card-glow-border">
-        <div>
-          <div class="semester-title">{{ sem }}</div>
-          <div class="semester-gpa">Semester GPA: <strong>{{ getSemesterGpa(sem) }}</strong></div>
+  <!-- Semester accordion -->
+  <ng-container *ngFor="let sem of semesters(); let idx = index">
+    <div class="accordion-card" [class.accordion-open]="isOpen(sem)">
+      <button class="accordion-header" (click)="toggle(sem)">
+        <div class="accordion-left">
+          <div class="accordion-semester-dot" [style.background]="semColor(idx)"></div>
+          <div>
+            <div class="accordion-title">{{ sem }}</div>
+            <div class="accordion-sub">Semester GPA: <strong [style.color]="cgpaColor(+getSemesterGpa(sem))">{{ getSemesterGpa(sem) }}</strong> · {{ getSemesterGrades(sem).length }} course(s)</div>
+          </div>
         </div>
-        <div class="metric-chip">
-          <app-icon name="book-open" [size]="16"></app-icon>
-          {{ getSemesterGrades(sem).length }} course(s)
+        <div class="accordion-chips">
+          <span class="gpa-chip font-mono" [style.background]="cgpaColor(+getSemesterGpa(sem)) + '18'" [style.color]="cgpaColor(+getSemesterGpa(sem))">
+            {{ getSemesterGpa(sem) }}
+          </span>
+          <span class="accordion-chevron" [class.rotated]="isOpen(sem)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
         </div>
-      </div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Course Name</th>
-              <th>Credits</th>
-              <th>Midterm</th>
-              <th>Final</th>
-              <th>Total</th>
-              <th>Grade</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let g of getSemesterGrades(sem)">
-              <td><span class="code-badge">{{ g.courseCode }}</span></td>
-              <td><strong>{{ g.courseName }}</strong></td>
-              <td>{{ g.creditHours }}</td>
-              <td class="numeric">
-                {{ g.midtermMarks ?? '—' }}<span *ngIf="g.midtermMarks !== null" class="mark-denominator">/40</span>
-              </td>
-              <td class="numeric">
-                {{ g.finalMarks ?? '—' }}<span *ngIf="g.finalMarks !== null" class="mark-denominator">/60</span>
-              </td>
-              <td class="numeric">
-                <strong *ngIf="g.totalMarks !== null">{{ g.totalMarks }}</strong>
-                <span *ngIf="g.totalMarks === null" class="text-muted">—</span>
-              </td>
-              <td>
-                <span class="grade-badge" [class]="gradeClass(g.gradeLetter)">
-                  {{ g.gradeDisplay }}
-                </span>
-              </td>
-              <td>
-                <span *ngIf="g.gradePoint !== null" class="grade-point">{{ g.gradePoint }}</span>
-                <span *ngIf="g.gradePoint === null" class="text-muted">—</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      </button>
+
+      <div class="accordion-body" *ngIf="isOpen(sem)">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Midterm</th>
+                <th>Final</th>
+                <th>Total</th>
+                <th>Grade</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of getSemesterGrades(sem)" class="result-row">
+                <td><span class="code-badge font-mono">{{ g.courseCode }}</span></td>
+                <td><strong>{{ g.courseName }}</strong></td>
+                <td>{{ g.creditHours }}</td>
+                <td class="numeric font-mono">{{ g.midtermMarks ?? '—' }}<span *ngIf="g.midtermMarks !== null" class="mark-denominator">/40</span></td>
+                <td class="numeric font-mono">{{ g.finalMarks ?? '—' }}<span *ngIf="g.finalMarks !== null" class="mark-denominator">/60</span></td>
+                <td class="numeric font-mono"><strong *ngIf="g.totalMarks !== null">{{ g.totalMarks }}</strong><span *ngIf="g.totalMarks === null" class="text-muted">—</span></td>
+                <td>
+                  <span class="grade-badge font-mono font-bold" [class]="gradeClass(g.gradeLetter)">
+                    {{ g.gradeDisplay ?? 'Pending' }}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="g.gradePoint !== null" class="grade-point font-mono font-bold">{{ g.gradePoint | number:'1.2-2' }}</span>
+                  <span *ngIf="g.gradePoint === null" class="text-muted">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </ng-container>
 
   <div class="empty-state" *ngIf="!loading() && grades().length === 0">
-    <div class="empty-icon"><app-icon name="chart" [size]="28"></app-icon></div>
+    <div class="empty-icon"><app-icon name="star" [size]="28"></app-icon></div>
     <h3>No results yet</h3>
     <p>Your grades will appear here once teachers enter your marks.</p>
   </div>

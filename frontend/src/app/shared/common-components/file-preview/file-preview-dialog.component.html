@@ -1,0 +1,143 @@
+<div class="dialog-container">
+      <div class="dialog-header">
+        <div class="file-info">
+          <mat-icon>{{ fileIcon() }}</mat-icon>
+          <div class="file-details">
+            <span class="file-name">{{ fileData()?.fileName || 'Unknown file' }}</span>
+            <span class="file-type">{{ fileType().toUpperCase() }}</span>
+          </div>
+        </div>
+        <button mat-icon-button (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="dialog-content">
+        <!-- Loading State -->
+        @if (isLoading()) {
+          <div class="preview-loading">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Loading {{ fileType() }} preview...</p>
+          </div>
+        }
+
+        <!-- Error State -->
+        @else if (error()) {
+          <div class="preview-error">
+            <mat-icon class="error-icon">error_outline</mat-icon>
+            <h3>Preview Error</h3>
+            <p>{{ error() }}</p>
+            <button mat-raised-button color="primary" (click)="retry()">
+              <mat-icon>refresh</mat-icon>
+              Retry
+            </button>
+          </div>
+        }
+
+        <!-- Preview Content -->
+        @else {
+          <!-- PDF Preview -->
+          @if (fileType() === 'pdf' && previewUrl()) {
+            <iframe
+              [src]="previewUrl()"
+              class="pdf-preview"
+              frameborder="0"
+              width="100%"
+              height="100%">
+            </iframe>
+          }
+
+          <!-- Excel Preview -->
+          @else if (fileType() === 'excel' && excelSheets().length > 0) {
+            <div class="excel-preview">
+              @if (excelSheets().length > 1) {
+                <mat-tab-group class="excel-tabs">
+                  @for (sheet of excelSheets(); track sheet.name) {
+                    <mat-tab [label]="sheet.name">
+                      <div class="sheet-content">
+                        <div class="sheet-info">
+                          <span>{{ sheet.data.length }} rows × {{ sheet.headers.length }} columns</span>
+                        </div>
+                        <div class="table-container">
+                          <table class="excel-table">
+                            <thead>
+                              <tr>
+                                @for (header of sheet.headers; track $index) {
+                                  <th>{{ header }}</th>
+                                }
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (row of sheet.data; track $index) {
+                                <tr>
+                                  @for (cell of row; track $index) {
+                                    <td [title]="cell">{{ cell }}</td>
+                                  }
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </mat-tab>
+                  }
+                </mat-tab-group>
+              } @else {
+                <div class="sheet-content">
+                  <div class="sheet-info">
+                    <h4>{{ excelSheets()[0].name }}</h4>
+                    <span>{{ excelSheets()[0].data.length }} rows × {{ excelSheets()[0].headers.length }} columns</span>
+                  </div>
+                  <div class="table-container">
+                    <table class="excel-table">
+                      <thead>
+                        <tr>
+                          @for (header of excelSheets()[0].headers; track $index) {
+                            <th>{{ header }}</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of excelSheets()[0].data; track $index) {
+                          <tr>
+                            @for (cell of row; track $index) {
+                              <td [title]="cell">{{ cell }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Image Preview -->
+          @else if (fileType() === 'image' && previewUrl()) {
+            <div class="image-preview-container">
+              <img
+                [src]="previewUrl()"
+                class="image-preview"
+                alt="File preview" />
+            </div>
+          }
+
+          <!-- Text Preview -->
+          @else if (fileType() === 'text' && textContent()) {
+            <div class="text-preview">
+              <pre>{{ textContent() }}</pre>
+            </div>
+          }
+
+          <!-- Unsupported -->
+          @else {
+            <div class="no-preview">
+              <mat-icon class="large-icon">{{ fileIcon() }}</mat-icon>
+              <h3>{{ fileData()?.fileName || 'File' }}</h3>
+              <p>Preview not available for this file type</p>
+            </div>
+          }
+        }
+      </div>
+    </div>

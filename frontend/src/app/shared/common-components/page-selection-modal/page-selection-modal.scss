@@ -1,0 +1,101 @@
+.modal-container {
+      min-width: 500px;
+      max-width: 600px;
+    }
+    
+    .modal-header {
+      display: flex;
+      flex-direction: column;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      position: relative;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .modal-subtitle {
+      margin: 8px 0 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .modal-message {
+      margin: 0 0 24px;
+      color: #555;
+      font-size: 1rem;
+    }
+    
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option-card {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+    }
+    
+    .option-card:hover {
+      border-color: #2196f3;
+      background: #f8fafe;
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+    }
+    
+    .option-icon {
+      margin-right: 16px;
+      color: #2196f3;
+    }
+    
+    .option-content {
+      flex: 1;
+    }
+    
+    .option-name {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .option-description {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .option-arrow {
+      color: #999;
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .cancel-btn {
+      color: #666;
+    }

@@ -1,0 +1,20 @@
+.search-fastpath {
+      font-size: 11px;
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 6px;
+      padding: 4px 8px;
+      width: 100%;
+      outline: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+    }
+    .search-fastpath:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    .search-fastpath::placeholder {
+      color: #94a3b8;
+      font-size: 10.5px;
+    }

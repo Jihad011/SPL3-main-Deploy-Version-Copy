@@ -1,0 +1,573 @@
+/* ── Student Dashboard Modern Styles ───────────────────────── */
+    :host { display: block; width: 100%; }
+
+    .student-dashboard-page {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* Student Meta Badges in Header */
+    .student-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      margin-top: 0.4rem;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-xs);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+
+      strong { color: var(--text-primary); }
+    }
+
+    .meta-pill--status {
+      background: #ECFDF5;
+      color: #065F46;
+      border-color: #A7F3D0;
+      font-weight: 600;
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #059669;
+      }
+    }
+
+    .header-due-badge {
+      background: #DC2626;
+      color: #FFFFFF;
+      padding: 0.1rem 0.45rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-left: 0.35rem;
+    }
+
+    .btn-due-highlight {
+      border-color: #FCA5A5 !important;
+      background: #FEF2F2 !important;
+      color: #DC2626 !important;
+    }
+
+    /* ── Row 1: KPI Dashboard Grid ────────────────────────────── */
+    .kpi-dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+
+      @media (max-width: 1100px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card--kpi-cgpa {
+      padding: 1.15rem 1.25rem;
+    }
+
+    .kpi-cgpa-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .cgpa-ring-mini {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      flex-shrink: 0;
+    }
+
+    .cgpa-svg-mini {
+      width: 58px;
+      height: 58px;
+      transform: rotate(-90deg);
+    }
+
+    .cgpa-track-mini {
+      fill: none;
+      stroke: #F1F5F9;
+      stroke-width: 6;
+    }
+
+    .cgpa-fill-mini {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 201.06;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s;
+    }
+
+    .cgpa-mini-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .kpi-cgpa-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+    }
+
+    .kpi-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .standing-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.12rem 0.45rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    .kpi-sub-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+
+      strong { color: var(--text-primary); font-weight: 600; }
+    }
+
+    /* ── Row 2: Bento Grid (60% / 40%) ───────────────────────── */
+    .dashboard-bento-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bento-col-main, .bento-col-side {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .bento-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-header-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .btn-table-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #2563EB;
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-xs);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: #EFF6FF;
+      }
+    }
+
+    /* Course Table Refinements */
+    .course-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .course-cell-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+    }
+
+    .retake-mini-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+
+    .empty-state-compact {
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Chart Container */
+    .chart-container-dashboard {
+      position: relative;
+      height: 220px;
+      width: 100%;
+      padding: 0.75rem 1.25rem 1.25rem;
+    }
+
+    .cgpa-trend-badge {
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-xs);
+    }
+
+    /* ── Right Column: Invoices, Simulator & Shortcuts ───────── */
+    .payable-header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .pulse-dot-red {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #DC2626;
+      flex-shrink: 0;
+    }
+
+    .payable-fee-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    .payable-fee-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-xs);
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+    }
+
+    .fee-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-xs);
+      background: #FEE2E2;
+      color: #DC2626;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .fee-main-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .fee-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .fee-type-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .fee-sem-label {
+      font-size: 0.68rem;
+      color: #475569;
+      background: #F1F5F9;
+      padding: 0.08rem 0.35rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .fee-due-date {
+      font-size: 0.7rem;
+      color: #DC2626;
+      margin-top: 0.15rem;
+      font-weight: 500;
+    }
+
+    .fee-pay-action-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.3rem;
+    }
+
+    .fee-amount-value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #DC2626;
+    }
+
+    .btn-pay-now-mini {
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid #DC2626;
+      background: #DC2626;
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background: #B91C1C;
+      }
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+
+
+    /* ── Quick Shortcuts ──────────────────────────────────────── */
+    .shortcuts-card {
+      .shortcuts-grid {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem 1.25rem 1rem;
+        gap: 0.5rem;
+      }
+    }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border-light);
+      background: #FFFFFF;
+      text-decoration: none;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: #CBD5E1;
+        background: var(--bg-elevated);
+        transform: translateY(-1px);
+      }
+    }
+
+    .shortcut-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      &.icon-blue { background: #EFF6FF; color: #2563EB; }
+      &.icon-purple { background: #F5F3FF; color: #7C3AED; }
+      &.icon-green { background: #ECFDF5; color: #059669; }
+    }
+
+    .shortcut-info {
+      flex: 1;
+    }
+
+    .shortcut-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ── Degree Milestone Card Styles ─────────────────────────── */
+    .degree-milestone-card {
+      .milestone-content {
+        padding: 0 1.25rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+    }
+
+    .degree-completion-badge {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1D4ED8;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+
+      .pct-val { font-weight: 800; font-size: 0.9rem; }
+      .pct-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; }
+    }
+
+    .milestone-progress-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .milestone-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+
+      strong { color: var(--text-primary); font-weight: 700; }
+    }
+
+    .milestone-track {
+      width: 100%;
+      height: 8px;
+      background: #F1F5F9;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .milestone-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3B82F6 0%, #10B981 100%);
+      border-radius: 9999px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .milestone-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: #94A3B8;
+      font-weight: 500;
+
+      .tick-reached {
+        color: #059669;
+        font-weight: 700;
+      }
+    }
+
+    .standing-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border);
+    }
+
+    .standing-banner-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .standing-banner-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .standing-banner-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .standing-banner-desc {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin-top: 0.1rem;
+    }
+
+    .term-load-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-elevated);
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--border-light);
+    }
+
+    .term-load-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .tl-k {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .tl-v {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn-history-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #2563EB;
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-xs);
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: #EFF6FF;
+      }
+    }

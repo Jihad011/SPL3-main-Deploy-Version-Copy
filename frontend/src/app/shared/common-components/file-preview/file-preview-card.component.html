@@ -1,0 +1,22 @@
+<div class="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between hover:shadow-md transition">
+        <div class="space-y-1 flex-1">
+          <div class="text-sm font-semibold text-gray-800">
+            {{ fileData?.fileName || 'Unknown File' }}
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ fileData?.mimeType || 'application/octet-stream' }}
+          </div>
+          @if(getFileSize()) {
+            <div class="text-xs text-gray-400">
+              {{ formatFileSize(getFileSize()!) }}
+            </div>
+          }
+        </div>
+        </div>
+      <button
+        type="button"
+        class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center shadow hover:bg-green-600 transition flex-shrink-0 ml-4"
+        [attr.aria-label]="'Preview ' + fileData?.fileName"
+        (click)="onPreview()">
+        <mat-icon>visibility</mat-icon>
+      </button>

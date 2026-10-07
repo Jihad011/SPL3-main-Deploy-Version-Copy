@@ -1,0 +1,9 @@
+<button
+      (click)="customAction()"
+      [disabled]="disabled"
+      class="nav-action-btn"
+      *ngIf="buttons().customButton"
+    >
+      <app-icon name="plus" [size]="16"></app-icon>
+      <span>{{ label }}</span>
+    </button>

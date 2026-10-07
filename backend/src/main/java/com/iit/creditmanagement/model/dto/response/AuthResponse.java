@@ -15,10 +15,16 @@ public record AuthResponse(
         String email,
         Role   role,
         String rollNumber,
-        String registrationNumber
+        String registrationNumber,
+        Long   studentId,
+        Long   teacherId,
+        Long   adminId
 ) {
     /** Factory for cleaner construction. */
     public static AuthResponse of(String token, com.iit.creditmanagement.model.entity.User user) {
+        Long sId = user.getRole() == Role.STUDENT ? user.getId() : null;
+        Long tId = user.getRole() == Role.TEACHER ? user.getId() : null;
+        Long aId = user.getRole() == Role.ADMIN   ? user.getId() : null;
         return new AuthResponse(
                 token,
                 "Bearer",
@@ -27,7 +33,10 @@ public record AuthResponse(
                 user.getEmail(),
                 user.getRole(),
                 user.getRollNumber(),
-                user.getRegistrationNumber()
+                user.getRegistrationNumber(),
+                sId,
+                tId,
+                aId
         );
     }
 }
