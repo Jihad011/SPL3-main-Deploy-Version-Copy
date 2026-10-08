@@ -26,6 +26,11 @@ public record CourseResponse(
         OffsetDateTime createdAt
 ) {
     public static CourseResponse from(Course c) {
+        int maxS = (c.getCourseType() == CourseType.CORE) ? Math.max(c.getMaxSeats() != null ? c.getMaxSeats() : 200, 200) : (c.getMaxSeats() != null ? c.getMaxSeats() : 40);
+        int current = c.getCurrentEnrollment() != null ? c.getCurrentEnrollment() : 0;
+        int available = Math.max(0, maxS - current);
+        boolean full = (c.getCourseType() == CourseType.CORE) ? false : current >= maxS;
+
         return new CourseResponse(
                 c.getId(),
                 c.getCode(),
@@ -37,10 +42,10 @@ public record CourseResponse(
                 c.getCourseType(),
                 c.getSemesterLevel(),
                 c.getTrack(),
-                c.getMaxSeats(),
-                c.getCurrentEnrollment(),
-                c.getMaxSeats() - c.getCurrentEnrollment(),
-                !c.hasAvailableSeats(),
+                maxS,
+                current,
+                available,
+                full,
                 c.getTeacher() != null ? c.getTeacher().getId() : null,
                 c.getTeacher() != null ? c.getTeacher().getName() : null,
                 c.isActive(),
