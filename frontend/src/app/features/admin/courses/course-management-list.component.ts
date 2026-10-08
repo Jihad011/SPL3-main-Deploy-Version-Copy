@@ -45,9 +45,9 @@ import { ToastService } from '../../../core/services/toast.service';
                 <th style="padding: 0.65rem 0.85rem;">Code</th>
                 <th style="padding: 0.65rem 0.85rem;">Course Title</th>
                 <th style="padding: 0.65rem 0.85rem;">Credits</th>
+                <th style="padding: 0.65rem 0.85rem;">Semester</th>
+                <th style="padding: 0.65rem 0.85rem;">Type</th>
                 <th style="padding: 0.65rem 0.85rem;">Assigned Lead Faculty</th>
-                <th style="padding: 0.65rem 0.85rem;">Seats</th>
-                <th style="padding: 0.65rem 0.85rem; text-align: center;">Faculty Syllabus</th>
                 <th style="padding: 0.65rem 0.85rem; text-align: center;">Actions</th>
               </tr>
             </thead>
@@ -56,18 +56,15 @@ import { ToastService } from '../../../core/services/toast.service';
                 <td style="padding: 0.65rem 0.85rem;"><span class="code-badge font-mono" style="font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.45rem; border-radius: 4px;">{{ c.code }}</span></td>
                 <td style="padding: 0.65rem 0.85rem;"><strong>{{ c.name }}</strong></td>
                 <td style="padding: 0.65rem 0.85rem;">{{ c.creditHours }} Cr</td>
+                <td style="padding: 0.65rem 0.85rem;">{{ c.semesterLevel ? ('Semester ' + c.semesterLevel) : '2nd & 3rd Semester' }}</td>
+                <td style="padding: 0.65rem 0.85rem;">
+                  <span [style.background]="c.courseType === 'CORE' ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)'" [style.color]="c.courseType === 'CORE' ? '#2563eb' : '#10b981'" style="padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">
+                    {{ c.courseType === 'CORE' ? 'Mandatory' : 'Optional' }}
+                  </span>
+                </td>
                 <td style="padding: 0.65rem 0.85rem;">
                   <span *ngIf="c.teacherName" style="font-weight: 600; color: #1e293b;">{{ c.teacherName }}</span>
                   <span *ngIf="!c.teacherName" class="text-muted" style="font-style: italic; color: #94a3b8;">Faculty TBA</span>
-                </td>
-                <td style="padding: 0.65rem 0.85rem;" class="font-mono">
-                  {{ c.currentEnrollment }} / {{ c.maxSeats }}
-                </td>
-                <td style="padding: 0.65rem 0.85rem; text-align: center;">
-                  <a *ngIf="c.syllabusUrl" [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" class="btn-syllabus-link" style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.65rem; background: rgba(37,99,235,0.1); color: #2563eb; border-radius: 6px; font-weight: 600; font-size: 0.78rem; text-decoration: none;" title="View Faculty Uploaded Syllabus Document">
-                    <app-icon name="file-text" [size]="14" /> {{ c.syllabusFileName || 'Syllabus Doc' }}
-                  </a>
-                  <span *ngIf="!c.syllabusUrl" style="color: #94a3b8; font-size: 0.75rem; font-style: italic;">Not Uploaded</span>
                 </td>
                 <td style="padding: 0.65rem 0.85rem; text-align: center;">
                   <div style="display: inline-flex; gap: 0.35rem;">

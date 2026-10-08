@@ -34,26 +34,34 @@
     (viewChange)="view.set($event)"
   />
 
-  <!-- Filter Status Tabs -->
+  <!-- Filter Status Tabs & Semester Dropdown -->
   <div class="filter-tabs-bar" *ngIf="!loading() && enrollments().length > 0">
-    <button class="filter-tab" [class.active]="statusFilter() === 'ALL'" (click)="statusFilter.set('ALL')">
-      All <span class="filter-count">{{ enrollments().length }}</span>
-    </button>
-    <button class="filter-tab" [class.active]="statusFilter() === 'ACTIVE'" (click)="statusFilter.set('ACTIVE')">
-      <span class="dot-active"></span>Active <span class="filter-count">{{ activeCount() }}</span>
-    </button>
-    <button class="filter-tab" [class.active]="statusFilter() === 'COMPLETED'" (click)="statusFilter.set('COMPLETED')">
-      <span class="dot-completed"></span>Completed <span class="filter-count">{{ completedCount() }}</span>
-    </button>
-    <button class="filter-tab" [class.active]="statusFilter() === 'DROPPED'" (click)="statusFilter.set('DROPPED')" *ngIf="droppedCount() > 0">
-      <span class="dot-dropped"></span>Dropped <span class="filter-count">{{ droppedCount() }}</span>
-    </button>
+    <div class="tabs-left">
+      <button class="filter-tab" [class.active]="statusFilter() === 'ALL'" (click)="statusFilter.set('ALL')">
+        All <span class="filter-count">{{ enrollments().length }}</span>
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter() === 'ACTIVE'" (click)="statusFilter.set('ACTIVE')">
+        <span class="dot-active"></span>Active <span class="filter-count">{{ activeCount() }}</span>
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter() === 'COMPLETED'" (click)="statusFilter.set('COMPLETED')">
+        <span class="dot-completed"></span>Completed <span class="filter-count">{{ completedCount() }}</span>
+      </button>
+    </div>
+
+    <div class="semester-filter-dropdown-wrap font-mono" title="Filter courses by semester">
+      <app-icon name="calendar" [size]="13" />
+      <select class="semester-filter-select font-mono" [ngModel]="selectedSemesterFilter()" (ngModelChange)="selectedSemesterFilter.set($event)">
+        <option value="ALL">All Semesters</option>
+        <option value="1">First Semester</option>
+        <option value="2">Second Semester</option>
+        <option value="3">Third Semester</option>
+      </select>
+    </div>
   </div>
 
   <!-- Grid View -->
   <div class="courses-grid" *ngIf="!loading() && view() === 'grid' && filteredEnrollments().length > 0">
-    <div class="course-card my-course-card" *ngFor="let e of filteredEnrollments(); let i = index"
-         [class.card-dropped]="e.status === 'DROPPED'">
+    <div class="course-card my-course-card" *ngFor="let e of filteredEnrollments(); let i = index">
       <div class="course-card-header">
         <span class="code-badge font-mono">{{ e.courseCode }}</span>
         <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
@@ -62,10 +70,14 @@
       </div>
 
       <h3 class="course-name">{{ e.courseName }}</h3>
+      <div class="course-teacher-line" style="font-size: 0.85rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.25rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+        <app-icon name="user" [size]="14"></app-icon>
+        <span>Instructor: <strong>{{ getInstructorName(e) }}</strong></span>
+      </div>
 
       <div class="course-meta">
         <span class="meta-item"><app-icon name="clock" [size]="14"></app-icon>{{ e.creditHours }} credit(s)</span>
-        <span class="meta-item"><app-icon name="calendar" [size]="14"></app-icon>{{ e.semesterLabel }}</span>
+        <span class="meta-item"><app-icon name="calendar" [size]="14"></app-icon>{{ getSemesterDisplay(e) }}</span>
         <span class="retake-badge" *ngIf="e.isRetake">Retake</span>
       </div>
 
@@ -73,17 +85,9 @@
         Enrolled on {{ e.enrolledAt | date:'mediumDate' }}
       </div>
 
-      <div class="card-action-bar" style="display:flex;gap:0.5rem;align-items:center;">
-        <generic-button
-          *ngIf="e.status === 'ACTIVE'"
-          label="Drop Course"
-          icon="trash"
-          styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.8rem; padding: 0.35rem 0.75rem; flex: 1; justify-content: center;"
-          [enable]="droppingId() !== e.id"
-          (onClick)="confirmDrop(e)"
-        />
-        <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.4rem 0.65rem;font-size:0.75rem;" title="View Course Syllabus">
-          <app-icon name="file-text" [size]="14" /> Syllabus
+      <div class="card-action-bar" *ngIf="e.syllabusUrl">
+        <a [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.3.rem;padding:0.4rem 0.65rem;font-size:0.75rem;width:100%;justify-content:center;" title="View Course Syllabus">
+          <app-icon name="file-text" [size]="14" /> Download Syllabus
         </a>
       </div>
     </div>
@@ -96,23 +100,28 @@
         <thead>
           <tr>
             <th>Course Code</th>
-            <th>Course Name</th>
+            <th>Course Name & Instructor</th>
             <th>Credits</th>
             <th>Semester</th>
             <th>Type / Retake</th>
             <th>Enrolled Date</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th>Syllabus</th>
           </tr>
         </thead>
         <tbody>
           <tr class="fade-in-up" *ngFor="let e of filteredEnrollments(); let i = index" 
-              [style.animation-delay.ms]="i * 30"
-              [class.row-dropped]="e.status === 'DROPPED'">
+              [style.animation-delay.ms]="i * 30">
             <td><span class="code-badge font-mono">{{ e.courseCode }}</span></td>
-            <td><strong>{{ e.courseName }}</strong></td>
+            <td>
+              <strong>{{ e.courseName }}</strong>
+              <div style="font-size: 0.78rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.3rem;">
+                <app-icon name="user" [size]="12" />
+                <span>Instructor: {{ getInstructorName(e) }}</span>
+              </div>
+            </td>
             <td>{{ e.creditHours }} Cr</td>
-            <td>{{ e.semesterLabel }}</td>
+            <td>{{ getSemesterDisplay(e) }}</td>
             <td>
               <span class="badge badge-subtle" *ngIf="!e.isRetake">Regular</span>
               <span class="retake-badge" *ngIf="e.isRetake">Retake</span>
@@ -124,19 +133,10 @@
               </span>
             </td>
             <td>
-              <div style="display:inline-flex;gap:0.4rem;align-items:center;">
-                <generic-button
-                  *ngIf="e.status === 'ACTIVE'"
-                  label="Drop"
-                  icon="x"
-                  styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; padding: 0.25rem 0.55rem;"
-                  [enable]="droppingId() !== e.id"
-                  (onClick)="confirmDrop(e)"
-                />
-                <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" title="View Course Syllabus">
-                  <app-icon name="file-text" [size]="14" /> Syllabus
-                </a>
-              </div>
+              <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" title="View Course Syllabus">
+                <app-icon name="file-text" [size]="14" /> Syllabus
+              </a>
+              <span *ngIf="!e.syllabusUrl" class="text-muted text-xs">—</span>
             </td>
           </tr>
         </tbody>
@@ -149,15 +149,4 @@
     <h3>No course enrollments found</h3>
     <p>You haven't enrolled in any courses under this filter.</p>
   </div>
-
-  <!-- CenterPoint Confirmation Dialogue -->
-  <confirmation-dialogue
-    [isOpen]="showConfirmDialogue()"
-    title="Confirm Drop Course"
-    [message]="confirmMessage()"
-    variant="danger"
-    (close)="onCancelDrop()"
-    (buttonClick)="onConfirmDropModalAction($event)"
-  />
-
 </div>

@@ -60,7 +60,7 @@ class StudentHistoryServiceTest {
 
         spring2025 = Semester.builder()
                 .id(1L)
-                .name(SemesterName.SPRING)
+                .name(SemesterName.FIRST_SEMESTER)
                 .year(2025)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .endDate(LocalDate.of(2025, 6, 30))
@@ -69,7 +69,7 @@ class StudentHistoryServiceTest {
 
         fall2025 = Semester.builder()
                 .id(2L)
-                .name(SemesterName.FALL)
+                .name(SemesterName.SECOND_SEMESTER)
                 .year(2025)
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 12, 31))
@@ -78,7 +78,7 @@ class StudentHistoryServiceTest {
 
         spring2026 = Semester.builder()
                 .id(3L)
-                .name(SemesterName.SPRING)
+                .name(SemesterName.THIRD_SEMESTER)
                 .year(2026)
                 .startDate(LocalDate.of(2026, 1, 1))
                 .endDate(LocalDate.of(2026, 6, 30))
@@ -87,8 +87,8 @@ class StudentHistoryServiceTest {
 
         course1 = Course.builder()
                 .id(100L)
-                .code("MIT-501")
-                .name("Advanced Algorithms")
+                .code("MITM 303")
+                .name("Advanced Computer Networks & Internetworking")
                 .creditHours(3)
                 .build();
     }
@@ -144,6 +144,7 @@ class StudentHistoryServiceTest {
         assertEquals("25S0204", response.semesters().get(0).semesterRollId());
         assertFalse(response.semesters().get(0).isGap());
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.semesters().get(0).sgpa());
+        assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.semesters().get(0).cgpa());
 
         // Fall 2025 (Gap semester!) -> Roll: 25F0204, isGap: true
         assertEquals("25F0204", response.semesters().get(1).semesterRollId());

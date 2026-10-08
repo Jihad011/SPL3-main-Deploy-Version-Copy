@@ -125,12 +125,20 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
 
         // Fetch all semesters sorted chronologically
         List<Semester> allSemesters = semesterRepository.findAll(Sort.by(Sort.Direction.ASC, "startDate", "id"));
-        List<Enrollment> allEnrollments = enrollmentRepository.findAllByStudentId(student.getId());
+        List<Enrollment> allEnrollments = enrollmentRepository.findAllByStudentId(student.getId()).stream()
+                .filter(e -> e.getCourse() != null && e.getCourse().isActive())
+                .toList();
 
-        // Group enrollments by semesterId
+        // Group enrollments by target semester level (1=First Semester, 2=Second Semester, 3=Third Semester)
         Map<Long, List<Enrollment>> enrollmentsBySemester = new HashMap<>();
         for (Enrollment e : allEnrollments) {
-            enrollmentsBySemester.computeIfAbsent(e.getSemester().getId(), k -> new ArrayList<>()).add(e);
+            int level = resolveCourseLevel(e.getCourse(), e.getTargetSemesterLevel());
+
+            Long targetSemId = (level > 0 && level <= allSemesters.size())
+                    ? allSemesters.get(level - 1).getId()
+                    : e.getSemester().getId();
+
+            enrollmentsBySemester.computeIfAbsent(targetSemId, k -> new ArrayList<>()).add(e);
         }
 
         // Find index of first enrolled semester
@@ -148,6 +156,9 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
         int totalGapCount = 0;
         BigDecimal gapFeeRate = BigDecimal.valueOf(AppConstants.DEFAULT_SEMESTER_GAP_FEE);
 
+        BigDecimal cumulativeTotalPoints = BigDecimal.ZERO;
+        int cumulativeCompletedCredits = 0;
+
         for (int i = 0; i < allSemesters.size(); i++) {
             Semester sem = allSemesters.get(i);
             List<Enrollment> semEnrollments = enrollmentsBySemester.getOrDefault(sem.getId(), List.of());
@@ -160,6 +171,10 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                     totalGapCount++;
                 }
 
+                BigDecimal currentCgpa = (cumulativeCompletedCredits > 0)
+                        ? cumulativeTotalPoints.divide(BigDecimal.valueOf(cumulativeCompletedCredits), 2, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO;
+
                 semesterHistoryList.add(new SemesterHistoryDTO(
                         sem.getId(),
                         sem.getName() != null ? sem.getName().name() : "N/A",
@@ -170,6 +185,7 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                         isGap,
                         0,
                         BigDecimal.ZERO,
+                        currentCgpa,
                         isGap ? gapFeeRate : BigDecimal.ZERO,
                         List.of()
                 ));
@@ -208,8 +224,10 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                     ));
 
                     totalAttemptedCredits += c.getCreditHours();
-                    if (gp != null && gp.compareTo(BigDecimal.ZERO) > 0) {
-                        totalCompletedCredits += c.getCreditHours();
+                    if (gp != null) {
+                        if (gp.compareTo(BigDecimal.ZERO) > 0) {
+                            totalCompletedCredits += c.getCreditHours();
+                        }
                         semesterTotalPoints = semesterTotalPoints.add(gp.multiply(BigDecimal.valueOf(c.getCreditHours())));
                         semesterCredits += c.getCreditHours();
                     }
@@ -217,6 +235,12 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
 
                 BigDecimal sgpa = (semesterCredits > 0)
                         ? semesterTotalPoints.divide(BigDecimal.valueOf(semesterCredits), 2, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO;
+
+                cumulativeTotalPoints = cumulativeTotalPoints.add(semesterTotalPoints);
+                cumulativeCompletedCredits += semesterCredits;
+                BigDecimal currentCgpa = (cumulativeCompletedCredits > 0)
+                        ? cumulativeTotalPoints.divide(BigDecimal.valueOf(cumulativeCompletedCredits), 2, RoundingMode.HALF_UP)
                         : BigDecimal.ZERO;
 
                 semesterHistoryList.add(new SemesterHistoryDTO(
@@ -229,6 +253,7 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                         false,
                         semesterCredits,
                         sgpa,
+                        currentCgpa,
                         BigDecimal.ZERO,
                         courseRecords
                 ));
@@ -265,5 +290,21 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                 totalGapFines != null ? totalGapFines : BigDecimal.ZERO,
                 semesterHistoryList
         );
+    }
+
+    private int resolveCourseLevel(Course c, Integer targetSemesterLevel) {
+        if (targetSemesterLevel != null && targetSemesterLevel > 0) {
+            return targetSemesterLevel;
+        }
+        if (c != null) {
+            if (c.getSemesterLevel() != null && c.getSemesterLevel() > 0) {
+                return c.getSemesterLevel();
+            }
+            String code = c.getCode() != null ? c.getCode().trim() : "";
+            if (List.of("MITM 303", "MITM 304", "MITM 310", "MITM 311").contains(code)) return 1;
+            if (List.of("MITM 301", "MITM 305", "MITE 435", "MITE 439", "MITE 436", "MITE 430", "MITE 437", "MITE 432", "MITE 442", "MITE 438", "MITE 434").contains(code)) return 2;
+            if (List.of("MITM 421", "MITE 441", "MITE 431", "MITE 455", "MITE 433").contains(code)) return 3;
+        }
+        return 1;
     }
 }

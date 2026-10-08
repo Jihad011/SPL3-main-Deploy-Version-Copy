@@ -313,7 +313,7 @@ import { ThemeService, Theme } from '../../shared/services/theme.service';
   <app-delete-confirmation-dialogue
     [isOpen]="showDeleteDialogue()"
     title="Confirm Course Deletion"
-    message="Are you sure you want to deactivate and remove course MIT-501 (Advanced Software Architecture)? All associated student enrollments will be archived."
+    message="Are you sure you want to deactivate and remove course MITM 303 (Advanced Computer Networks & Internetworking)? All associated student enrollments will be archived."
     (close)="showDeleteDialogue.set(false)"
     (buttonClick)="handleDeleteAction($event)"
   />
@@ -526,8 +526,8 @@ export class ComponentsShowcaseComponent implements OnInit {
         rows: [
           {
             cells: [
-              { label: 'Course Code', value: 'MIT-501', type: 'value', width: '20%' },
-              { label: 'Course Title', value: 'Advanced Software Engineering', type: 'value', width: '35%' },
+              { label: 'Course Code', value: 'MITM 303', type: 'value', width: '20%' },
+              { label: 'Course Title', value: 'Advanced Computer Networks & Internetworking', type: 'value', width: '35%' },
               { label: 'Credit Hours', value: '3.0 Cr', type: 'value', width: '15%' },
               { label: 'Midterm', value: '38.0 / 40', type: 'value', width: '15%' },
               { label: 'Final Score', value: '56.5 / 60', type: 'value', width: '15%' }
@@ -535,8 +535,8 @@ export class ComponentsShowcaseComponent implements OnInit {
           },
           {
             cells: [
-              { label: 'Course Code', value: 'MIT-502', type: 'value', width: '20%' },
-              { label: 'Course Title', value: 'Cloud-Native Distributed Systems', type: 'value', width: '35%' },
+              { label: 'Course Code', value: 'MITM 304', type: 'value', width: '20%' },
+              { label: 'Course Title', value: 'Database Architecture and Administration', type: 'value', width: '35%' },
               { label: 'Credit Hours', value: '3.0 Cr', type: 'value', width: '15%' },
               { label: 'Midterm', value: '36.5 / 40', type: 'value', width: '15%' },
               { label: 'Final Score', value: '54.0 / 60', type: 'value', width: '15%' }

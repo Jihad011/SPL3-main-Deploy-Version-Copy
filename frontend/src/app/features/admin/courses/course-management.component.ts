@@ -63,7 +63,7 @@ import { CourseManagementListComponent } from './course-management-list.componen
                 [frmGroup]="frmGroup"
                 controlName="code"
                 label="Course Code"
-                placeholder="e.g. MIT-501"
+                placeholder="e.g. MITM 303"
                 displayMode="vertical"
               />
 

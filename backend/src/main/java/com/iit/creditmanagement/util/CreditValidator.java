@@ -6,6 +6,8 @@ import com.iit.creditmanagement.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Validates business rules related to course enrollment.
  * Runs checks BEFORE hitting the database to provide clear error messages.
@@ -39,6 +41,64 @@ public class CreditValidator {
                 )
             );
         }
+    }
+
+    public void validateCreditLimit(Long studentId, Long semesterId, com.iit.creditmanagement.model.entity.Course newCourse, Integer targetSemesterLevel, String intakeType) {
+        if (newCourse == null) {
+            return;
+        }
+
+        int targetLvl = targetSemesterLevel != null ? targetSemesterLevel :
+                (newCourse.getSemesterLevel() != null ? newCourse.getSemesterLevel() :
+                (java.util.List.of("MITM 303", "MITM 304", "MITM 310", "MITM 311").contains(newCourse.getCode()) ? 1 :
+                (java.util.List.of("MITM 301", "MITM 305").contains(newCourse.getCode()) ? 2 :
+                ("MITM 421".equals(newCourse.getCode()) ? 3 : 2))));
+
+        String targetIntake = (intakeType != null && !intakeType.isBlank()) ? intakeType.trim() : "Spring";
+
+        List<com.iit.creditmanagement.model.entity.Enrollment> levelEnrollments = enrollmentRepository
+                .findAllByStudentId(studentId)
+                .stream()
+                .filter(e -> e.getStatus() == com.iit.creditmanagement.model.enums.EnrollmentStatus.ACTIVE ||
+                             e.getStatus() == com.iit.creditmanagement.model.enums.EnrollmentStatus.COMPLETED)
+                .toList();
+
+        int currentCredits = 0;
+        for (com.iit.creditmanagement.model.entity.Enrollment e : levelEnrollments) {
+            int eLvl = e.getTargetSemesterLevel() != null ? e.getTargetSemesterLevel() :
+                    (e.getCourse().getSemesterLevel() != null ? e.getCourse().getSemesterLevel() :
+                    (java.util.List.of("MITM 303", "MITM 304", "MITM 310", "MITM 311").contains(e.getCourse().getCode()) ? 1 :
+                    (java.util.List.of("MITM 301", "MITM 305").contains(e.getCourse().getCode()) ? 2 :
+                    ("MITM 421".equals(e.getCourse().getCode()) ? 3 : 2))));
+
+            String eIntake = e.getIntakeType() != null ? e.getIntakeType().trim() : "Spring";
+
+            if (eLvl == targetLvl && eIntake.equalsIgnoreCase(targetIntake)) {
+                currentCredits += e.getCourse().getCreditHours();
+            }
+        }
+
+        if (currentCredits + newCourse.getCreditHours() > AppConstants.MAX_CREDITS_PER_SEMESTER) {
+            throw new BusinessRuleException(
+                String.format(
+                    "Credit limit exceeded. You currently have %d credits for Semester %d (%s Intake). " +
+                    "Adding %d credit(s) would exceed the %d-credit limit.",
+                    currentCredits,
+                    targetLvl,
+                    targetIntake,
+                    newCourse.getCreditHours(),
+                    AppConstants.MAX_CREDITS_PER_SEMESTER
+                )
+            );
+        }
+    }
+
+    public void validateCreditLimit(Long studentId, Long semesterId, com.iit.creditmanagement.model.entity.Course newCourse, Integer targetSemesterLevel) {
+        validateCreditLimit(studentId, semesterId, newCourse, targetSemesterLevel, "Spring");
+    }
+
+    public void validateCreditLimit(Long studentId, Long semesterId, com.iit.creditmanagement.model.entity.Course newCourse) {
+        validateCreditLimit(studentId, semesterId, newCourse, null, "Spring");
     }
 
     /**

@@ -47,6 +47,12 @@ public class Course {
     @Builder.Default
     private CourseType courseType = CourseType.OPTIONAL;
 
+    @Column(name = "semester_level")
+    private Integer semesterLevel;
+
+    @Column(name = "track", length = 100)
+    private String track;
+
     @Column(name = "max_seats", nullable = false)
     @Builder.Default
     private Integer maxSeats = 40;

@@ -1,8 +1,9 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { CourseResponse, SemesterResponse } from '../../../core/models/models';
+import { CourseResponse, SemesterResponse, EnrollmentResponse } from '../../../core/models/models';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent, FilterOption } from '../../../shared/components/toolbar/toolbar.component';
 import { ToastService } from '../../../core/services/toast.service';
@@ -18,6 +19,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     IconComponent,
     ToolbarComponent,
@@ -31,17 +33,38 @@ import {
     <div class="page-header-left">
       <div class="page-eyebrow">Academic enrollment workspace</div>
       <h1 class="page-title">Course Enrollment</h1>
-      <p class="page-subtitle" *ngIf="activeSemester()">
-        <app-icon name="calendar" [size]="15" /> {{ activeSemester()!.label }} — Select and enroll in courses for this term
-      </p>
-      <p class="page-subtitle" *ngIf="!activeSemester() && !loading()">
-        No active semester found for course enrollment.
+      <p class="page-subtitle">
+        <app-icon name="calendar" [size]="15" /> {{ selectedSemesterLevel() === 1 ? '1st Semester' : (selectedSemesterLevel() === 2 ? '2nd Semester' : '3rd Semester') }} — {{ selectedSemesterType() }} Intake Cycle (2026)
       </p>
     </div>
     <div class="header-actions">
       <a routerLink="../my-courses" class="btn btn-secondary">
         <app-icon name="list-check" [size]="15" /> View Enrolled Courses
       </a>
+    </div>
+  </div>
+
+  <!-- Top Academic Term Selectors: Semester Name & Semester Type -->
+  <div class="top-selector-bar">
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="book-open" [size]="15" /> Semester Name
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterLevel()" (ngModelChange)="selectedSemesterLevel.set(+$event)">
+        <option [value]="1">1st Semester</option>
+        <option [value]="2">2nd Semester</option>
+        <option [value]="3">3rd Semester</option>
+      </select>
+    </div>
+
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="calendar" [size]="15" /> Semester Type
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterType()" (ngModelChange)="selectedSemesterType.set($event)">
+        <option value="Spring">Spring Intake</option>
+        <option value="Fall">Fall Intake</option>
+      </select>
     </div>
   </div>
 
@@ -109,22 +132,24 @@ import {
     <div class="course-card" *ngFor="let c of filteredCourses(); let i = index" [class.course-card--full]="c.isFull">
       <div class="course-card-header">
         <span class="course-code code-badge font-mono">{{ c.code }}</span>
-        <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span>
+        <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType === 'CORE' ? 'Mandatory' : 'Optional' }}</span>
       </div>
 
       <h3 class="course-name">{{ c.name }}</h3>
-      <p class="course-desc" *ngIf="c.description">{{ c.description }}</p>
+      <div class="course-teacher-line" style="font-size: 0.85rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.25rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+        <app-icon name="user" [size]="14"></app-icon>
+        <span>Instructor: <strong>{{ getInstructorName(c) }}</strong></span>
+      </div>
 
-      <div *ngIf="c.syllabusUrl" style="margin-top: 0.25rem;">
+      <div *ngIf="c.syllabusUrl" style="margin-top: 0.15rem;">
         <a [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary, #2563eb); text-decoration: underline;">
           <app-icon name="file-text" [size]="14" /> Download Official Syllabus File
         </a>
       </div>
 
-      <div class="course-meta">
+      <div class="course-meta" style="flex-wrap: wrap; gap: 0.6rem;">
         <span class="meta-item"><app-icon name="clock" [size]="14" /> {{ c.creditHours }} Credit(s)</span>
-        <span class="meta-item" *ngIf="c.teacherName"><app-icon name="user" [size]="14" /> {{ c.teacherName }}</span>
-        <span class="meta-item text-muted font-mono" *ngIf="!c.teacherName">Faculty TBA</span>
+        <span class="meta-item"><app-icon name="calendar" [size]="14" /> {{ getCourseSemesterDisplay(c) }}</span>
       </div>
 
       <div class="seat-info" [class.seats-low]="c.availableSeats <= 5 && !c.isFull" [class.seats-full]="c.isFull">
@@ -143,9 +168,9 @@ import {
       </div>
 
       <generic-button
-        [label]="c.isFull ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now')"
-        [icon]="c.isFull ? 'lock' : 'check-circle'"
-        [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+        [label]="isCourseEnrolled(c.code) ? 'Already Enrolled' : (c.isFull ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now'))"
+        [icon]="isCourseEnrolled(c.code) ? 'check-circle' : (c.isFull ? 'lock' : 'check-circle')"
+        [enable]="!isCourseEnrolled(c.code) && !c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
         styles="width: 100%; margin-top: 0.75rem; justify-content: center;"
         (onClick)="enroll(c)"
       />
@@ -159,10 +184,9 @@ import {
         <thead>
           <tr>
             <th>Code</th>
-            <th>Course Name</th>
+            <th>Course Name & Instructor</th>
             <th>Type</th>
             <th>Credits</th>
-            <th>Faculty</th>
             <th>Seats Available</th>
             <th>Action</th>
           </tr>
@@ -170,10 +194,15 @@ import {
         <tbody>
           <tr class="fade-in-up" [style.animation-delay.ms]="i * 30" *ngFor="let c of filteredCourses(); let i = index">
             <td><span class="code-badge font-mono">{{ c.code }}</span></td>
-            <td><strong>{{ c.name }}</strong></td>
+            <td>
+              <strong>{{ c.name }}</strong>
+              <div style="font-size: 0.78rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.3rem;">
+                <app-icon name="user" [size]="12" />
+                <span>Instructor: {{ getInstructorName(c) }}</span>
+              </div>
+            </td>
             <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
             <td>{{ c.creditHours }} Cr</td>
-            <td>{{ c.teacherName ?? 'TBA' }}</td>
             <td>
               <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'" class="font-mono font-semibold">
                 {{ c.isFull ? 'Full' : (c.availableSeats + ' / ' + c.maxSeats) }}
@@ -181,8 +210,8 @@ import {
             </td>
             <td>
               <generic-button
-                [label]="c.isFull ? 'Full' : 'Enroll'"
-                [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+                [label]="isCourseEnrolled(c.code) ? 'Enrolled' : (c.isFull ? 'Full' : 'Enroll')"
+                [enable]="!isCourseEnrolled(c.code) && !c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
                 styles="font-size: 0.8rem; padding: 0.35rem 0.75rem;"
                 (onClick)="enroll(c)"
               />
@@ -215,6 +244,49 @@ import {
   `,
   styles: [`
     .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    
+    .top-selector-bar {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .selector-card {
+      flex: 1;
+      min-width: 240px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .selector-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent-primary, #2563eb);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .selector-dropdown {
+      padding: 0.55rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    .selector-dropdown:focus {
+      border-color: var(--accent-primary);
+    }
     
     .credit-meter-card {
       background: var(--bg-card);
@@ -387,40 +459,108 @@ export class CourseRegistrationComponent implements OnInit {
   query = signal('');
   view = signal<'grid' | 'list'>('grid');
   selectedType = signal('ALL');
+  selectedSemesterLevel = signal<number>(1);
+  selectedSemesterType = signal<'Spring' | 'Fall'>('Spring');
 
-  currentEnrolledCredits = signal<number>(0);
+  allEnrollments = signal<EnrollmentResponse[]>([]);
   readonly maxCredits = 12;
 
   showConfirmDialogue = signal(false);
   pendingEnrollCourse = signal<CourseResponse | null>(null);
   pendingRetake = signal(false);
 
+  isCourseEnrolled(courseCode: string): boolean {
+    const level = this.selectedSemesterLevel();
+    const type = this.selectedSemesterType();
+
+    return this.allEnrollments().some(e => {
+      if (e.courseCode !== courseCode) return false;
+      if (e.status !== 'ACTIVE' && e.status !== 'COMPLETED') return false;
+
+      const eLevel = e.targetSemesterLevel ?? (
+        ['MITM 303', 'MITM 304', 'MITM 310', 'MITM 311'].includes(e.courseCode) ? 1 :
+        ['MITM 301', 'MITM 305'].includes(e.courseCode) ? 2 :
+        e.courseCode === 'MITM 421' ? 3 : 2
+      );
+
+      const eType = e.intakeType || 'Spring';
+      return eLevel === level && eType.toLowerCase() === type.toLowerCase();
+    });
+  }
+
+  currentEnrolledCredits = computed(() => {
+    const enrollments = this.allEnrollments();
+    const level = this.selectedSemesterLevel();
+    const type = this.selectedSemesterType();
+
+    const activeLevelEnrollments = enrollments.filter(e => {
+      if (e.status !== 'ACTIVE' && e.status !== 'COMPLETED') return false;
+      const eLevel = e.targetSemesterLevel ?? (
+        ['MITM 303', 'MITM 304', 'MITM 310', 'MITM 311'].includes(e.courseCode) ? 1 :
+        ['MITM 301', 'MITM 305'].includes(e.courseCode) ? 2 :
+        e.courseCode === 'MITM 421' ? 3 : 2
+      );
+      const eType = e.intakeType || 'Spring';
+      return eLevel === level && eType.toLowerCase() === type.toLowerCase();
+    });
+
+    return activeLevelEnrollments.reduce((sum, e) => sum + (e.creditHours || 0), 0);
+  });
+
   remainingCredits = computed(() => Math.max(0, this.maxCredits - this.currentEnrolledCredits()));
 
+  totalCompletedCredits = signal<number>(0);
+
+  studentSemesterLevel = computed(() => {
+    const credits = this.totalCompletedCredits();
+    if (credits >= 24) return 3; // 3rd Semester
+    if (credits >= 12) return 2; // 2nd Semester
+    return 1;                    // 1st Semester
+  });
+
   courseTypes = computed(() => {
-    const types = new Set(this.courses().map(c => c.courseType));
-    return Array.from(types);
+    const tracks = new Set<string>();
+    for (const c of this.courses()) {
+      if (c.track) tracks.add(c.track);
+      else if (c.courseType) tracks.add(c.courseType);
+    }
+    return Array.from(tracks);
   });
 
   filterOptions = computed<FilterOption[]>(() => {
     return this.courseTypes().map(type => ({
       label: type,
       value: type,
-      count: this.courses().filter(c => c.courseType === type).length
+      count: this.courses().filter(c => c.track === type || c.courseType === type).length
     }));
   });
 
   filteredCourses = computed(() => {
     let result = this.courses();
+    const level = this.selectedSemesterLevel();
+
+    // Semester-level filtering matching official curriculum rules:
+    // Level 1 (1st Semester): ONLY 4 mandatory courses (MITM 303, 304, 310, 311) - strictly NO optional courses
+    // Level 2 (2nd Semester): 2 mandatory 2nd semester courses (MITM 301, 305) + ALL optional track courses
+    // Level 3 (3rd Semester): 1 mandatory 3rd semester project (MITM 421) + ALL optional track courses
+    if (level === 1) {
+      result = result.filter(c => (c.semesterLevel === 1 || ['MITM 303', 'MITM 304', 'MITM 310', 'MITM 311'].includes(c.code)) && c.courseType !== 'OPTIONAL');
+    } else if (level === 2) {
+      result = result.filter(c => c.semesterLevel === 2 || ['MITM 301', 'MITM 305'].includes(c.code) || c.courseType === 'OPTIONAL');
+    } else if (level === 3) {
+      result = result.filter(c => c.semesterLevel === 3 || c.code === 'MITM 421' || c.courseType === 'OPTIONAL');
+    }
+
     const type = this.selectedType();
     if (type !== 'ALL') {
-      result = result.filter(c => c.courseType === type);
+      result = result.filter(c => c.track === type || c.courseType === type);
     }
     const q = this.query().trim().toLowerCase();
     if (q) {
       result = result.filter(c =>
         c.name.toLowerCase().includes(q) ||
         c.code.toLowerCase().includes(q) ||
+        (c.track || '').toLowerCase().includes(q) ||
         (c.teacherName || '').toLowerCase().includes(q)
       );
     }
@@ -433,6 +573,42 @@ export class CourseRegistrationComponent implements OnInit {
   });
 
   constructor(private api: ApiService, private toast: ToastService) {}
+
+  getInstructorName(c: CourseResponse): string {
+    if (c.teacherName && c.teacherName !== 'Faculty TBA' && c.teacherName !== 'Faculty Instructor') {
+      return c.teacherName;
+    }
+    const map: Record<string, string> = {
+      'MITM 303': 'Dr. Md. Shariful Islam',
+      'MITM 304': 'Dr. Mohammad Shoyaib',
+      'MITM 310': 'Dr. Ahmedul Kabir',
+      'MITM 311': 'Dr. B. M. Mainul Hossain',
+      'MITM 301': 'Md. Saeed Siddik',
+      'MITM 305': 'Dr. Md. Nurul Ahad Tawhid',
+      'MITM 421': 'Dr. Ahmedul Kabir',
+      'MITE 436': 'Dr. Ahmedul Kabir',
+      'MITE 430': 'Dr. B. M. Mainul Hossain',
+      'MITE 437': 'Dr. Mohammad Shoyaib',
+      'MITE 431': 'Dr. B. M. Mainul Hossain',
+      'MITE 434': 'Md. Saeed Siddik',
+      'MITE 439': 'Dr. Kazi Muheymin-Us-Sakib',
+      'MITE 435': 'Toukir Ahammed',
+      'MITE 441': 'Toukir Ahammed',
+      'MITE 432': 'Dr. Md. Shariful Islam',
+      'MITE 442': 'Dr. Md. Shariful Islam',
+      'MITE 438': 'Dr. Md. Shariful Islam',
+      'MITE 455': 'Dr. Md. Shariful Islam',
+      'MITE 433': 'Dr. Md. Shariful Islam'
+    };
+    return map[c.code] || 'Faculty Instructor';
+  }
+
+  getCourseSemesterDisplay(c: CourseResponse): string {
+    if (c.semesterLevel === 1 || ['MITM 303', 'MITM 304', 'MITM 310', 'MITM 311'].includes(c.code)) return 'First Semester';
+    if (c.semesterLevel === 2 || ['MITM 301', 'MITM 305'].includes(c.code)) return 'Second Semester';
+    if (c.semesterLevel === 3 || c.code === 'MITM 421') return 'Third Semester';
+    return 'Second & Third Semester';
+  }
 
   getSyllabusFullUrl(url: string | null): string {
     if (!url) return '';
@@ -460,12 +636,12 @@ export class CourseRegistrationComponent implements OnInit {
   loadEnrolledCredits(): void {
     this.api.getMyEnrollments().subscribe({
       next: (enrollments) => {
-        const activeSemId = this.activeSemId();
-        const active = (enrollments || []).filter(e =>
-          e.status === 'ACTIVE' && (!activeSemId || e.semesterId === activeSemId)
-        );
-        const total = active.reduce((acc, e) => acc + (e.creditHours || 0), 0);
-        this.currentEnrolledCredits.set(total);
+        const list = enrollments || [];
+        this.allEnrollments.set(list);
+
+        const completed = list.filter(e => e.status === 'COMPLETED');
+        const completedTotal = completed.reduce((acc, e) => acc + (e.creditHours || 0), 0);
+        this.totalCompletedCredits.set(completedTotal);
       },
       error: () => {}
     });
@@ -518,13 +694,19 @@ export class CourseRegistrationComponent implements OnInit {
     this.error.set('');
     this.enrolling.set(course.id);
 
-    this.api.enroll({ courseId: course.id, semesterId: semId, retake: this.pendingRetake() }).subscribe({
+    this.api.enroll({
+      courseId: course.id,
+      semesterId: semId,
+      retake: this.pendingRetake(),
+      targetSemesterLevel: this.selectedSemesterLevel(),
+      intakeType: this.selectedSemesterType()
+    }).subscribe({
       next: () => {
         this.enrolling.set(null);
         const msg = `Successfully enrolled in ${course.name}!`;
         this.success.set(msg);
         this.toast.success(msg + ' View in My Course(s).');
-        this.currentEnrolledCredits.update(v => v + course.creditHours);
+        this.loadEnrolledCredits();
         this.loadCourses();
       },
       error: (e) => {

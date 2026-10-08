@@ -11,18 +11,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class StudentRollHelperTest {
 
     @Test
-    @DisplayName("Should format dynamic semester roll ID correctly for Spring and Fall")
+    @DisplayName("Should format dynamic semester roll ID correctly for First and Second Semester")
     void testFormatSemesterRoll() {
-        // Spring 2026, Batch 2, Class Roll 4 -> 26S0204
-        String springRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SPRING, 2, 4);
+        // Second Semester 2026, Batch 2, Class Roll 4 -> 26S0204
+        String springRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 4);
         assertEquals("26S0204", springRoll);
 
-        // Fall 2026, Batch 2, Class Roll 4 -> 26F0204
-        String fallRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FALL, 2, 4);
+        // First Semester 2026, Batch 2, Class Roll 4 -> 26F0204
+        String fallRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, 2, 4);
         assertEquals("26F0204", fallRoll);
 
-        // Spring 2027, Batch 2, Class Roll 4 -> 27S0204
-        String nextYearSpringRoll = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SPRING, 2, 4);
+        // Third Semester 2026, Batch 2, Class Roll 4 -> 26T0204
+        String thirdRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.THIRD_SEMESTER, 2, 4);
+        assertEquals("26T0204", thirdRoll);
+
+        // Second Semester 2027, Batch 2, Class Roll 4 -> 27S0204
+        String nextYearSpringRoll = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, 2, 4);
         assertEquals("27S0204", nextYearSpringRoll);
     }
 
@@ -36,7 +40,7 @@ class StudentRollHelperTest {
 
         Semester sem = Semester.builder()
                 .year(2026)
-                .name(SemesterName.SPRING)
+                .name(SemesterName.SECOND_SEMESTER)
                 .build();
 
         String roll = StudentRollHelper.deriveSemesterRoll(student, sem);
@@ -71,18 +75,18 @@ class StudentRollHelperTest {
     @DisplayName("Should enforce strict uniqueness of dynamic rolls across different students and semesters")
     void testDynamicRollUniqueness() {
         // Different students in same semester must have distinct roll IDs
-        String student1Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SPRING, 2, 1);
-        String student2Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SPRING, 2, 2);
-        String student3Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SPRING, 3, 1);
+        String student1Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 1);
+        String student2Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 2);
+        String student3Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 3, 1);
         
         assertNotEquals(student1Roll, student2Roll);
         assertNotEquals(student1Roll, student3Roll);
         assertNotEquals(student2Roll, student3Roll);
 
         // Same student across different semesters must have distinct semester-specific roll IDs
-        String spring26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SPRING, 2, 4);
-        String fall26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FALL, 2, 4);
-        String spring27 = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SPRING, 2, 4);
+        String spring26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 4);
+        String fall26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, 2, 4);
+        String spring27 = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, 2, 4);
 
         assertEquals("26S0204", spring26);
         assertEquals("26F0204", fall26);

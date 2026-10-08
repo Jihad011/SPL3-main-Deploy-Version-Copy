@@ -77,7 +77,7 @@ import {
           <div class="accordion-semester-dot" [style.background]="semColor(idx)"></div>
           <div>
             <div class="accordion-title">{{ sem }}</div>
-            <div class="accordion-sub">Semester GPA: <strong [style.color]="cgpaColor(+getSemesterGpa(sem))">{{ getSemesterGpa(sem) }}</strong> · {{ getSemesterGrades(sem).length }} course(s)</div>
+            <div class="accordion-sub">Term CGPA: <strong [style.color]="cgpaColor(+getSemesterGpa(sem))">{{ getSemesterGpa(sem) }}</strong> · CGPA: <strong [style.color]="cgpaColor(+getSemesterCgpa(sem))">{{ getSemesterCgpa(sem) }}</strong> · {{ getSemesterGrades(sem).length }} course(s)</div>
           </div>
         </div>
         <div class="accordion-chips">
@@ -274,6 +274,18 @@ export class ResultsComponent implements OnInit {
 
   getSemesterGpa(sem: string): string {
     const grades = this.getSemesterGrades(sem).filter(g => g.gradePoint !== null);
+    if (!grades.length) return '—';
+    const total = grades.reduce((s, g) => s + (g.gradePoint! * g.creditHours), 0);
+    const credits = grades.reduce((s, g) => s + g.creditHours, 0);
+    return credits ? (total / credits).toFixed(2) : '—';
+  }
+
+  getSemesterCgpa(sem: string): string {
+    const allSems = this.semesters();
+    const idx = allSems.indexOf(sem);
+    if (idx === -1) return '—';
+    const relSems = allSems.slice(0, idx + 1);
+    const grades = this.grades().filter(g => relSems.includes(g.semesterLabel) && g.gradePoint !== null);
     if (!grades.length) return '—';
     const total = grades.reduce((s, g) => s + (g.gradePoint! * g.creditHours), 0);
     const credits = grades.reduce((s, g) => s + g.creditHours, 0);

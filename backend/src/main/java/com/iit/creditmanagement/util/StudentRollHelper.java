@@ -11,8 +11,8 @@ public final class StudentRollHelper {
 
     private StudentRollHelper() {}
 
-    // Pattern for Dynamic Semester Roll: e.g. 26S0204 or 26F0204
-    private static final Pattern DYNAMIC_ROLL_PATTERN = Pattern.compile("^(\\d{2})([SF])(\\d{2})(\\d{2,4})$", Pattern.CASE_INSENSITIVE);
+    // Pattern for Dynamic Semester Roll: e.g. 26S0204, 26F0204, 26T0204
+    private static final Pattern DYNAMIC_ROLL_PATTERN = Pattern.compile("^(\\d{2})([SFT123])(\\d{2})(\\d{2,4})$", Pattern.CASE_INSENSITIVE);
     
     // Pattern for Legacy BSSE Roll: e.g. BSSE1204
     private static final Pattern BSSE_ROLL_PATTERN = Pattern.compile("^BSSE(\\d{2})(\\d{2})$", Pattern.CASE_INSENSITIVE);
@@ -27,7 +27,7 @@ public final class StudentRollHelper {
      */
     public static String formatSemesterRoll(int year, SemesterName term, Integer batch, Integer classRoll) {
         int yearTwoDigit = Math.abs(year) % 100;
-        String termCode = (term == SemesterName.FALL) ? "F" : "S";
+        String termCode = (term == SemesterName.THIRD_SEMESTER) ? "T" : ((term == SemesterName.SECOND_SEMESTER) ? "S" : "F");
         int safeBatch = (batch != null && batch > 0) ? (batch > 99 ? batch % 100 : batch) : 1;
         int safeRoll = (classRoll != null && classRoll > 0) ? (classRoll > 99 ? classRoll % 100 : classRoll) : 1;
 
@@ -44,11 +44,11 @@ public final class StudentRollHelper {
 
         if (semester == null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return formatSemesterRoll(currentYear, SemesterName.SPRING, batch, classRoll);
+            return formatSemesterRoll(currentYear, SemesterName.FIRST_SEMESTER, batch, classRoll);
         }
 
         int year = (semester.getYear() != null) ? semester.getYear() : java.time.LocalDate.now().getYear();
-        SemesterName term = (semester.getName() != null) ? semester.getName() : SemesterName.SPRING;
+        SemesterName term = (semester.getName() != null) ? semester.getName() : SemesterName.FIRST_SEMESTER;
         return formatSemesterRoll(year, term, batch, classRoll);
     }
 

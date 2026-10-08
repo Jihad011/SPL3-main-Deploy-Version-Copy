@@ -59,9 +59,9 @@ class EnrollmentControllerTest {
 
         sampleResponse = new EnrollmentResponse(
                 100L, 1L, "Jihad", "1413",
-                10L, "MIT-601", "Cloud Computing", 3,
+                10L, "MITM 303", "Advanced Computer Networks & Internetworking", 3,
                 1L, "1st Year 1st Semester (2026)",
-                EnrollmentStatus.ACTIVE, false,
+                EnrollmentStatus.ACTIVE, false, null, null,
                 OffsetDateTime.now()
         );
     }
@@ -78,7 +78,7 @@ class EnrollmentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new EnrollRequest(10L, 1L, false))))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.courseCode").value("MIT-601"))
+                .andExpect(jsonPath("$.courseCode").value("MITM 303"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
@@ -116,7 +116,7 @@ class EnrollmentControllerTest {
 
         mockMvc.perform(get("/enrollments/my").with(user(studentUser)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].courseCode").value("MIT-601"));
+                .andExpect(jsonPath("$[0].courseCode").value("MITM 303"));
     }
 
     @Test
@@ -124,9 +124,9 @@ class EnrollmentControllerTest {
     void dropEnrollment() throws Exception {
         EnrollmentResponse dropped = new EnrollmentResponse(
                 100L, 1L, "Jihad", "1413",
-                10L, "MIT-601", "Cloud Computing", 3,
+                10L, "MITM 303", "Advanced Computer Networks & Internetworking", 3,
                 1L, "1st Year 1st Semester (2026)",
-                EnrollmentStatus.DROPPED, false,
+                EnrollmentStatus.DROPPED, false, null, null,
                 OffsetDateTime.now()
         );
         when(enrollmentService.dropCourse(eq(100L), any())).thenReturn(dropped);

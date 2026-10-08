@@ -74,6 +74,8 @@ export interface CourseResponse {
   syllabusFileName?: string | null;
   creditHours: number;
   courseType: CourseType;
+  semesterLevel?: number | null;
+  track?: string | null;
   maxSeats: number;
   currentEnrollment: number;
   availableSeats: number;
@@ -112,6 +114,9 @@ export interface EnrollmentResponse {
   isRetake: boolean;
   syllabusUrl?: string | null;
   syllabusFileName?: string | null;
+  teacherName?: string | null;
+  targetSemesterLevel?: number | null;
+  intakeType?: string | null;
   enrolledAt: string;
   courseType?: string;
 }
@@ -120,6 +125,8 @@ export interface EnrollRequest {
   courseId: number;
   semesterId: number;
   retake: boolean;
+  targetSemesterLevel?: number;
+  intakeType?: string;
 }
 
 // ── Grade ─────────────────────────────────────────────────────
@@ -240,6 +247,7 @@ export interface SemesterHistoryDTO {
   isGap: boolean;
   totalCredits: number;
   sgpa: number;
+  cgpa: number;
   gapFineAmount: number;
   courses: CourseGradeRecordDTO[];
 }

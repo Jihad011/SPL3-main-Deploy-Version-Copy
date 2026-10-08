@@ -50,8 +50,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         // 2. Business rule checks (app-layer for friendly messages)
+        Integer targetLevel = request.targetSemesterLevel() != null ? request.targetSemesterLevel() :
+                (course.getSemesterLevel() != null ? course.getSemesterLevel() :
+                (java.util.List.of("MITM 303", "MITM 304", "MITM 310", "MITM 311").contains(course.getCode()) ? 1 :
+                (java.util.List.of("MITM 301", "MITM 305").contains(course.getCode()) ? 2 :
+                ("MITM 421".equals(course.getCode()) ? 3 : 2))));
+        String intakeType = request.intakeType() != null ? request.intakeType() : "Spring";
+
         creditValidator.validateNoDuplicateEnrollment(studentId, course.getId(), semester.getId());
-        creditValidator.validateCreditLimit(studentId, semester.getId(), course.getCreditHours());
+        creditValidator.validateCreditLimit(studentId, semester.getId(), course, targetLevel, intakeType);
         creditValidator.validateSeatAvailability(
                 course.getCurrentEnrollment(), course.getMaxSeats(), course.getName());
 
@@ -63,6 +70,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (enrollment != null) {
             enrollment.setStatus(EnrollmentStatus.ACTIVE);
             enrollment.setRetake(request.retake());
+            enrollment.setTargetSemesterLevel(targetLevel);
+            enrollment.setIntakeType(intakeType);
         } else {
             enrollment = Enrollment.builder()
                     .student(student)
@@ -70,6 +79,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .semester(semester)
                     .status(EnrollmentStatus.ACTIVE)
                     .isRetake(request.retake())
+                    .targetSemesterLevel(targetLevel)
+                    .intakeType(intakeType)
                     .build();
         }
 

@@ -20,8 +20,20 @@ public record EnrollmentResponse(
         boolean          isRetake,
         String           syllabusUrl,
         String           syllabusFileName,
+        String           teacherName,
+        Integer          targetSemesterLevel,
+        String           intakeType,
         OffsetDateTime   enrolledAt
 ) {
+    public EnrollmentResponse(
+            Long id, Long studentId, String studentName, String rollNumber,
+            Long courseId, String courseCode, String courseName, Integer creditHours,
+            Long semesterId, String semesterLabel, EnrollmentStatus status, boolean isRetake,
+            String syllabusUrl, String syllabusFileName, OffsetDateTime enrolledAt
+    ) {
+        this(id, studentId, studentName, rollNumber, courseId, courseCode, courseName, creditHours,
+             semesterId, semesterLabel, status, isRetake, syllabusUrl, syllabusFileName, null, null, "Spring", enrolledAt);
+    }
     public static EnrollmentResponse from(Enrollment e) {
         return new EnrollmentResponse(
                 e.getId(),
@@ -38,6 +50,9 @@ public record EnrollmentResponse(
                 e.isRetake(),
                 e.getCourse().getSyllabusUrl(),
                 e.getCourse().getSyllabusFileName(),
+                e.getCourse().getTeacher() != null ? e.getCourse().getTeacher().getName() : null,
+                e.getTargetSemesterLevel(),
+                e.getIntakeType() != null ? e.getIntakeType() : "Spring",
                 e.getEnrolledAt()
         );
     }

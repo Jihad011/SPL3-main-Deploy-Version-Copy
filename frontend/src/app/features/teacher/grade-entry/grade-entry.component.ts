@@ -101,6 +101,31 @@ function computeGradeLetter(total: number): string {
   <div class="alert alert-error" *ngIf="error()">
     <app-icon name="alert-triangle" [size]="16"></app-icon>{{ error() }}
   </div>
+
+  <!-- Top Academic Term Selectors: Semester Name & Semester Type -->
+  <div class="top-selector-bar" *ngIf="!loading()">
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="book-open" [size]="15" /> Semester Name
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterLevel()" (ngModelChange)="selectedSemesterLevel.set(+$event)">
+        <option [value]="1">1st Semester</option>
+        <option [value]="2">2nd Semester</option>
+        <option [value]="3">3rd Semester</option>
+      </select>
+    </div>
+
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="calendar" [size]="15" /> Semester Type
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterType()" (ngModelChange)="selectedSemesterType.set($event)">
+        <option value="Spring">Spring Intake</option>
+        <option value="Fall">Fall Intake</option>
+      </select>
+    </div>
+  </div>
+
   <div class="spinner-wrapper" *ngIf="loading()"><div class="spinner"></div></div>
 
   <!-- Grade Distribution Summary Bar -->
@@ -313,6 +338,48 @@ function computeGradeLetter(total: number): string {
 </div>
   `,
   styles: [`
+    .top-selector-bar {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .selector-card {
+      flex: 1;
+      min-width: 240px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .selector-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent-primary, #2563eb);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .selector-dropdown {
+      padding: 0.55rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    .selector-dropdown:focus {
+      border-color: var(--accent-primary);
+    }
     .metric-chip {
       display: inline-flex;
       align-items: center;
@@ -486,6 +553,9 @@ function computeGradeLetter(total: number): string {
   `]
 })
 export class GradeEntryComponent implements OnInit {
+  selectedSemesterLevel = signal<number>(1);
+  selectedSemesterType = signal<'Spring' | 'Fall'>('Spring');
+
   rows = signal<GradeRow[]>([]);
   semester = signal<SemesterResponse | null>(null);
   loading = signal(true);
@@ -494,6 +564,8 @@ export class GradeEntryComponent implements OnInit {
   query = signal('');
   courseId!: number;
   showSaveConfirm = signal(false);
+  activeCourseCode = signal<string>('');
+  activeCourseName = signal<string>('');
 
   filteredRows = computed(() => {
     const q = this.query().trim().toLowerCase();
@@ -554,6 +626,10 @@ export class GradeEntryComponent implements OnInit {
         this.semester.set(sem);
         this.api.getEnrolledStudents(this.courseId, sem.id).subscribe({
           next: (enrollments) => {
+            if (enrollments.length > 0) {
+              this.activeCourseCode.set(enrollments[0].courseCode || '');
+              this.activeCourseName.set(enrollments[0].courseName || '');
+            }
             this.api.getCourseGrades(this.courseId, sem.id).subscribe({
               next: (grades) => {
                 const gradeMap = new Map(grades.map(g => [g.enrollmentId, g]));
@@ -769,23 +845,108 @@ export class GradeEntryComponent implements OnInit {
   }
 
   importCsv(event: Event): void {
+    this.error.set(''); // Clear previous error banner
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) {
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length > 0) {
+          const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+          const courseColIdx = headers.findIndex(h => /^(course\s*code|coursecode|course|subject)$/i.test(h));
+
+          if (courseColIdx === -1) {
+            const activeCode = this.activeCourseCode();
+            const msg = `Missing Course Code Column: The uploaded CSV file does not contain a 'Course Code' header. All mark sheets must include a 'Course Code' column (e.g. ${activeCode || 'MITM 303'}).`;
+            this.error.set(msg);
+            this.toast.error(msg);
+            setTimeout(() => this.error.set(''), 5000);
+            input.value = '';
+            return;
+          }
+
+          if (lines.length > 1) {
+            const firstDataRow = lines[1].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+            const fileCourseCode = firstDataRow[courseColIdx];
+            const activeCode = this.activeCourseCode();
+
+            if (!fileCourseCode || (activeCode && fileCourseCode.trim().toLowerCase() !== activeCode.trim().toLowerCase())) {
+              const msg = `Course Mismatch Warning: The uploaded CSV file is for '${(fileCourseCode || 'Unknown').trim()}', but you are currently grading '${activeCode}' (${this.activeCourseName()}). Import cancelled!`;
+              this.error.set(msg);
+              this.toast.error(msg);
+              setTimeout(() => this.error.set(''), 5000);
+              input.value = '';
+              return;
+            }
+
+            // Check if any mark in the CSV actually differs from current rows
+            let changedCount = 0;
+            const currentMap = new Map(this.rows().map(r => [(r.rollNumber || '').toLowerCase().trim(), r]));
+            const rollColIdx = headers.findIndex(h => /^(roll\s*number|roll\s*no\.?|roll|student\s*roll|rollnumber)$/i.test(h));
+            const midColIdx = headers.findIndex(h => /^(midterm|mid|midterm\s*marks)$/i.test(h));
+            const finColIdx = headers.findIndex(h => /^(final|finals|final\s*marks)$/i.test(h));
+
+            if (rollColIdx !== -1) {
+              for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                const roll = cols[rollColIdx]?.toLowerCase().trim();
+                if (!roll) continue;
+
+                const existing = currentMap.get(roll);
+                if (existing) {
+                  const csvMid = midColIdx !== -1 && cols[midColIdx] ? parseFloat(cols[midColIdx]) : null;
+                  const csvFin = finColIdx !== -1 && cols[finColIdx] ? parseFloat(cols[finColIdx]) : null;
+
+                  const oldMid = existing.midtermInput;
+                  const oldFin = existing.finalInput;
+
+                  const midDiff = (csvMid !== null && !isNaN(csvMid) && csvMid !== oldMid);
+                  const finDiff = (csvFin !== null && !isNaN(csvFin) && csvFin !== oldFin);
+
+                  if (midDiff || finDiff) {
+                    changedCount++;
+                  }
+                }
+              }
+
+              if (changedCount === 0) {
+                const msg = 'No Change Detected.';
+                this.toast.info(msg);
+                input.value = '';
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      this.processCsvUpload(file, input);
+    };
+    reader.readAsText(file);
+  }
+
+  private processCsvUpload(file: File, input: HTMLInputElement): void {
     this.loading.set(true);
+    this.error.set('');
 
     this.api.uploadGradesCsv(this.courseId, file).subscribe({
       next: (responses) => {
         this.loading.set(false);
+        this.error.set('');
         this.toast.success(`Successfully processed ${responses.length} grades from CSV! 🎉`);
         this.loadData();
       },
       error: (err) => {
         this.loading.set(false);
-        const msg = err.error?.detail || err.error?.message || 'Failed to upload CSV grades';
+        const msg = err.error?.detail || err.error?.message || (typeof err.error === 'string' ? err.error : 'Failed to upload CSV grades');
         this.error.set(msg);
         this.toast.error(msg);
+        setTimeout(() => this.error.set(''), 5000);
       }
     });
 

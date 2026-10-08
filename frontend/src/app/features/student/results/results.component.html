@@ -52,7 +52,7 @@
           <div class="accordion-semester-dot" [style.background]="semColor(idx)"></div>
           <div>
             <div class="accordion-title">{{ sem }}</div>
-            <div class="accordion-sub">Semester GPA: <strong [style.color]="cgpaColor(+getSemesterGpa(sem))">{{ getSemesterGpa(sem) }}</strong> · {{ getSemesterGrades(sem).length }} course(s)</div>
+            <div class="accordion-sub">Term CGPA: <strong [style.color]="cgpaColor(+getSemesterGpa(sem))">{{ getSemesterGpa(sem) }}</strong> · {{ getSemesterGrades(sem).length }} course(s)</div>
           </div>
         </div>
         <div class="accordion-chips">

@@ -281,8 +281,12 @@
                   <span class="pill-v font-mono">{{ sem.totalCredits }}</span>
                 </div>
                 <div class="metric-pill sgpa-metric-pill">
-                  <span class="pill-k">Term SGPA:</span>
+                  <span class="pill-k">Term CGPA:</span>
                   <span class="pill-v font-mono">{{ sem.sgpa | number:'1.2-2' }}</span>
+                </div>
+                <div class="metric-pill cgpa-metric-pill">
+                  <span class="pill-k">Cum. CGPA:</span>
+                  <span class="pill-v font-mono">{{ sem.cgpa | number:'1.2-2' }}</span>
                 </div>
               </div>
             </div>

@@ -37,7 +37,7 @@ import {
   <div class="page-header">
     <div class="page-header-left">
       <p class="page-eyebrow">Faculty Academic Workspace</p>
-      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
+      <h1 class="page-title">Welcome back, {{ fullName }}</h1>
       <p class="page-subtitle">Review assigned academic courses and manage student assessment grade sheets.</p>
     </div>
     <div class="header-actions">
@@ -349,8 +349,8 @@ export class TeacherDashboardComponent implements OnInit {
   private auth = inject(AuthStateService);
   private toast = inject(ToastService);
 
-  get firstName(): string {
-    return this.auth.user()?.name?.split(' ')[0] || 'Professor';
+  get fullName(): string {
+    return this.auth.user()?.name || 'Professor';
   }
 
   filtered = computed(() => {
@@ -438,6 +438,12 @@ export class TeacherDashboardComponent implements OnInit {
     if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
+    if (course.syllabusFileName && course.syllabusFileName.trim().toLowerCase() === file.name.trim().toLowerCase()) {
+      this.toast.info('No Change Detected.');
+      input.value = '';
+      return;
+    }
+
     this.uploadingCourseId.set(course.id);
 
     this.api.uploadSyllabusFile(file).subscribe({

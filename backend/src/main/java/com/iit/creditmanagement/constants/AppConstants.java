@@ -28,8 +28,17 @@ public final class AppConstants {
     public static final double C_MIN       = 45.0;
     public static final double D_MIN       = 40.0;
 
-    // ── Default Fees (BDT) ───────────────────────────────────
+    // ── Default Fees (BDT - DU IIT EMIT Notice) ─────────────
     public static final double DEFAULT_RETAKE_FEE       = 500.0;
     public static final double DEFAULT_SEMESTER_GAP_FEE = 10000.0;
     public static final double DEFAULT_REGISTRATION_FEE = 200.0;
+
+    // ── Official Program Fees (BDT - DU IIT EMIT Brochure Page 5) ──
+    public static final double ADMISSION_FEE_1ST_SEM     = 12000.0;
+    public static final double SEMESTER_FEE              = 10000.0;
+    public static final double LAB_USAGE_FEE             = 8000.0;
+    public static final double COST_PER_CREDIT           = 4500.0;
+    public static final double FIRST_SEMESTER_TOTAL_FEE  = 84000.0;  // 12000 + 10000 + 8000 + (12 * 4500)
+    public static final double SUBSEQUENT_SEMESTER_FEE   = 72000.0;  // 10000 + 8000 + (12 * 4500)
+    public static final double TOTAL_PROGRAM_FEE         = 228000.0; // 84000 + 72000 + 72000
 }

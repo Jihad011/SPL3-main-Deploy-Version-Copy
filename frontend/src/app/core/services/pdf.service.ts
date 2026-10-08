@@ -330,7 +330,7 @@ export class PdfService {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
             doc.setTextColor(71, 85, 105);
-            doc.text(`Term Roll: ${sem.semesterRollId || 'N/A'}   |   Credits: 0   |   SGPA: 0.00`, margin + contentWidth - 4, boxStartY + 6.2, { align: 'right' });
+            doc.text(`Term Roll: ${sem.semesterRollId || 'N/A'}   |   Credits: 0   |   Term CGPA: 0.00`, margin + contentWidth - 4, boxStartY + 6.2, { align: 'right' });
 
             // Body text for empty course
             doc.setFontSize(8.5);
@@ -363,7 +363,7 @@ export class PdfService {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
             doc.setTextColor(203, 213, 225);
-            const semMeta = `Term Roll: ${sem.semesterRollId || 'N/A'}   |   Credits: ${sem.totalCredits || 0}   |   Term SGPA: ${sem.sgpa ? Number(sem.sgpa).toFixed(2) : '0.00'}`;
+            const semMeta = `Term Roll: ${sem.semesterRollId || 'N/A'}   |   Credits: ${sem.totalCredits || 0}   |   Term CGPA: ${sem.sgpa ? Number(sem.sgpa).toFixed(2) : '0.00'}`;
             doc.text(semMeta, margin + contentWidth - 4, boxStartY + 5.5, { align: 'right' });
 
             this.runAutoTable(doc, {

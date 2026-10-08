@@ -7,8 +7,8 @@ public record CourseRequest(
 
         @NotBlank(message = "Course code is required")
         @Size(max = 20, message = "Code must not exceed 20 characters")
-        @Pattern(regexp = "^[A-Z]{2,6}-\\d{3,4}$",
-                 message = "Code format must be like MIT-501")
+        @Pattern(regexp = "^[A-Z]{2,6}[\\s-]?\\d{3,4}$",
+                 message = "Code format must be like MITM 303 or MITE 436")
         String code,
 
         @NotBlank(message = "Course name is required")
@@ -27,6 +27,9 @@ public record CourseRequest(
 
         @NotNull(message = "Course type is required")
         CourseType courseType,
+
+        Integer semesterLevel,
+        String track,
 
         @Min(value = 1, message = "Max seats must be at least 1")
         @Max(value = 200, message = "Max seats must not exceed 200")

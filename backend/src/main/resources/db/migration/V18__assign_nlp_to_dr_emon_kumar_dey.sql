@@ -14,4 +14,4 @@ ON CONFLICT (email) DO UPDATE SET
 -- 2. Update Natural Language Processing course
 UPDATE courses 
 SET teacher_id = (SELECT id FROM users WHERE email = 'emon@iit.du.ac.bd' LIMIT 1)
-WHERE name ILIKE '%Natural Language Processing%' OR name ILIKE '%NLP%' OR code = 'MIT-604';
+WHERE name ILIKE '%Natural Language Processing%' OR name ILIKE '%NLP%' OR code = 'MITE 431';

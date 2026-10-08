@@ -1,5 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { StudentDashboardResponse, FeeResponse } from '../../../core/models/models';
@@ -15,7 +16,7 @@ import { ChartData, ChartOptions } from 'chart.js';
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, DecimalPipe, DatePipe, SkeletonComponent, IconComponent, BaseChartDirective, CardGlowDirective],
+  imports: [CommonModule, FormsModule, RouterLink, DecimalPipe, DatePipe, SkeletonComponent, IconComponent, BaseChartDirective, CardGlowDirective],
   animations: [listAnimation],
   template: `
 <div class="page student-dashboard-page">
@@ -34,9 +35,15 @@ import { ChartData, ChartOptions } from 'chart.js';
         <span class="meta-pill font-mono" *ngIf="d.registrationNumber">
           <strong>Reg:</strong> {{ d.registrationNumber }}
         </span>
-        <span class="meta-pill" *ngIf="d.currentSemester">
-          <app-icon name="calendar" [size]="13" /> {{ d.currentSemester }}
-        </span>
+        <div class="semester-filter-dropdown-wrap font-mono" title="Filter courses by semester">
+          <app-icon name="calendar" [size]="13" />
+          <select class="semester-filter-select font-mono" [ngModel]="selectedSemesterFilter()" (ngModelChange)="selectedSemesterFilter.set($event)">
+            <option value="ALL">All Semesters</option>
+            <option value="1">First Semester</option>
+            <option value="2">Second Semester</option>
+            <option value="3">Third Semester</option>
+          </select>
+        </div>
         <span class="meta-pill meta-pill--status">
           <span class="status-dot"></span> Active Student
         </span>
@@ -103,20 +110,20 @@ import { ChartData, ChartOptions } from 'chart.js';
         </div>
       </div>
 
-      <!-- Card 2: Term Credits Utilization -->
+      <!-- Card 2: Term / Program Credits Utilization -->
       <div class="stat-card stat-card--blue">
         <div class="stat-card-inner">
           <div class="stat-icon"><app-icon name="book-open" [size]="20" /></div>
           <div class="stat-content">
             <div class="stat-value font-mono">
-              {{ d.currentSemesterCredits }}<span class="stat-max">/{{ d.maxCreditsPerSemester }}</span>
+              {{ filteredCredits() }}<span class="stat-max">/{{ maxAllowedCredits() }}</span>
             </div>
-            <div class="stat-label">Term Credit Limit</div>
+            <div class="stat-label">{{ creditCardLabel() }}</div>
             <div class="progress-bar" style="margin-top:0.45rem">
-              <div class="progress-fill" [style.width.%]="creditPercent" [class.fill-warning]="creditPercent >= 100"></div>
+              <div class="progress-fill" [style.width.%]="creditPercent()" [class.fill-warning]="creditPercent() >= 100"></div>
             </div>
             <div class="stat-sub">
-              {{ d.remainingCredits > 0 ? (d.remainingCredits + ' credits remaining') : 'Maximum term cap reached' }}
+              {{ creditCardSubtext() }}
             </div>
           </div>
         </div>
@@ -148,9 +155,9 @@ import { ChartData, ChartOptions } from 'chart.js';
         <div class="stat-card-inner">
           <div class="stat-icon"><app-icon name="list-check" [size]="20" /></div>
           <div class="stat-content">
-            <div class="stat-value font-mono">{{ d.currentEnrollments.length }}</div>
+            <div class="stat-value font-mono">{{ filteredEnrollments().length }}</div>
             <div class="stat-label">Active Courses</div>
-            <div class="stat-sub">{{ d.currentSemester || 'Current term' }}</div>
+            <div class="stat-sub">{{ getSelectedSemesterTitle() }}</div>
             <a routerLink="../my-courses" class="stat-link">
               My courses <app-icon name="arrow-right" [size]="13" />
             </a>
@@ -170,7 +177,7 @@ import { ChartData, ChartOptions } from 'chart.js';
           <div class="card-header">
             <div class="card-header-titles">
               <h2 class="card-title">Enrolled Courses & Timetable</h2>
-              <div class="card-sub">{{ d.currentSemester || 'Active semester offerings' }}</div>
+              <div class="card-sub">{{ getSelectedSemesterTitle() }}</div>
             </div>
             <div class="card-header-actions">
               <a routerLink="../my-courses" class="btn-table-action">
@@ -179,7 +186,7 @@ import { ChartData, ChartOptions } from 'chart.js';
             </div>
           </div>
 
-          <div class="table-wrapper" *ngIf="d.currentEnrollments.length > 0">
+          <div class="table-wrapper" *ngIf="filteredEnrollments().length > 0">
             <table class="data-table">
               <thead>
                 <tr>
@@ -191,8 +198,8 @@ import { ChartData, ChartOptions } from 'chart.js';
                   <th style="width: 100px;">Syllabus</th>
                 </tr>
               </thead>
-              <tbody [@listAnimation]="d.currentEnrollments.length">
-                <tr *ngFor="let e of d.currentEnrollments">
+              <tbody [@listAnimation]="filteredEnrollments().length">
+                <tr *ngFor="let e of filteredEnrollments()">
                   <td><span class="code-badge">{{ e.courseCode }}</span></td>
                   <td>
                     <div class="course-name-cell">
@@ -222,9 +229,9 @@ import { ChartData, ChartOptions } from 'chart.js';
             </table>
           </div>
 
-          <div class="empty-state-compact" *ngIf="d.currentEnrollments.length === 0">
+          <div class="empty-state-compact" *ngIf="filteredEnrollments().length === 0">
             <app-icon name="book-open" [size]="28" class="text-muted" />
-            <p>No courses registered for {{ d.currentSemester || 'this term' }}.</p>
+            <p>No courses registered for {{ getSelectedSemesterTitle() }}.</p>
             <a routerLink="../courses" class="btn btn-primary btn-sm">
               <app-icon name="plus" [size]="14" /> Enroll in Courses
             </a>
@@ -342,8 +349,8 @@ import { ChartData, ChartOptions } from 'chart.js';
             <!-- Term Load Strip -->
             <div class="term-load-strip">
               <div class="term-load-item">
-                <span class="tl-k">Current Term Load</span>
-                <span class="tl-v font-mono">{{ d.currentSemesterCredits }} Credits ({{ d.currentEnrollments.length }} Courses)</span>
+                <span class="tl-k">{{ selectedSemesterFilter() === 'ALL' ? 'Total Program Load' : 'Current Term Load' }}</span>
+                <span class="tl-v font-mono">{{ filteredCredits() }} Credits ({{ filteredEnrollments().length }} Courses)</span>
               </div>
               <a routerLink="../history" class="btn-history-link">
                 View Dossier <app-icon name="arrow-right" [size]="12" />
@@ -430,6 +437,34 @@ import { ChartData, ChartOptions } from 'chart.js';
         border-radius: 50%;
         background: #059669;
       }
+    }
+
+    .semester-filter-dropdown-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: var(--radius-xs);
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      font-size: 0.76rem;
+      color: #1D4ED8;
+    }
+
+    .semester-filter-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #1E40AF;
+      cursor: pointer;
+    }
+
+    .semester-filter-select option {
+      background: #FFFFFF;
+      color: #0F172A;
+      font-weight: 500;
     }
 
     .header-due-badge {
@@ -968,7 +1003,65 @@ export class StudentDashboardComponent implements OnInit {
   loading     = signal(true);
   payingFeeId = signal<number | null>(null);
   error       = signal('');
-  creditPercent = 0;
+
+  selectedSemesterFilter = signal<string>('ALL');
+
+  filteredEnrollments = computed(() => {
+    const d = this.dashboard();
+    if (!d || !d.currentEnrollments) return [];
+    const filter = this.selectedSemesterFilter();
+    if (filter === 'ALL') return d.currentEnrollments;
+    const targetSemNum = parseInt(filter, 10);
+    return d.currentEnrollments.filter(e => {
+      if (e.targetSemesterLevel != null) {
+        return e.targetSemesterLevel === targetSemNum;
+      }
+      const c = e.courseCode || '';
+      if (['MITM 303', 'MITM 304', 'MITM 310', 'MITM 311'].includes(c)) return targetSemNum === 1;
+      if (['MITM 301', 'MITM 305'].includes(c)) return targetSemNum === 2;
+      if (c === 'MITM 421') return targetSemNum === 3;
+      return true;
+    });
+  });
+
+  filteredCredits = computed(() => {
+    return this.filteredEnrollments().reduce((sum, e) => sum + (e.creditHours || 0), 0);
+  });
+
+  maxAllowedCredits = computed(() => {
+    return this.selectedSemesterFilter() === 'ALL' ? 36 : 12;
+  });
+
+  creditCardLabel = computed(() => {
+    return this.selectedSemesterFilter() === 'ALL' ? 'Program Credit Limit' : 'Semester Credit Limit';
+  });
+
+  creditPercent = computed(() => {
+    const max = this.maxAllowedCredits();
+    if (max <= 0) return 0;
+    return Math.min(100, (this.filteredCredits() / max) * 100);
+  });
+
+  remainingCredits = computed(() => {
+    return Math.max(0, this.maxAllowedCredits() - this.filteredCredits());
+  });
+
+  creditCardSubtext = computed(() => {
+    const rem = this.remainingCredits();
+    const isAll = this.selectedSemesterFilter() === 'ALL';
+    if (rem > 0) {
+      return `${rem} credits remaining for ${isAll ? 'program' : 'term'}`;
+    }
+    return isAll ? 'Full 36 degree credits enrolled' : 'Maximum term cap reached';
+  });
+
+  getSelectedSemesterTitle(): string {
+    const val = this.selectedSemesterFilter();
+    if (val === '1') return 'First Semester';
+    if (val === '2') return 'Second Semester';
+    if (val === '3') return 'Third Semester';
+    return 'All Semesters';
+  }
 
   // Chart configuration
   cgpaTrendChartOptions: ChartOptions = {
@@ -1008,9 +1101,9 @@ export class StudentDashboardComponent implements OnInit {
   };
 
   cgpaTrendChartData: ChartData<'line'> = {
-    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Current'],
+    labels: ['First Semester', 'Second Semester', 'Third Semester'],
     datasets: [{
-      data: [3.1, 3.25, 3.15, 3.4, 3.5], // Will be updated with actual data
+      data: [0, 0, 0],
       borderColor: '#2563EB',
       backgroundColor: 'rgba(37, 99, 235, 0.08)',
       fill: true,
@@ -1029,6 +1122,14 @@ export class StudentDashboardComponent implements OnInit {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     return `http://localhost:8080${url}`;
+  }
+
+  formatSemester(s: string | null | undefined): string {
+    if (!s) return 'Active Semester';
+    if (s.includes('1st Year 1st') || s.includes('1st Semester') || s.includes('Y1S1')) return 'First Semester';
+    if (s.includes('1st Year 2nd') || s.includes('2nd Semester') || s.includes('Y1S2')) return 'Second Semester';
+    if (s.includes('2nd Year 1st') || s.includes('3rd Semester') || s.includes('Y2S1')) return 'Third Semester';
+    return s.replace(/\d+st Year\s*/gi, '').replace(/\d+nd Year\s*/gi, '').replace(/\d+rd Year\s*/gi, '').trim();
   }
 
   get firstName(): string {
@@ -1055,20 +1156,30 @@ export class StudentDashboardComponent implements OnInit {
     this.api.getStudentDashboard().subscribe({
       next: (d) => {
         this.dashboard.set(d);
-        this.creditPercent = d.maxCreditsPerSemester > 0
-          ? (d.currentSemesterCredits / d.maxCreditsPerSemester) * 100 : 0;
 
-        // Mock trend data leading up to current CGPA for visualization
-        const currentCgpa = d.cgpa || 0;
-        this.cgpaTrendChartData.datasets[0].data = [
-          Math.max(2.0, currentCgpa - 0.3),
-          Math.max(2.0, currentCgpa - 0.1),
-          Math.max(2.0, currentCgpa - 0.2),
-          Math.max(2.0, currentCgpa - 0.05),
-          currentCgpa
-        ];
-        // Trigger chart update
-        this.cgpaTrendChartData = { ...this.cgpaTrendChartData };
+        // Fetch academic history for 3-semester CGPA progression graph
+        this.api.getMyAcademicHistory().subscribe({
+          next: (history) => {
+            if (history && history.semesters && history.semesters.length > 0) {
+              const rawPoints: number[] = history.semesters
+                .slice(0, 3)
+                .map(sem => Number(sem.cgpa || sem.sgpa || 0));
+
+              while (rawPoints.length < 3) {
+                rawPoints.push(0);
+              }
+
+              const hasNoPoints = rawPoints.every(v => v === 0);
+              const firstVal = (hasNoPoints && history.cgpa > 0) ? Number(history.cgpa) : (rawPoints[0] || 0);
+
+              const chartValues: number[] = [firstVal, rawPoints[1] || 0, rawPoints[2] || 0];
+
+              this.cgpaTrendChartData.datasets[0].data = chartValues;
+              this.cgpaTrendChartData = { ...this.cgpaTrendChartData };
+            }
+          },
+          error: () => {}
+        });
 
         this.loading.set(false);
       },

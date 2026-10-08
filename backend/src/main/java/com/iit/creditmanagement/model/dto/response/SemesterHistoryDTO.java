@@ -13,6 +13,7 @@ public record SemesterHistoryDTO(
         boolean isGap,
         int totalCredits,
         BigDecimal sgpa,
+        BigDecimal cgpa,
         BigDecimal gapFineAmount,
         List<CourseGradeRecordDTO> courses
 ) {}

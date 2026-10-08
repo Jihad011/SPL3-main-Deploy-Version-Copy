@@ -150,6 +150,9 @@ public class GradeServiceImpl implements GradeService {
     @Transactional
     @CacheEvict(value = "cgpa", allEntries = true)
     public List<GradeResponse> uploadGradesCsv(Long teacherId, Long courseId, MultipartFile file) {
+        Course targetCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
         List<GradeEntryRequest> requests = new ArrayList<>();
         List<String> skippedRolls = new ArrayList<>();
 
@@ -164,6 +167,28 @@ public class GradeServiceImpl implements GradeService {
              CSVParser csvParser = new CSVParser(reader, csvFormat)) {
             
             for (CSVRecord record : csvParser) {
+                // Course Code validation if header is present
+                String csvCourseCode = null;
+                if (record.isSet("Course Code")) csvCourseCode = record.get("Course Code");
+                else if (record.isSet("CourseCode")) csvCourseCode = record.get("CourseCode");
+                else if (record.isSet("Course")) csvCourseCode = record.get("Course");
+                else if (record.isSet("Course_Code")) csvCourseCode = record.get("Course_Code");
+                else if (record.isSet("Subject")) csvCourseCode = record.get("Subject");
+
+                if (csvCourseCode == null || csvCourseCode.isBlank()) {
+                    throw new BusinessRuleException(String.format(
+                        "Missing Course Code: The uploaded CSV file does not contain a 'Course Code' header column. Every grade sheet must specify the Course Code (e.g. '%s').",
+                        targetCourse.getCode()
+                    ));
+                }
+
+                String trimmedCode = csvCourseCode.trim();
+                if (!trimmedCode.equalsIgnoreCase(targetCourse.getCode()) && !trimmedCode.equalsIgnoreCase(targetCourse.getName())) {
+                    throw new BusinessRuleException(String.format(
+                        "Course Mismatch: The uploaded CSV is for course '%s', but you are uploading into '%s (%s)'. Import cancelled to prevent accidental mark overwrite.",
+                        trimmedCode, targetCourse.getCode(), targetCourse.getName()
+                    ));
+                }
                 // Flexible Roll Number resolution
                 String rollNumber = null;
                 if (record.isSet("Roll Number")) rollNumber = record.get("Roll Number");
@@ -237,6 +262,29 @@ public class GradeServiceImpl implements GradeService {
                 throw new BusinessRuleException("CSV file contains no valid student records.");
             }
         }
+
+        // Check if any mark in the CSV actually differs from existing DB grade records
+        boolean anyChange = false;
+        for (GradeEntryRequest req : requests) {
+            Optional<Grade> existingOpt = gradeRepository.findByEnrollmentId(req.enrollmentId());
+            if (existingOpt.isEmpty()) {
+                anyChange = true;
+                break;
+            }
+            Grade existing = existingOpt.get();
+            boolean midSame = (req.midtermMarks() == null && existing.getMidtermMarks() == null) ||
+                              (req.midtermMarks() != null && existing.getMidtermMarks() != null && req.midtermMarks().compareTo(existing.getMidtermMarks()) == 0);
+            boolean finSame = (req.finalMarks() == null && existing.getFinalMarks() == null) ||
+                              (req.finalMarks() != null && existing.getFinalMarks() != null && req.finalMarks().compareTo(existing.getFinalMarks()) == 0);
+            if (!midSame || !finSame) {
+                anyChange = true;
+                break;
+            }
+        }
+
+        if (!anyChange) {
+            throw new BusinessRuleException("No Change Detected.");
+        }
         
         return bulkEnterGrades(teacherId, requests);
     }
@@ -265,6 +313,7 @@ public class GradeServiceImpl implements GradeService {
     public List<GradeResponse> getMyGrades(Long studentId) {
         return gradeRepository.findAllByEnrollmentStudentId(studentId)
                 .stream()
+                .filter(g -> g.getEnrollment() != null && g.getEnrollment().getCourse() != null && g.getEnrollment().getCourse().isActive())
                 .map(GradeResponse::from)
                 .toList();
     }

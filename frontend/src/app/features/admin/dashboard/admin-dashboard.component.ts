@@ -37,7 +37,7 @@ import {
   <div class="page-header">
     <div class="page-header-left">
       <p class="page-eyebrow">Academic administration hub</p>
-      <h1 class="page-title">Welcome back, {{ firstName }}</h1>
+      <h1 class="page-title">Welcome back, {{ fullName }}</h1>
       <p class="page-subtitle">Monitor academic operations, faculty rosters, and jump into common administrative workflows.</p>
     </div>
     <div class="header-actions">
@@ -252,8 +252,8 @@ export class AdminDashboardComponent implements OnInit {
   private auth = inject(AuthStateService);
   private toast = inject(ToastService);
 
-  get firstName(): string {
-    return this.auth.user()?.name?.split(' ')[0] || 'Admin';
+  get fullName(): string {
+    return this.auth.user()?.name || 'Admin';
   }
 
   summaryItems = computed<SummaryCardItem[]>(() => {

@@ -51,6 +51,13 @@ public class Enrollment {
     @Builder.Default
     private boolean isRetake = false;
 
+    @Column(name = "target_semester_level")
+    private Integer targetSemesterLevel;
+
+    @Column(name = "intake_type")
+    @Builder.Default
+    private String intakeType = "Spring";
+
     @CreatedDate
     @Column(name = "enrolled_at", nullable = false, updatable = false)
     private OffsetDateTime enrolledAt;

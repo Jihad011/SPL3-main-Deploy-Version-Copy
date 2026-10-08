@@ -49,12 +49,12 @@ class EnrollmentServiceTest {
                 .role(Role.STUDENT).rollNumber("1413").build();
 
         course = Course.builder()
-                .id(10L).code("MIT-601").name("Cloud Computing")
-                .creditHours(3).courseType(CourseType.OPTIONAL)
-                .maxSeats(40).currentEnrollment(5).build();
+                .id(10L).code("MITM 303").name("Advanced Computer Networks & Internetworking")
+                .creditHours(3).courseType(CourseType.CORE)
+                .maxSeats(200).currentEnrollment(5).build();
 
         activeSemester = Semester.builder()
-                .id(1L).name(SemesterName.SPRING).year(2026)
+                .id(1L).name(SemesterName.FIRST_SEMESTER).year(2026)
                 .startDate(LocalDate.of(2026, 2, 1))
                 .endDate(LocalDate.of(2026, 6, 30))
                 .isActive(true).build();
@@ -75,13 +75,13 @@ class EnrollmentServiceTest {
 
         // CreditValidator does nothing (passes all checks)
         doNothing().when(creditValidator).validateNoDuplicateEnrollment(any(), any(), any());
-        doNothing().when(creditValidator).validateCreditLimit(any(), any(), anyInt());
+        doNothing().when(creditValidator).validateCreditLimit(any(), any(), any(), any());
         doNothing().when(creditValidator).validateSeatAvailability(anyInt(), anyInt(), anyString());
 
         EnrollmentResponse response = enrollmentService.enroll(1L, new EnrollRequest(10L, 1L, false));
 
         assertThat(response).isNotNull();
-        assertThat(response.courseCode()).isEqualTo("MIT-601");
+        assertThat(response.courseCode()).isEqualTo("MITM 303");
         assertThat(response.status()).isEqualTo(EnrollmentStatus.ACTIVE);
         verify(enrollmentRepository).save(any(Enrollment.class));
     }
@@ -109,7 +109,7 @@ class EnrollmentServiceTest {
 
         doNothing().when(creditValidator).validateNoDuplicateEnrollment(any(), any(), any());
         doThrow(new BusinessRuleException("Credit limit exceeded"))
-                .when(creditValidator).validateCreditLimit(any(), any(), anyInt());
+                .when(creditValidator).validateCreditLimit(any(), any(), any(), any());
 
         assertThatThrownBy(() -> enrollmentService.enroll(1L, new EnrollRequest(10L, 1L, false)))
                 .isInstanceOf(BusinessRuleException.class)
@@ -126,7 +126,7 @@ class EnrollmentServiceTest {
         when(semesterRepository.findById(1L)).thenReturn(Optional.of(activeSemester));
 
         doNothing().when(creditValidator).validateNoDuplicateEnrollment(any(), any(), any());
-        doNothing().when(creditValidator).validateCreditLimit(any(), any(), anyInt());
+        doNothing().when(creditValidator).validateCreditLimit(any(), any(), any(), any());
         doThrow(new BusinessRuleException("course is full"))
                 .when(creditValidator).validateSeatAvailability(anyInt(), anyInt(), anyString());
 
