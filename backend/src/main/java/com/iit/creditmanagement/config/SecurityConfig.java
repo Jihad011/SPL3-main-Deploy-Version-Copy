@@ -41,6 +41,7 @@ public class SecurityConfig {
         "/auth/**",
         "/ai/**",
         "/payment/sslcommerz/callback/**",
+        "/v1/payment/sslcommerz/callback/**",
         "/actuator/health",
         "/actuator/info"
     };
@@ -54,6 +55,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(authenticationEntryPoint)
