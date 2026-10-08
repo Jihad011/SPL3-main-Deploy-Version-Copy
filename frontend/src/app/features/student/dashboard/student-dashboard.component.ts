@@ -188,6 +188,7 @@ import { ChartData, ChartOptions } from 'chart.js';
                   <th style="width: 80px;">Credits</th>
                   <th style="width: 90px;">Type</th>
                   <th style="width: 100px;">Status</th>
+                  <th style="width: 100px;">Syllabus</th>
                 </tr>
               </thead>
               <tbody [@listAnimation]="d.currentEnrollments.length">
@@ -209,6 +210,12 @@ import { ChartData, ChartOptions } from 'chart.js';
                     <span class="status-badge" [class]="'status-' + e.status.toLowerCase()">
                       {{ e.status }}
                     </span>
+                  </td>
+                  <td>
+                    <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-xs" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.5rem;font-size:0.75rem;" title="View Course Syllabus">
+                      <app-icon name="file-text" [size]="13" /> Syllabus
+                    </a>
+                    <span *ngIf="!e.syllabusUrl" class="text-muted text-xs">—</span>
                   </td>
                 </tr>
               </tbody>
@@ -1017,6 +1024,12 @@ export class StudentDashboardComponent implements OnInit {
     private auth: AuthStateService,
     private toast: ToastService
   ) {}
+
+  getSyllabusFullUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
 
   get firstName(): string {
     return this.auth.user()?.name?.trim().split(/\s+/)[0] || 'Student';

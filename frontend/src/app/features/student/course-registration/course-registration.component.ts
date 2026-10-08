@@ -116,8 +116,8 @@ import {
       <p class="course-desc" *ngIf="c.description">{{ c.description }}</p>
 
       <div *ngIf="c.syllabusUrl" style="margin-top: 0.25rem;">
-        <a [href]="'http://localhost:8080' + c.syllabusUrl" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary, #2563eb); text-decoration: underline;">
-          <app-icon name="download" [size]="14" /> Download Official Syllabus File
+        <a [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary, #2563eb); text-decoration: underline;">
+          <app-icon name="file-text" [size]="14" /> Download Official Syllabus File
         </a>
       </div>
 
@@ -433,6 +433,12 @@ export class CourseRegistrationComponent implements OnInit {
   });
 
   constructor(private api: ApiService, private toast: ToastService) {}
+
+  getSyllabusFullUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
 
   ngOnInit(): void {
     this.loadActiveSemester();

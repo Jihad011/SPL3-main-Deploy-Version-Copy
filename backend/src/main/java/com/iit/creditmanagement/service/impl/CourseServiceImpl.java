@@ -23,6 +23,9 @@ import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 
+import com.iit.creditmanagement.repository.EnrollmentRepository;
+import com.iit.creditmanagement.model.entity.Enrollment;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,6 +34,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository   courseRepository;
     private final UserRepository     userRepository;
     private final SemesterRepository semesterRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final AuditService       auditService;
     private final NotificationService notificationService;
 
@@ -69,7 +73,19 @@ public class CourseServiceImpl implements CourseService {
             );
         }
 
-        return CourseResponse.from(courseRepository.save(course));
+        Course saved = courseRepository.save(course);
+        if (saved.getSyllabusUrl() != null && !saved.getSyllabusUrl().isBlank()) {
+            if (saved.getTeacher() != null) {
+                notificationService.sendNotification(
+                        saved.getTeacher(),
+                        "Course Syllabus Available",
+                        String.format("Syllabus document is available for %s (%s).", saved.getName(), saved.getCode()),
+                        "SYLLABUS_UPDATED"
+                );
+            }
+        }
+
+        return CourseResponse.from(saved);
     }
 
     @Override
@@ -78,6 +94,10 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse updateCourse(Long courseId, CourseRequest request) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
+        boolean syllabusUpdated = request.syllabusUrl() != null &&
+                !request.syllabusUrl().isBlank() &&
+                !request.syllabusUrl().equals(course.getSyllabusUrl());
 
         course.setName(request.name());
         course.setDescription(request.description());
@@ -107,7 +127,31 @@ public class CourseServiceImpl implements CourseService {
             );
         }
 
-        return CourseResponse.from(courseRepository.save(course));
+        Course saved = courseRepository.save(course);
+
+        if (syllabusUpdated) {
+            if (saved.getTeacher() != null) {
+                notificationService.sendNotification(
+                        saved.getTeacher(),
+                        "Syllabus Document Updated",
+                        String.format("The syllabus for %s (%s) has been updated.", saved.getName(), saved.getCode()),
+                        "SYLLABUS_UPDATED"
+                );
+            }
+            List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsForGradeEntry(saved.getId(), null);
+            for (Enrollment e : enrollments) {
+                if (e.getStudent() != null) {
+                    notificationService.sendNotification(
+                            e.getStudent(),
+                            "Course Syllabus Available",
+                            String.format("Syllabus document is available for your enrolled course %s (%s).", saved.getName(), saved.getCode()),
+                            "SYLLABUS_UPDATED"
+                    );
+                }
+            }
+        }
+
+        return CourseResponse.from(saved);
     }
 
     @Override

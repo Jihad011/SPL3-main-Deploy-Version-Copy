@@ -110,6 +110,8 @@ export interface EnrollmentResponse {
   semesterLabel: string;
   status: EnrollmentStatus;
   isRetake: boolean;
+  syllabusUrl?: string | null;
+  syllabusFileName?: string | null;
   enrolledAt: string;
   courseType?: string;
 }

@@ -63,8 +63,8 @@ public class CourseController {
     }
 
     @PutMapping("/{courseId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Update course details (admin only)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @Operation(summary = "Update course details or syllabus (admin or teacher)")
     public ResponseEntity<CourseResponse> updateCourse(
             @PathVariable Long courseId,
             @Valid @RequestBody CourseRequest request) {

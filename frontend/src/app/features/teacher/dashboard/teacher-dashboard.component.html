@@ -89,10 +89,13 @@
         </div>
       </div>
 
-      <div class="course-card-footer">
-        <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn-grade font-mono font-semibold">
+      <div class="course-card-footer" style="display:flex;gap:0.5rem;align-items:center;">
+        <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn-grade font-mono font-semibold" style="flex:1">
           <app-icon name="edit" [size]="14" />
           <span>Enter Marks & Grades</span>
+        </a>
+        <a *ngIf="c.syllabusUrl" [href]="c.syllabusUrl" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.45rem 0.65rem;font-size:0.75rem;" title="View Course Syllabus">
+          <app-icon name="file-text" [size]="14" /> Syllabus
         </a>
       </div>
     </div>
@@ -124,9 +127,14 @@
               </span>
             </td>
             <td>
-              <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn btn-primary btn-sm">
-                <app-icon name="edit" [size]="14" /> Enter Grades
-              </a>
+              <div style="display:inline-flex;gap:0.4rem;align-items:center;">
+                <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn btn-primary btn-sm">
+                  <app-icon name="edit" [size]="14" /> Enter Grades
+                </a>
+                <a *ngIf="c.syllabusUrl" [href]="c.syllabusUrl" target="_blank" class="btn btn-secondary btn-sm" title="View Course Syllabus">
+                  <app-icon name="file-text" [size]="14" /> Syllabus
+                </a>
+              </div>
             </td>
           </tr>
         </tbody>

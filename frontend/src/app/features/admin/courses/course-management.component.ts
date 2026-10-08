@@ -114,52 +114,34 @@ import { CourseManagementListComponent } from './course-management-list.componen
               />
             </div>
 
-            <!-- Manual Text Syllabus -->
+            <!-- Textual Syllabus / Learning Outcomes -->
             <div style="margin-top: 1rem;">
               <input-text-area
                 [frmGroup]="frmGroup"
                 controlName="description"
-                label="Course Syllabus & Learning Outcomes (Text / Manual Input)"
-                placeholder="Describe course objectives, prerequisites, and evaluation scheme..."
-                [rows]="3"
+                label="Course Syllabus & Learning Outcomes (Textual Description)"
+                placeholder="Describe course objectives, prerequisites, topics, and evaluation scheme..."
+                [rows]="4"
                 displayMode="vertical"
               />
             </div>
 
-            <!-- File Upload Syllabus -->
-            <div class="syllabus-upload-zone">
-              <label class="syllabus-upload-label">
-                Attach Official Syllabus File (PDF, DOCX, TXT)
-              </label>
-
-              <div class="file-upload-box" *ngIf="!frmGroup.get('syllabusUrl')?.value">
-                <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.docx,.doc,.txt" style="display: none;">
-                <button type="button" class="btn-upload-file" (click)="fileInput.click()" [disabled]="uploadingSyllabus()">
-                  <app-icon name="download" [size]="16" *ngIf="!uploadingSyllabus()"></app-icon>
-                  <span *ngIf="uploadingSyllabus()" class="spinner-sm"></span>
-                  {{ uploadingSyllabus() ? 'Uploading File...' : 'Upload Syllabus File (PDF/DOCX)' }}
-                </button>
-                <span class="file-hint">Attach full course outline document for student & faculty access</span>
-              </div>
-
-              <!-- Attached File Badge -->
-              <div class="attached-file-card" *ngIf="frmGroup.get('syllabusUrl')?.value">
-                <div class="attached-file-info">
-                  <app-icon name="list-check" [size]="20" class="file-icon"></app-icon>
-                  <div class="file-details">
-                    <span class="file-name">{{ frmGroup.get('syllabusFileName')?.value || 'Course_Syllabus.pdf' }}</span>
-                    <span class="file-status">File uploaded & ready to attach</span>
+            <!-- Faculty Attached Syllabus Document Preview for Admin -->
+            <div class="attached-file-card" *ngIf="frmGroup.get('syllabusUrl')?.value" style="margin-top: 1rem; padding: 0.85rem 1rem; background: var(--bg-elevated, #f8fafc); border: 1px solid var(--border, #cbd5e1); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <app-icon name="file-text" [size]="22" style="color: var(--accent-primary, #2563eb);"></app-icon>
+                <div>
+                  <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary, #1e293b);">
+                    {{ frmGroup.get('syllabusFileName')?.value || 'Official_Course_Syllabus.pdf' }}
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary, #64748b);">
+                    Faculty Syllabus File Uploaded & Attached
                   </div>
                 </div>
-                <div class="attached-file-actions">
-                  <a [href]="getSyllabusFullUrl(frmGroup.get('syllabusUrl')?.value)" target="_blank" class="btn-file-view">
-                    <app-icon name="eye" [size]="14"></app-icon> View Document
-                  </a>
-                  <button type="button" class="btn-file-remove" (click)="removeSyllabusFile()">
-                    <app-icon name="x" [size]="14"></app-icon> Remove
-                  </button>
-                </div>
               </div>
+              <a [href]="getSyllabusFullUrl(frmGroup.get('syllabusUrl')?.value)" target="_blank" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; font-size: 0.8rem; font-weight: 600;">
+                <app-icon name="eye" [size]="14"></app-icon> View Faculty Syllabus Document
+              </a>
             </div>
           </form>
         </div>

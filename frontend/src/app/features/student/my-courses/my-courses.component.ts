@@ -333,6 +333,12 @@ export class MyCoursesComponent implements OnInit {
 
   constructor(private api: ApiService, private toast: ToastService) {}
 
+  getSyllabusFullUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
+
   ngOnInit(): void {
     this.loadEnrollments();
   }

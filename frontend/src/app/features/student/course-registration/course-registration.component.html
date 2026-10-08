@@ -92,6 +92,9 @@
         <span class="meta-item"><app-icon name="clock" [size]="14" /> {{ c.creditHours }} Credit(s)</span>
         <span class="meta-item" *ngIf="c.teacherName"><app-icon name="user" [size]="14" /> {{ c.teacherName }}</span>
         <span class="meta-item text-muted font-mono" *ngIf="!c.teacherName">Faculty TBA</span>
+        <a *ngIf="c.syllabusUrl" [href]="c.syllabusUrl" target="_blank" class="meta-item" style="color:var(--primary-color,#2563eb);font-weight:600;" title="View Course Syllabus">
+          <app-icon name="file-text" [size]="14" /> Syllabus
+        </a>
       </div>
 
       <div class="seat-info" [class.seats-low]="c.availableSeats <= 5 && !c.isFull" [class.seats-full]="c.isFull">

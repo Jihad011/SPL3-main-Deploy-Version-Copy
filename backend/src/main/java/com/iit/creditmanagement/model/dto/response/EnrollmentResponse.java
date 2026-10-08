@@ -18,6 +18,8 @@ public record EnrollmentResponse(
         String           semesterLabel,
         EnrollmentStatus status,
         boolean          isRetake,
+        String           syllabusUrl,
+        String           syllabusFileName,
         OffsetDateTime   enrolledAt
 ) {
     public static EnrollmentResponse from(Enrollment e) {
@@ -34,6 +36,8 @@ public record EnrollmentResponse(
                 e.getSemester().getLabel(),
                 e.getStatus(),
                 e.isRetake(),
+                e.getCourse().getSyllabusUrl(),
+                e.getCourse().getSyllabusFileName(),
                 e.getEnrolledAt()
         );
     }

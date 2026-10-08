@@ -83,9 +83,13 @@ public class FileUploadController {
             else if (lower.endsWith(".doc")) contentType = "application/msword";
             else if (lower.endsWith(".txt")) contentType = "text/plain";
 
+            String disposition = (lower.endsWith(".docx") || lower.endsWith(".doc"))
+                    ? "attachment; filename=\"" + resource.getFilename() + "\""
+                    : "inline; filename=\"" + resource.getFilename() + "\"";
+
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                     .body(resource);
 
         } catch (MalformedURLException e) {

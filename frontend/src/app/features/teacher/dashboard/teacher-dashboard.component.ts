@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { CourseResponse } from '../../../core/models/models';
 import { AuthStateService } from '../../../core/services/auth-state.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ToolbarComponent } from '../../../shared/components/toolbar/toolbar.component';
 import { listAnimation } from '../../../shared/animations';
@@ -119,11 +120,25 @@ import {
         </div>
       </div>
 
-      <div class="course-card-footer">
-        <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn-grade font-mono font-semibold">
-          <app-icon name="edit" [size]="14" />
-          <span>Enter Marks & Grades</span>
-        </a>
+      <div class="course-card-footer" style="display:flex;flex-direction:column;gap:0.5rem;">
+        <div style="display:flex;gap:0.5rem;align-items:center;width:100%;">
+          <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn-grade font-mono font-semibold" style="flex:1">
+            <app-icon name="edit" [size]="14" />
+            <span>Enter Marks & Grades</span>
+          </a>
+          <a *ngIf="c.syllabusUrl" [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.45rem 0.65rem;font-size:0.75rem;" title="View Course Syllabus">
+            <app-icon name="file-text" [size]="14" /> View Syllabus
+          </a>
+        </div>
+
+        <div class="syllabus-upload-row">
+          <input type="file" #fileInput (change)="onFileSelected(c, $event)" accept=".pdf,.docx,.doc,.txt" style="display: none;">
+          <button type="button" class="btn-upload-sm" (click)="fileInput.click()" [disabled]="uploadingCourseId() === c.id">
+            <app-icon name="download" [size]="13" *ngIf="uploadingCourseId() !== c.id"></app-icon>
+            <span *ngIf="uploadingCourseId() === c.id" class="spinner-sm"></span>
+            {{ c.syllabusUrl ? 'Replace Syllabus Document' : 'Upload Syllabus Document (PDF, DOCX, TXT)' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -139,6 +154,7 @@ import {
             <th>Type</th>
             <th>Credits</th>
             <th>Enrolled Students</th>
+            <th>Syllabus Document</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -152,6 +168,17 @@ import {
               <span class="font-mono font-semibold" [style.color]="c.isFull ? '#ef4444' : '#10b981'">
                 {{ c.currentEnrollment }} / {{ c.maxSeats }}
               </span>
+            </td>
+            <td>
+              <div style="display:inline-flex;gap:0.4rem;align-items:center;">
+                <a *ngIf="c.syllabusUrl" [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" title="View Course Syllabus Document">
+                  <app-icon name="file-text" [size]="14" /> {{ c.syllabusFileName || 'Syllabus Document' }}
+                </a>
+                <input type="file" #listFileInput (change)="onFileSelected(c, $event)" accept=".pdf,.docx,.doc,.txt" style="display: none;">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="listFileInput.click()" [disabled]="uploadingCourseId() === c.id">
+                  <app-icon name="download" [size]="13"></app-icon> {{ c.syllabusUrl ? 'Upload New' : 'Upload Syllabus (PDF/DOCX/TXT)' }}
+                </button>
+              </div>
             </td>
             <td>
               <a [routerLink]="['../grade-entry']" [queryParams]="{ courseId: c.id }" class="btn btn-primary btn-sm">
@@ -277,6 +304,38 @@ import {
       color: #ffffff;
       opacity: 1;
     }
+    .syllabus-upload-row {
+      margin-top: 0.25rem;
+    }
+    .btn-upload-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      width: 100%;
+      padding: 0.4rem 0.75rem;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--accent-primary, #2563eb);
+      border: 1px dashed rgba(37, 99, 235, 0.3);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-upload-sm:hover:not(:disabled) {
+      background: rgba(37, 99, 235, 0.15);
+      border-color: var(--accent-primary, #2563eb);
+    }
+    .spinner-sm {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--accent-primary);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
 export class TeacherDashboardComponent implements OnInit {
@@ -284,9 +343,11 @@ export class TeacherDashboardComponent implements OnInit {
   loading = signal(true);
   search = signal('');
   view = signal<'grid' | 'list'>('grid');
+  uploadingCourseId = signal<number | null>(null);
 
   private api = inject(ApiService);
   private auth = inject(AuthStateService);
+  private toast = inject(ToastService);
 
   get firstName(): string {
     return this.auth.user()?.name?.split(' ')[0] || 'Professor';
@@ -363,6 +424,54 @@ export class TeacherDashboardComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+
+  getSyllabusFullUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
+
+  onFileSelected(course: CourseResponse, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.uploadingCourseId.set(course.id);
+
+    this.api.uploadSyllabusFile(file).subscribe({
+      next: (uploadRes) => {
+        const updateReq = {
+          code: course.code,
+          name: course.name,
+          description: course.description || undefined,
+          syllabusUrl: uploadRes.url,
+          syllabusFileName: uploadRes.fileName,
+          creditHours: course.creditHours,
+          courseType: course.courseType,
+          maxSeats: course.maxSeats,
+          teacherId: course.teacherId || undefined
+        };
+
+        this.api.updateCourse(course.id, updateReq).subscribe({
+          next: () => {
+            this.uploadingCourseId.set(null);
+            this.toast.success(`Uploaded syllabus: ${uploadRes.fileName}`);
+            this.loadCourses();
+          },
+          error: (err) => {
+            this.uploadingCourseId.set(null);
+            const msg = err.error?.detail || err.error?.message || 'Failed to update course with syllabus.';
+            this.toast.error(msg);
+          }
+        });
+      },
+      error: (err) => {
+        this.uploadingCourseId.set(null);
+        const msg = err.error?.detail || err.error?.message || 'Failed to upload syllabus file.';
+        this.toast.error(msg);
+      }
     });
   }
 }

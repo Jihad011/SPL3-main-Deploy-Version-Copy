@@ -73,14 +73,18 @@
         Enrolled on {{ e.enrolledAt | date:'mediumDate' }}
       </div>
 
-      <div class="card-action-bar" *ngIf="e.status === 'ACTIVE'">
+      <div class="card-action-bar" style="display:flex;gap:0.5rem;align-items:center;">
         <generic-button
+          *ngIf="e.status === 'ACTIVE'"
           label="Drop Course"
           icon="trash"
-          styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.8rem; padding: 0.35rem 0.75rem; width: 100%; justify-content: center;"
+          styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.8rem; padding: 0.35rem 0.75rem; flex: 1; justify-content: center;"
           [enable]="droppingId() !== e.id"
           (onClick)="confirmDrop(e)"
         />
+        <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.4rem 0.65rem;font-size:0.75rem;" title="View Course Syllabus">
+          <app-icon name="file-text" [size]="14" /> Syllabus
+        </a>
       </div>
     </div>
   </div>
@@ -120,15 +124,19 @@
               </span>
             </td>
             <td>
-              <generic-button
-                *ngIf="e.status === 'ACTIVE'"
-                label="Drop"
-                icon="x"
-                styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; padding: 0.25rem 0.55rem;"
-                [enable]="droppingId() !== e.id"
-                (onClick)="confirmDrop(e)"
-              />
-              <span *ngIf="e.status !== 'ACTIVE'" class="text-muted text-xs">—</span>
+              <div style="display:inline-flex;gap:0.4rem;align-items:center;">
+                <generic-button
+                  *ngIf="e.status === 'ACTIVE'"
+                  label="Drop"
+                  icon="x"
+                  styles="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; padding: 0.25rem 0.55rem;"
+                  [enable]="droppingId() !== e.id"
+                  (onClick)="confirmDrop(e)"
+                />
+                <a *ngIf="e.syllabusUrl" [href]="getSyllabusFullUrl(e.syllabusUrl)" target="_blank" class="btn btn-secondary btn-sm" title="View Course Syllabus">
+                  <app-icon name="file-text" [size]="14" /> Syllabus
+                </a>
+              </div>
             </td>
           </tr>
         </tbody>
