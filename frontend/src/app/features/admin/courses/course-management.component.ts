@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { ApiService } from '../../../core/services/api.service';
 import { CourseResponse, CourseRequest, UserResponse } from '../../../core/models/models';
 import { ToastService } from '../../../core/services/toast.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 // CenterPoint Shared Controls & Layouts
 import {
@@ -34,6 +35,7 @@ import { CourseManagementListComponent } from './course-management-list.componen
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    IconComponent,
     ExpansionPanelHeader,
     InputTextBox,
     InputNumber,
@@ -112,15 +114,52 @@ import { CourseManagementListComponent } from './course-management-list.componen
               />
             </div>
 
+            <!-- Manual Text Syllabus -->
             <div style="margin-top: 1rem;">
               <input-text-area
                 [frmGroup]="frmGroup"
                 controlName="description"
-                label="Course Syllabus & Learning Outcomes"
+                label="Course Syllabus & Learning Outcomes (Text / Manual Input)"
                 placeholder="Describe course objectives, prerequisites, and evaluation scheme..."
                 [rows]="3"
                 displayMode="vertical"
               />
+            </div>
+
+            <!-- File Upload Syllabus -->
+            <div class="syllabus-upload-zone">
+              <label class="syllabus-upload-label">
+                Attach Official Syllabus File (PDF, DOCX, TXT)
+              </label>
+
+              <div class="file-upload-box" *ngIf="!frmGroup.get('syllabusUrl')?.value">
+                <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.docx,.doc,.txt" style="display: none;">
+                <button type="button" class="btn-upload-file" (click)="fileInput.click()" [disabled]="uploadingSyllabus()">
+                  <app-icon name="download" [size]="16" *ngIf="!uploadingSyllabus()"></app-icon>
+                  <span *ngIf="uploadingSyllabus()" class="spinner-sm"></span>
+                  {{ uploadingSyllabus() ? 'Uploading File...' : 'Upload Syllabus File (PDF/DOCX)' }}
+                </button>
+                <span class="file-hint">Attach full course outline document for student & faculty access</span>
+              </div>
+
+              <!-- Attached File Badge -->
+              <div class="attached-file-card" *ngIf="frmGroup.get('syllabusUrl')?.value">
+                <div class="attached-file-info">
+                  <app-icon name="list-check" [size]="20" class="file-icon"></app-icon>
+                  <div class="file-details">
+                    <span class="file-name">{{ frmGroup.get('syllabusFileName')?.value || 'Course_Syllabus.pdf' }}</span>
+                    <span class="file-status">File uploaded & ready to attach</span>
+                  </div>
+                </div>
+                <div class="attached-file-actions">
+                  <a [href]="getSyllabusFullUrl(frmGroup.get('syllabusUrl')?.value)" target="_blank" class="btn-file-view">
+                    <app-icon name="eye" [size]="14"></app-icon> View Document
+                  </a>
+                  <button type="button" class="btn-file-remove" (click)="removeSyllabusFile()">
+                    <app-icon name="x" [size]="14"></app-icon> Remove
+                  </button>
+                </div>
+              </div>
             </div>
           </form>
         </div>
@@ -160,6 +199,120 @@ import { CourseManagementListComponent } from './course-management-list.componen
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1rem;
     }
+    .syllabus-upload-zone {
+      margin-top: 1rem;
+      background: var(--bg-elevated, #f8fafc);
+      border: 1.5px dashed var(--border, #cbd5e1);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .syllabus-upload-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary, #1e293b);
+      margin-bottom: 0.5rem;
+    }
+    .file-upload-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .btn-upload-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: var(--accent-primary, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: fit-content;
+      transition: all 0.2s;
+    }
+    .btn-upload-file:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .file-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted, #64748b);
+    }
+    .attached-file-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card, #ffffff);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .attached-file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .file-icon {
+      color: var(--accent-primary, #2563eb);
+    }
+    .file-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .file-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary, #1e293b);
+    }
+    .file-status {
+      font-size: 0.75rem;
+      color: var(--accent-green, #10b981);
+      font-weight: 600;
+    }
+    .attached-file-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-file-view {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--accent-primary, #2563eb);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .btn-file-remove {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .spinner-sm {
+      width: 14px;
+      height: 14px;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
 export class CourseManagementComponent implements OnInit, OnDestroy {
@@ -168,6 +321,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   isEdit = false;
   editCourseId: number | null = null;
   teachers = signal<UserResponse[]>([]);
+  uploadingSyllabus = signal(false);
 
   frmGroup: FormGroup;
 
@@ -196,7 +350,9 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
       maxSeats: [40, [Validators.required, Validators.min(5), Validators.max(200)]],
       courseType: ['CORE', Validators.required],
       teacherId: [null],
-      description: ['']
+      description: [''],
+      syllabusUrl: [null],
+      syllabusFileName: [null]
     });
 
     // Wire up Navbar Action signals
@@ -227,7 +383,6 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         ONCLICK_VIEW.set(false);
       }
     }, { allowSignalWrites: true });
-
   }
 
   ngOnInit(): void {
@@ -250,6 +405,44 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
       next: (res) => this.teachers.set(res.content),
       error: () => {}
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.uploadingSyllabus.set(true);
+
+    this.api.uploadSyllabusFile(file).subscribe({
+      next: (res) => {
+        this.uploadingSyllabus.set(false);
+        this.frmGroup.patchValue({
+          syllabusUrl: res.url,
+          syllabusFileName: res.fileName
+        });
+        this.toast.success(`Attached syllabus file: ${res.fileName}`);
+      },
+      error: (err) => {
+        this.uploadingSyllabus.set(false);
+        const msg = err.error?.detail || err.error?.message || 'Failed to upload syllabus file.';
+        this.toast.error(msg);
+      }
+    });
+  }
+
+  removeSyllabusFile(): void {
+    this.frmGroup.patchValue({
+      syllabusUrl: null,
+      syllabusFileName: null
+    });
+    this.toast.info('Removed attached syllabus file.');
+  }
+
+  getSyllabusFullUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
   }
 
   submitSave(): void {
@@ -297,7 +490,9 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
       creditHours: 3,
       maxSeats: 40,
       courseType: 'CORE',
-      teacherId: null
+      teacherId: null,
+      syllabusUrl: null,
+      syllabusFileName: null
     });
     ButtonUtils.setPageButtons({
       save: true,
@@ -321,7 +516,9 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
           maxSeats: c.maxSeats,
           courseType: c.courseType,
           teacherId: c.teacherId,
-          description: c.description
+          description: c.description,
+          syllabusUrl: c.syllabusUrl,
+          syllabusFileName: c.syllabusFileName
         });
         ButtonUtils.setPageButtons({
           save: false,

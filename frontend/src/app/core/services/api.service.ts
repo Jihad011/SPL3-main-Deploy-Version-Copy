@@ -74,6 +74,11 @@ export class ApiService {
   deactivateCourse(id: number): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(`${this.api}/courses/${id}`);
   }
+  uploadSyllabusFile(file: File): Observable<{ url: string; fileName: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string; fileName: string }>(`${this.api}/files/upload-syllabus`, formData);
+  }
 
   // ── Enrollments ───────────────────────────────────────────
   enroll(req: EnrollRequest): Observable<EnrollmentResponse> {

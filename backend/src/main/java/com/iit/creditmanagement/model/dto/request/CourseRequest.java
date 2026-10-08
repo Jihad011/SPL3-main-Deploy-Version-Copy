@@ -17,6 +17,9 @@ public record CourseRequest(
 
         String description,
 
+        String syllabusUrl,
+        String syllabusFileName,
+
         @NotNull(message = "Credit hours are required")
         @Min(value = 1, message = "Credit hours must be at least 1")
         @Max(value = 6, message = "Credit hours must not exceed 6")

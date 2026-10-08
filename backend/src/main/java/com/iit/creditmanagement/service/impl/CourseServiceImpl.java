@@ -50,6 +50,8 @@ public class CourseServiceImpl implements CourseService {
                 .code(request.code())
                 .name(request.name())
                 .description(request.description())
+                .syllabusUrl(request.syllabusUrl())
+                .syllabusFileName(request.syllabusFileName())
                 .creditHours(request.creditHours())
                 .courseType(request.courseType())
                 .maxSeats(maxSeats)
@@ -79,6 +81,8 @@ public class CourseServiceImpl implements CourseService {
 
         course.setName(request.name());
         course.setDescription(request.description());
+        course.setSyllabusUrl(request.syllabusUrl());
+        course.setSyllabusFileName(request.syllabusFileName());
         course.setCreditHours(request.creditHours());
         course.setCourseType(request.courseType());
 

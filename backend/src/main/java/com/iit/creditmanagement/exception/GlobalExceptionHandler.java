@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -146,6 +148,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT,
                 "The record was modified by another request. Please try again.",
                 "CONCURRENT_MODIFICATION",
+                request);
+    }
+
+    @ExceptionHandler({
+        MaxUploadSizeExceededException.class,
+        MultipartException.class
+    })
+    public ProblemDetail handleMaxUploadSize(Exception ex, HttpServletRequest request) {
+        log.warn("File upload error: {}", ex.getMessage());
+        return problem(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "Uploaded file processing error: " + ex.getMessage(),
+                "FILE_UPLOAD_ERROR",
                 request);
     }
 

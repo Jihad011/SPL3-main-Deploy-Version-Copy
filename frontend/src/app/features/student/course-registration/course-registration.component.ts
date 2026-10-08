@@ -115,6 +115,12 @@ import {
       <h3 class="course-name">{{ c.name }}</h3>
       <p class="course-desc" *ngIf="c.description">{{ c.description }}</p>
 
+      <div *ngIf="c.syllabusUrl" style="margin-top: 0.25rem;">
+        <a [href]="'http://localhost:8080' + c.syllabusUrl" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary, #2563eb); text-decoration: underline;">
+          <app-icon name="download" [size]="14" /> Download Official Syllabus File
+        </a>
+      </div>
+
       <div class="course-meta">
         <span class="meta-item"><app-icon name="clock" [size]="14" /> {{ c.creditHours }} Credit(s)</span>
         <span class="meta-item" *ngIf="c.teacherName"><app-icon name="user" [size]="14" /> {{ c.teacherName }}</span>

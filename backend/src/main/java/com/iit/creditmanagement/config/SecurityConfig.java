@@ -42,6 +42,8 @@ public class SecurityConfig {
         "/ai/**",
         "/payment/sslcommerz/callback/**",
         "/v1/payment/sslcommerz/callback/**",
+        "/files/syllabi/**",
+        "/v1/files/syllabi/**",
         "/actuator/health",
         "/actuator/info"
     };

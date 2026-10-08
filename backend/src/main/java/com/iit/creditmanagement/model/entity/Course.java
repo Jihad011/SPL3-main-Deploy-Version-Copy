@@ -33,6 +33,12 @@ public class Course {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "syllabus_url", length = 500)
+    private String syllabusUrl;
+
+    @Column(name = "syllabus_file_name", length = 255)
+    private String syllabusFileName;
+
     @Column(name = "credit_hours", nullable = false)
     private Integer creditHours;
 

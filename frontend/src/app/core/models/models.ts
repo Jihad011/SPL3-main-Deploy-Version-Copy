@@ -70,6 +70,8 @@ export interface CourseResponse {
   code: string;
   name: string;
   description: string | null;
+  syllabusUrl?: string | null;
+  syllabusFileName?: string | null;
   creditHours: number;
   courseType: CourseType;
   maxSeats: number;
@@ -86,6 +88,8 @@ export interface CourseRequest {
   code: string;
   name: string;
   description?: string;
+  syllabusUrl?: string;
+  syllabusFileName?: string;
   creditHours: number;
   courseType: CourseType;
   maxSeats?: number;
