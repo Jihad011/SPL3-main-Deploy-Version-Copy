@@ -12,8 +12,8 @@ public final class AppConstants {
     public static final int MAX_SEATS_OPTIONAL_COURSE = 40;
 
     // ── Mark Boundaries ──────────────────────────────────────
-    public static final double MAX_MIDTERM_MARKS = 100.0;
-    public static final double MAX_FINAL_MARKS   = 100.0;
+    public static final double MAX_MIDTERM_MARKS = 40.0;
+    public static final double MAX_FINAL_MARKS   = 60.0;
     public static final double MAX_TOTAL_MARKS   = 100.0;
     public static final double PASSING_MARKS     = 40.0;
 
