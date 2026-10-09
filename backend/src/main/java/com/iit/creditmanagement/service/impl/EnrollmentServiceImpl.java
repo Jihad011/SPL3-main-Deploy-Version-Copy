@@ -60,7 +60,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         creditValidator.validateNoDuplicateEnrollment(studentId, course.getId(), semester.getId());
         creditValidator.validateCreditLimit(studentId, semester.getId(), course, targetLevel, intakeType);
         creditValidator.validateSeatAvailability(
-                course.getCurrentEnrollment(), course.getMaxSeats(), course.getName());
+                course.getId(), semester.getId(), intakeType, course.getMaxSeats(), course.getName(), course.getCurrentEnrollment());
 
         // 3. Persist enrollment (Handle re-enrolling if previously dropped)
         Enrollment enrollment = enrollmentRepository

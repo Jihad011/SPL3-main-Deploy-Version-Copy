@@ -4,17 +4,38 @@
     <div class="page-header-left">
       <div class="page-eyebrow">Academic enrollment workspace</div>
       <h1 class="page-title">Course Enrollment</h1>
-      <p class="page-subtitle" *ngIf="activeSemester()">
-        <app-icon name="calendar" [size]="15" /> {{ activeSemester()!.label }} — Select and enroll in courses for this term
-      </p>
-      <p class="page-subtitle" *ngIf="!activeSemester() && !loading()">
-        No active semester found for course enrollment.
+      <p class="page-subtitle">
+        <app-icon name="calendar" [size]="15" /> {{ selectedSemesterLevel() === 1 ? '1st Semester' : (selectedSemesterLevel() === 2 ? '2nd Semester' : '3rd Semester') }} — {{ selectedSemesterType() }} Intake Cycle (2026)
       </p>
     </div>
     <div class="header-actions">
       <a routerLink="../my-courses" class="btn btn-secondary">
         <app-icon name="list-check" [size]="15" /> View Enrolled Courses
       </a>
+    </div>
+  </div>
+
+  <!-- Top Academic Term Selectors: Semester Name & Semester Type -->
+  <div class="top-selector-bar">
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="book-open" [size]="15" /> Semester Name
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterLevel()" (ngModelChange)="onSemesterLevelChange(+$event)">
+        <option [value]="1">1st Semester</option>
+        <option [value]="2">2nd Semester</option>
+        <option [value]="3">3rd Semester</option>
+      </select>
+    </div>
+
+    <div class="selector-card">
+      <label class="selector-label">
+        <app-icon name="calendar" [size]="15" /> Semester Type
+      </label>
+      <select class="selector-dropdown font-mono" [ngModel]="selectedSemesterType()" (ngModelChange)="onSemesterTypeChange($event)">
+        <option value="Spring">Spring Intake</option>
+        <option value="Fall">Fall Intake</option>
+      </select>
     </div>
   </div>
 
@@ -55,7 +76,7 @@
 
   <!-- Universal Toolbar -->
   <app-toolbar
-    *ngIf="!loading() && courses().length > 0"
+    *ngIf="!loading() && semesterCourses().length > 0"
     searchPlaceholder="Search by course name, code, or faculty..."
     [showViewToggle]="true"
     [defaultView]="'grid'"
@@ -66,56 +87,61 @@
     (filterChange)="onFilterChange($event)"
   />
 
-  <!-- Filter tabs bar -->
-  <div class="filter-tabs-bar" *ngIf="!loading() && courses().length > 0">
+  <!-- Filter tabs bar: Dynamic Semester-Scoped Course Counts -->
+  <div class="filter-tabs-bar" *ngIf="!loading() && semesterCourses().length > 0">
     <button class="filter-tab" [class.active]="selectedType() === 'ALL'" (click)="selectedType.set('ALL')">
-      All Available Courses <span class="filter-count">{{ courses().length }}</span>
+      All Available Courses <span class="filter-count">{{ semesterCourses().length }}</span>
     </button>
     <button class="filter-tab" *ngFor="let type of courseTypes()"
       [class.active]="selectedType() === type" (click)="selectedType.set(type)">
-      {{ type }}
+      {{ type }} <span class="filter-count">{{ getTrackCount(type) }}</span>
     </button>
   </div>
 
   <!-- Grid View -->
   <div class="courses-grid" *ngIf="!loading() && view() === 'grid'">
-    <div class="course-card" *ngFor="let c of filteredCourses(); let i = index" [class.course-card--full]="c.isFull">
+    <div class="course-card" *ngFor="let c of filteredCourses(); let i = index" [class.course-card--full]="isCourseFull(c)">
       <div class="course-card-header">
         <span class="course-code code-badge font-mono">{{ c.code }}</span>
-        <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span>
+        <span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType === 'CORE' ? 'Mandatory' : 'Optional' }}</span>
       </div>
 
       <h3 class="course-name">{{ c.name }}</h3>
-      <p class="course-desc" *ngIf="c.description">{{ c.description }}</p>
+      <div class="course-teacher-line" style="font-size: 0.85rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.25rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+        <app-icon name="user" [size]="14"></app-icon>
+        <span>Instructor: <strong>{{ getInstructorName(c) }}</strong></span>
+      </div>
 
-      <div class="course-meta">
-        <span class="meta-item"><app-icon name="clock" [size]="14" /> {{ c.creditHours }} Credit(s)</span>
-        <span class="meta-item" *ngIf="c.teacherName"><app-icon name="user" [size]="14" /> {{ c.teacherName }}</span>
-        <span class="meta-item text-muted font-mono" *ngIf="!c.teacherName">Faculty TBA</span>
-        <a *ngIf="c.syllabusUrl" [href]="c.syllabusUrl" target="_blank" class="meta-item" style="color:var(--primary-color,#2563eb);font-weight:600;" title="View Course Syllabus">
-          <app-icon name="file-text" [size]="14" /> Syllabus
+      <div *ngIf="c.syllabusUrl" style="margin-top: 0.15rem;">
+        <a [href]="getSyllabusFullUrl(c.syllabusUrl)" target="_blank" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-primary, #2563eb); text-decoration: underline;">
+          <app-icon name="file-text" [size]="14" /> Download Official Syllabus File
         </a>
       </div>
 
-      <div class="seat-info" [class.seats-low]="c.availableSeats <= 5 && !c.isFull" [class.seats-full]="c.isFull">
+      <div class="course-meta" style="flex-wrap: wrap; gap: 0.6rem;">
+        <span class="meta-item"><app-icon name="clock" [size]="14" /> {{ c.creditHours }} Credit(s)</span>
+        <span class="meta-item"><app-icon name="calendar" [size]="14" /> {{ getCourseSemesterDisplay(c) }}</span>
+      </div>
+
+      <div class="seat-info" [class.seats-low]="getAvailableSeats(c) <= 5 && !isCourseFull(c)" [class.seats-full]="isCourseFull(c)">
         <div class="seat-bar">
           <div class="seat-fill" 
-               [style.width.%]="(c.currentEnrollment / c.maxSeats) * 100"
-               [style.background]="c.isFull ? '#DC2626' : ((c.currentEnrollment / c.maxSeats) > 0.8 ? '#D97706' : '#2563EB')">
+               [style.width.%]="(getCourseEnrollmentCount(c) / c.maxSeats) * 100"
+               [style.background]="isCourseFull(c) ? '#DC2626' : ((getCourseEnrollmentCount(c) / c.maxSeats) > 0.8 ? '#D97706' : '#2563EB')">
           </div>
         </div>
         <div class="seat-text-row">
-          <span class="seat-status" [class.full]="c.isFull" [class.low]="c.availableSeats <= 5 && !c.isFull">
-            {{ c.isFull ? 'Class Full' : (c.availableSeats + ' seats left') }}
+          <span class="seat-status" [class.full]="isCourseFull(c)" [class.low]="getAvailableSeats(c) <= 5 && !isCourseFull(c)">
+            {{ isCourseFull(c) ? 'Class Full' : (getAvailableSeats(c) + ' seats left') }}
           </span>
-          <span class="seat-count-tag numeric font-mono">{{ c.currentEnrollment }}/{{ c.maxSeats }}</span>
+          <span class="seat-count-tag numeric font-mono">{{ getCourseEnrollmentCount(c) }}/{{ c.maxSeats }}</span>
         </div>
       </div>
 
       <generic-button
-        [label]="c.isFull ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now')"
-        [icon]="c.isFull ? 'lock' : 'check-circle'"
-        [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+        [label]="isCourseEnrolled(c.code) ? 'Already Enrolled' : (isCourseFull(c) ? 'Course Full' : (currentEnrolledCredits() + c.creditHours > maxCredits ? 'Exceeds Cap' : 'Enroll Now'))"
+        [icon]="isCourseEnrolled(c.code) ? 'check-circle' : (isCourseFull(c) ? 'lock' : 'check-circle')"
+        [enable]="!isCourseEnrolled(c.code) && !isCourseFull(c) && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
         styles="width: 100%; margin-top: 0.75rem; justify-content: center;"
         (onClick)="enroll(c)"
       />
@@ -129,10 +155,9 @@
         <thead>
           <tr>
             <th>Code</th>
-            <th>Course Name</th>
+            <th>Course Name & Instructor</th>
             <th>Type</th>
             <th>Credits</th>
-            <th>Faculty</th>
             <th>Seats Available</th>
             <th>Action</th>
           </tr>
@@ -140,19 +165,24 @@
         <tbody>
           <tr class="fade-in-up" [style.animation-delay.ms]="i * 30" *ngFor="let c of filteredCourses(); let i = index">
             <td><span class="code-badge font-mono">{{ c.code }}</span></td>
-            <td><strong>{{ c.name }}</strong></td>
-            <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType }}</span></td>
-            <td>{{ c.creditHours }} Cr</td>
-            <td>{{ c.teacherName ?? 'TBA' }}</td>
             <td>
-              <span [style.color]="c.isFull ? 'var(--accent-red)' : 'var(--accent-green)'" class="font-mono font-semibold">
-                {{ c.isFull ? 'Full' : (c.availableSeats + ' / ' + c.maxSeats) }}
+              <strong>{{ c.name }}</strong>
+              <div style="font-size: 0.78rem; font-weight: 600; color: var(--accent-primary, #2563eb); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.3rem;">
+                <app-icon name="user" [size]="12" />
+                <span>Instructor: {{ getInstructorName(c) }}</span>
+              </div>
+            </td>
+            <td><span class="course-type-badge" [class]="'type-' + c.courseType.toLowerCase()">{{ c.courseType === 'CORE' ? 'Mandatory' : 'Optional' }}</span></td>
+            <td>{{ c.creditHours }} Cr</td>
+            <td>
+              <span [style.color]="isCourseFull(c) ? 'var(--accent-red)' : 'var(--accent-green)'" class="font-mono font-semibold">
+                {{ isCourseFull(c) ? 'Full' : (getAvailableSeats(c) + ' / ' + c.maxSeats) }}
               </span>
             </td>
             <td>
               <generic-button
-                [label]="c.isFull ? 'Full' : 'Enroll'"
-                [enable]="!c.isFull && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
+                [label]="isCourseEnrolled(c.code) ? 'Enrolled' : (isCourseFull(c) ? 'Full' : 'Enroll')"
+                [enable]="!isCourseEnrolled(c.code) && !isCourseFull(c) && enrolling() !== c.id && (currentEnrolledCredits() + c.creditHours <= maxCredits)"
                 styles="font-size: 0.8rem; padding: 0.35rem 0.75rem;"
                 (onClick)="enroll(c)"
               />
@@ -164,10 +194,10 @@
   </div>
 
   <div class="empty-state table-empty" *ngIf="!loading() && filteredCourses().length === 0">
-    <div class="empty-icon"><app-icon [name]="courses().length === 0 ? 'check-circle' : 'search'" [size]="28" /></div>
-    <h3>{{ courses().length === 0 ? "You're all enrolled!" : 'No matching courses found' }}</h3>
-    <p>{{ courses().length === 0 ? 'You have registered for all available courses for this active semester.' : 'Try adjusting your search keywords or category filters.' }}</p>
-    <a routerLink="../my-courses" class="btn btn-secondary" style="margin-top:0.75rem" *ngIf="courses().length === 0">
+    <div class="empty-icon"><app-icon [name]="semesterCourses().length === 0 ? 'check-circle' : 'search'" [size]="28" /></div>
+    <h3>{{ semesterCourses().length === 0 ? "You're all enrolled!" : 'No matching courses found' }}</h3>
+    <p>{{ semesterCourses().length === 0 ? 'No courses available for this semester selection.' : 'Try adjusting your search keywords or category filters.' }}</p>
+    <a routerLink="../my-courses" class="btn btn-secondary" style="margin-top:0.75rem" *ngIf="semesterCourses().length === 0">
       View My Courses
     </a>
   </div>

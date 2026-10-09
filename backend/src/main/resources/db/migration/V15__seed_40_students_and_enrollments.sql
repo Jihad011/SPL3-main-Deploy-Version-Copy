@@ -52,5 +52,14 @@ INSERT INTO users (name, email, password_hash, role, roll_number, registration_n
 ('Shoriful Islam',      'bsse1239@iit.du.ac.bd', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'STUDENT', 'BSSE1239', 'REG-2024-1239', '01710001239', 2024)
 ON CONFLICT (roll_number) DO NOTHING;
 
--- 3. Update current_enrollment count
+-- 3. Enroll all 40 students into the 4 first semester core courses
+INSERT INTO enrollments (student_id, course_id, semester_id, status, is_retake, target_semester_level, intake_type)
+SELECT u.id, c.id, (SELECT id FROM semesters WHERE is_active = TRUE ORDER BY id DESC LIMIT 1), 'ACTIVE', FALSE, 1, 'Spring'
+FROM users u
+CROSS JOIN (SELECT id FROM courses WHERE code IN ('MITM 303', 'MITM 304', 'MITM 310', 'MITM 311')) c
+WHERE u.role = 'STUDENT'
+ON CONFLICT (student_id, course_id, semester_id) DO UPDATE SET status = 'ACTIVE';
+
+-- 4. Update current_enrollment count
 UPDATE courses c SET current_enrollment = (SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'ACTIVE');
+

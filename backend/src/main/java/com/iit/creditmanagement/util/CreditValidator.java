@@ -120,6 +120,31 @@ public class CreditValidator {
         }
     }
 
+    /**
+     * Validates seat availability specifically for the target intake type (Spring vs Fall).
+     */
+    public void validateSeatAvailability(Long courseId, Long semesterId, String intakeType, int maxSeats, String courseName, int defaultCurrentEnrollment) {
+        if (courseId == null || semesterId == null) {
+            validateSeatAvailability(defaultCurrentEnrollment, maxSeats, courseName);
+            return;
+        }
+        String targetIntake = (intakeType != null && !intakeType.isBlank()) ? intakeType.trim() : "Spring";
+        long enrolledInIntake = enrollmentRepository.findAllByCourseIdAndSemesterId(courseId, semesterId)
+                .stream()
+                .filter(e -> e.getStatus() == com.iit.creditmanagement.model.enums.EnrollmentStatus.ACTIVE && 
+                        targetIntake.equalsIgnoreCase(e.getIntakeType()))
+                .count();
+
+        if (enrolledInIntake >= maxSeats) {
+            throw new BusinessRuleException(
+                String.format(
+                    "Course '%s' is full for %s Intake. Maximum %d seats reached.",
+                    courseName, targetIntake, maxSeats
+                )
+            );
+        }
+    }
+
     public void validateNoDuplicateEnrollment(Long studentId, Long courseId, Long semesterId) {
         enrollmentRepository.findByStudentIdAndCourseIdAndSemesterId(studentId, courseId, semesterId)
             .ifPresent(enrollment -> {
