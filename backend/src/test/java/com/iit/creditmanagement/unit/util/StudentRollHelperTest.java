@@ -12,19 +12,30 @@ import static org.junit.jupiter.api.Assertions.*;
 class StudentRollHelperTest {
 
     @Test
-    @DisplayName("Should format dynamic semester roll ID correctly for First and Second Semester")
+    @DisplayName("Should format dynamic semester roll ID correctly with Term Code and Term Type")
     void testFormatSemesterRoll() {
-        String springRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 4);
-        assertEquals("26S0204", springRoll);
+        // User example: First semester Spring 2026 -> 26FS1413, Fall -> 26FF1413
+        String firstSpringUser = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, "Spring", 14, 13);
+        assertEquals("26FS1413", firstSpringUser);
 
-        String fallRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, 2, 4);
-        assertEquals("26F0204", fallRoll);
+        String firstFallUser = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, "Fall", 14, 13);
+        assertEquals("26FF1413", firstFallUser);
 
-        String thirdRoll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.THIRD_SEMESTER, 2, 4);
-        assertEquals("26T0204", thirdRoll);
+        String secondSpring = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Spring", 2, 4);
+        assertEquals("26SS0204", secondSpring);
 
-        String nextYearSpringRoll = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, 2, 4);
-        assertEquals("27S0204", nextYearSpringRoll);
+        String secondFall = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Fall", 2, 4);
+        assertEquals("26SF0204", secondFall);
+
+        String thirdSpring = StudentRollHelper.formatSemesterRoll(2026, SemesterName.THIRD_SEMESTER, "Spring", 2, 4);
+        assertEquals("26TS0204", thirdSpring);
+
+        String nextYearSpring = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, "Spring", 2, 4);
+        assertEquals("27SS0204", nextYearSpring);
+
+        // Default overload (defaults to Spring)
+        String defaultSpring = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, 2, 4);
+        assertEquals("26FS0204", defaultSpring);
     }
 
     @Test
@@ -38,15 +49,29 @@ class StudentRollHelperTest {
         Semester sem = Semester.builder()
                 .year(2026)
                 .name(SemesterName.SECOND_SEMESTER)
+                .startDate(java.time.LocalDate.of(2026, 1, 1))
                 .build();
 
         String roll = StudentRollHelper.deriveSemesterRoll(student, sem);
-        assertEquals("26S0204", roll);
+        assertEquals("26SS0204", roll);
+
+        String fallRoll = StudentRollHelper.deriveSemesterRoll(student, sem, "Fall");
+        assertEquals("26SF0204", fallRoll);
     }
 
     @Test
     @DisplayName("Should parse various roll formats universally")
     void testParseRoll() {
+        // New 5-part dynamic format: 26FS1413
+        StudentRollHelper.ParsedRoll parsedNew = StudentRollHelper.parseRoll("26FS1413");
+        assertNotNull(parsedNew);
+        assertEquals(2026, parsedNew.year());
+        assertEquals("F", parsedNew.term());
+        assertEquals("S", parsedNew.intakeType());
+        assertEquals(14, parsedNew.batch());
+        assertEquals(13, parsedNew.classRoll());
+
+        // Legacy 4-part dynamic format: 26S0204
         StudentRollHelper.ParsedRoll parsedDyn = StudentRollHelper.parseRoll("26S0204");
         assertNotNull(parsedDyn);
         assertEquals(2026, parsedDyn.year());
@@ -68,21 +93,21 @@ class StudentRollHelperTest {
     @Test
     @DisplayName("Should enforce strict uniqueness of dynamic rolls across different students and semesters")
     void testDynamicRollUniqueness() {
-        String student1Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 1);
-        String student2Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 2);
-        String student3Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 3, 1);
+        String student1Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Spring", 2, 1);
+        String student2Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Spring", 2, 2);
+        String student3Roll = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Spring", 3, 1);
         
         assertNotEquals(student1Roll, student2Roll);
         assertNotEquals(student1Roll, student3Roll);
         assertNotEquals(student2Roll, student3Roll);
 
-        String spring26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, 2, 4);
-        String fall26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, 2, 4);
-        String spring27 = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, 2, 4);
+        String spring26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.SECOND_SEMESTER, "Spring", 2, 4);
+        String fall26 = StudentRollHelper.formatSemesterRoll(2026, SemesterName.FIRST_SEMESTER, "Fall", 2, 4);
+        String spring27 = StudentRollHelper.formatSemesterRoll(2027, SemesterName.SECOND_SEMESTER, "Spring", 2, 4);
 
-        assertEquals("26S0204", spring26);
-        assertEquals("26F0204", fall26);
-        assertEquals("27S0204", spring27);
+        assertEquals("26SS0204", spring26);
+        assertEquals("26FF0204", fall26);
+        assertEquals("27SS0204", spring27);
         assertNotEquals(spring26, fall26);
         assertNotEquals(spring26, spring27);
     }
@@ -90,6 +115,14 @@ class StudentRollHelperTest {
     @Test
     @DisplayName("Should handle case-insensitivity and whitespace in roll parsing")
     void testCaseInsensitiveAndWhitespaceParsing() {
+        StudentRollHelper.ParsedRoll parsedLowerNew = StudentRollHelper.parseRoll("  26fs1413  ");
+        assertNotNull(parsedLowerNew);
+        assertEquals(2026, parsedLowerNew.year());
+        assertEquals("F", parsedLowerNew.term());
+        assertEquals("S", parsedLowerNew.intakeType());
+        assertEquals(14, parsedLowerNew.batch());
+        assertEquals(13, parsedLowerNew.classRoll());
+
         StudentRollHelper.ParsedRoll parsedLower = StudentRollHelper.parseRoll("  26s0204  ");
         assertNotNull(parsedLower);
         assertEquals(2026, parsedLower.year());

@@ -136,22 +136,22 @@ class StudentHistoryServiceTest {
 
         assertNotNull(response);
         assertEquals("Arefin Shuvo", response.studentName());
-        assertEquals("26T0204", response.currentSemesterRollId());
+        assertEquals("26TS0204", response.currentSemesterRollId());
         assertEquals(3, response.semesters().size());
 
-        // Spring 2025 (FIRST_SEMESTER) -> Roll: 25F0204
-        assertEquals("25F0204", response.semesters().get(0).semesterRollId());
+        // Spring 2025 (FIRST_SEMESTER, Spring) -> Roll: 25FS0204
+        assertEquals("25FS0204", response.semesters().get(0).semesterRollId());
         assertFalse(response.semesters().get(0).isGap());
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.semesters().get(0).sgpa());
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.semesters().get(0).cgpa());
 
-        // Fall 2025 (SECOND_SEMESTER, Gap semester!) -> Roll: 25S0204, isGap: true
-        assertEquals("25S0204", response.semesters().get(1).semesterRollId());
+        // Fall 2025 (SECOND_SEMESTER, Fall, Gap semester!) -> Roll: 25SF0204, isGap: true
+        assertEquals("25SF0204", response.semesters().get(1).semesterRollId());
         assertTrue(response.semesters().get(1).isGap());
         assertEquals(BigDecimal.valueOf(10000.0), response.semesters().get(1).gapFineAmount());
 
-        // Spring 2026 (THIRD_SEMESTER) -> Roll: 26T0204
-        assertEquals("26T0204", response.semesters().get(2).semesterRollId());
+        // Spring 2026 (THIRD_SEMESTER, Spring) -> Roll: 26TS0204
+        assertEquals("26TS0204", response.semesters().get(2).semesterRollId());
         assertFalse(response.semesters().get(2).isGap());
 
         assertEquals(1, response.totalGapSemesters());
