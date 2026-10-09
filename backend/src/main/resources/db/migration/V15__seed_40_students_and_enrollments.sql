@@ -52,18 +52,5 @@ INSERT INTO users (name, email, password_hash, role, roll_number, registration_n
 ('Shoriful Islam',      'bsse1239@iit.du.ac.bd', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'STUDENT', 'BSSE1239', 'REG-2024-1239', '01710001239', 2024)
 ON CONFLICT (roll_number) DO NOTHING;
 
--- 3. Enroll 40 students ONLY into MITM 303 (Course ID 1)
-INSERT INTO enrollments (student_id, course_id, semester_id, status, is_retake)
-SELECT u.id, (SELECT id FROM courses WHERE code = 'MITM 303'), (SELECT id FROM semesters WHERE is_active = TRUE ORDER BY id DESC LIMIT 1), 'ACTIVE', FALSE
-FROM users u
-WHERE u.role = 'STUDENT'
-  AND u.roll_number IN (
-    'BSSE1201', 'BSSE1202', 'BSSE1203', 'BSSE1204', 'BSSE1205', 'BSSE1206', 'BSSE1207', 'BSSE1208', 'BSSE1209', 'BSSE1210',
-    'BSSE1210', 'BSSE1211', 'BSSE1212', 'BSSE1213', 'BSSE1214', 'BSSE1215', 'BSSE1216', 'BSSE1217', 'BSSE1218', 'BSSE1219',
-    'BSSE1220', 'BSSE1221', 'BSSE1222', 'BSSE1223', 'BSSE1224', 'BSSE1225', 'BSSE1226', 'BSSE1227', 'BSSE1228', 'BSSE1229',
-    'BSSE1230', 'BSSE1231', 'BSSE1232', 'BSSE1233', 'BSSE1234', 'BSSE1235', 'BSSE1236', 'BSSE1237', 'BSSE1238', 'BSSE1239'
-  )
-ON CONFLICT (student_id, course_id, semester_id) DO NOTHING;
-
--- 4. Update current_enrollment count
+-- 3. Update current_enrollment count
 UPDATE courses c SET current_enrollment = (SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'ACTIVE');

@@ -129,16 +129,20 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                 .filter(e -> e.getCourse() != null && e.getCourse().isActive())
                 .toList();
 
-        // Group enrollments by target semester level (1=First Semester, 2=Second Semester, 3=Third Semester)
+        // Group enrollments by actual semester or target semester level
         Map<Long, List<Enrollment>> enrollmentsBySemester = new HashMap<>();
         for (Enrollment e : allEnrollments) {
-            int level = resolveCourseLevel(e.getCourse(), e.getTargetSemesterLevel());
+            Long targetSemId = (e.getSemester() != null) ? e.getSemester().getId() : null;
+            if (targetSemId == null) {
+                int level = resolveCourseLevel(e.getCourse(), e.getTargetSemesterLevel());
+                if (level > 0 && level <= allSemesters.size()) {
+                    targetSemId = allSemesters.get(level - 1).getId();
+                }
+            }
 
-            Long targetSemId = (level > 0 && level <= allSemesters.size())
-                    ? allSemesters.get(level - 1).getId()
-                    : e.getSemester().getId();
-
-            enrollmentsBySemester.computeIfAbsent(targetSemId, k -> new ArrayList<>()).add(e);
+            if (targetSemId != null) {
+                enrollmentsBySemester.computeIfAbsent(targetSemId, k -> new ArrayList<>()).add(e);
+            }
         }
 
         // Find index of first enrolled semester
