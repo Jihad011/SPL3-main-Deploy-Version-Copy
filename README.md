@@ -28,10 +28,9 @@
    - [Official Academic Transcript Generation](#4-official-academic-transcript-generation)
 3. [Active Curriculum and Course Catalog (3 Semesters)](#active-curriculum-and-course-catalog-3-semesters)
 4. [University of Dhaka Standard Grading Scale](#university-of-dhaka-standard-grading-scale)
-5. [System Architecture and Data Model](#system-architecture-and-data-model)
+5. [System Architecture](#system-architecture)
    - [Layered Architecture Diagram](#layered-architecture)
    - [End-to-End Registration Flow Diagram](#end-to-end-registration-flow)
-   - [Entity-Relationship Diagram (ERD)](#entity-relationship-diagram-erd)
 6. [Portals and Functional Workspaces](#portals-and-functional-workspaces)
    - [Student Portal Modules](#1-student-portal-modules)
    - [Faculty Portal Modules](#2-faculty-teacher-portal-modules)
@@ -200,7 +199,7 @@ SGPA / CGPA = SUM(Grade Point * Credit Hours) / SUM(Credit Hours)
 
 ---
 
-## System Architecture and Data Model
+## System Architecture
 
 ### Layered Architecture
 
@@ -288,85 +287,6 @@ sequenceDiagram
     Note over Event,Listener: Asynchronous Billing Execution (Post-Commit)
     Event->>Listener: onCourseEnrolled(CourseEnrolledEvent)
     Listener->>DB: Checks retake flag & records billing invoice
-```
-
-### Entity-Relationship Diagram (ERD)
-
-```mermaid
-erDiagram
-    USERS ||--o{ ENROLLMENTS : "registers"
-    USERS ||--o{ FEES : "billed to"
-    USERS }o--o{ COURSES : "teaches"
-    SEMESTERS ||--o{ ENROLLMENTS : "contains"
-    COURSES ||--o{ ENROLLMENTS : "enrolled in"
-    ENROLLMENTS ||--o| GRADES : "evaluates"
-    FEES ||--o{ TRANSACTIONS : "paid via"
-
-    USERS {
-        bigint id PK
-        varchar email UK
-        varchar password
-        varchar name
-        varchar roll_number
-        int batch
-        varchar role
-    }
-
-    SEMESTERS {
-        bigint id PK
-        varchar name
-        int year
-        date start_date
-        date end_date
-        boolean is_active
-    }
-
-    COURSES {
-        bigint id PK
-        varchar code UK
-        varchar name
-        int credit_hours
-        int capacity
-        boolean is_active
-    }
-
-    ENROLLMENTS {
-        bigint id PK
-        bigint student_id FK
-        bigint course_id FK
-        bigint semester_id FK
-        varchar status
-        boolean is_retake
-        int target_semester_level
-        varchar intake_type
-    }
-
-    GRADES {
-        bigint id PK
-        bigint enrollment_id FK
-        numeric midterm_marks
-        numeric final_marks
-        numeric total_marks
-        varchar grade_letter
-        numeric grade_point
-    }
-
-    FEES {
-        bigint id PK
-        bigint student_id FK
-        numeric amount
-        varchar type
-        varchar status
-        date due_date
-    }
-
-    TRANSACTIONS {
-        bigint id PK
-        bigint fee_id FK
-        varchar tran_id UK
-        varchar gateway
-        varchar status
-    }
 ```
 
 ---
