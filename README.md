@@ -11,6 +11,11 @@
   <img src="https://img.shields.io/badge/Security-Spring_Security_6_%2B_JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT Security" />
 </p>
 
+> [!IMPORTANT]
+> **Supervised by:** **Dr. Md. Nurul Ahad Tawhid** (Associate Professor, Institute of Information Technology, University of Dhaka)  
+> **Developed by:** **Md. Jihad Hossain** (Roll: BSSE-1413 / Batch: 14, Institute of Information Technology, University of Dhaka)  
+> **Academic Program:** **SE-801: Software Project Lab 3 (SPL-3)** — 8th Semester Final Capstone Project, University of Dhaka
+
 ---
 
 ## 📑 Table of Contents
@@ -39,7 +44,7 @@
 12. [🧪 Testing & Quality Assurance (84/84 Passing)](#-testing--quality-assurance-8484-passing)
 13. [📡 Comprehensive REST API Reference](#-comprehensive-rest-api-reference)
 14. [❓ Frequently Asked Questions & Troubleshooting](#-frequently-asked-questions--troubleshooting)
-15. [🏛️ Academic Attribution & Acknowledgments](#️-academic-attribution--acknowledgments)
+15. [🏛️ Academic Attribution & Project Supervision](#️-academic-attribution--project-supervision)
 
 ---
 
@@ -636,16 +641,23 @@ Student `1413` has base roll `1413` (Batch 14, Roll 13). When enrolled in 1st Se
 
 ---
 
-## 🏛️ Academic Attribution & Acknowledgments
+## 🏛️ Academic Attribution & Project Supervision
 
-* **Institution:** **Institute of Information Technology (IIT), University of Dhaka**
-* **Academic Course:** **8th Semester Software Project Lab 3 (SPL-3)**
-* **Supervision:** Faculty and Examination Committee, IIT, University of Dhaka
-* **Author / Developer:** **Md. Jihad Hossain** (Roll: 1413 / Batch: 14)
+| Academic Role | Name & Title | Institutional Designation & Affiliation |
+| :--- | :--- | :--- |
+| **Supervised by** | **Dr. Md. Nurul Ahad Tawhid** | **Associate Professor**, Institute of Information Technology (IIT), University of Dhaka |
+| **Submitted by** | **Md. Jihad Hossain** | **Student** (Roll: BSSE-1413 / Batch: 14), Institute of Information Technology, University of Dhaka |
+| **Academic Course** | **SE-801: Software Project Lab III (SPL-3)** | 8th Semester Final B.Sc. in Software Engineering Capstone |
+| **Submitted to** | **SPL-3 Program Committee** | BSSE 4th Year Examination Committee, IIT, University of Dhaka |
+| **Department / Institute** | **Institute of Information Technology (IIT)** | University of Dhaka, Dhaka-1000, Bangladesh |
+| **Submission Date** | **October 10, 2026** | Academic Session 2021–2026 |
 
 ---
 
 <p align="center">
   <b>Institute of Information Technology (IIT), University of Dhaka</b><br>
+  <b>Project:</b> MIT Open Credit Management System (OCMS) — Software Project Lab III (SPL-3)<br>
+  👨‍🏫 <b>Supervised by:</b> Dr. Md. Nurul Ahad Tawhid, Associate Professor, IIT, University of Dhaka<br>
+  🎓 <b>Developed by:</b> Md. Jihad Hossain (Roll: BSSE-1413 / Batch: 14)<br>
   <i>Empowering Academic Governance Through Software Engineering Excellence</i>
 </p>
