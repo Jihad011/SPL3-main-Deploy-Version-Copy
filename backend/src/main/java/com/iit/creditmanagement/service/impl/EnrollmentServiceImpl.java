@@ -7,6 +7,7 @@ import com.iit.creditmanagement.model.dto.request.EnrollRequest;
 import com.iit.creditmanagement.model.dto.response.EnrollmentResponse;
 import com.iit.creditmanagement.model.entity.*;
 import com.iit.creditmanagement.model.enums.EnrollmentStatus;
+import com.iit.creditmanagement.model.enums.SemesterName;
 import com.iit.creditmanagement.repository.*;
 import com.iit.creditmanagement.service.EnrollmentService;
 import com.iit.creditmanagement.util.CreditValidator;
@@ -57,14 +58,28 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 ("MITM 421".equals(course.getCode()) ? 3 : 2))));
         String intakeType = request.intakeType() != null ? request.intakeType() : "Spring";
 
-        creditValidator.validateNoDuplicateEnrollment(studentId, course.getId(), semester.getId());
-        creditValidator.validateCreditLimit(studentId, semester.getId(), course, targetLevel, intakeType);
+        // Assign the matching semester entity so enrollment.semester reflects the exact academic term
+        Semester assignedSemester = semester;
+        if (targetLevel != null) {
+            SemesterName desiredName = switch (targetLevel) {
+                case 1 -> SemesterName.FIRST_SEMESTER;
+                case 2 -> SemesterName.SECOND_SEMESTER;
+                case 3 -> SemesterName.THIRD_SEMESTER;
+                default -> null;
+            };
+            if (desiredName != null) {
+                assignedSemester = semesterRepository.findByName(desiredName).orElse(semester);
+            }
+        }
+
+        creditValidator.validateNoDuplicateEnrollment(studentId, course.getId(), assignedSemester.getId());
+        creditValidator.validateCreditLimit(studentId, assignedSemester.getId(), course, targetLevel, intakeType);
         creditValidator.validateSeatAvailability(
-                course.getId(), semester.getId(), intakeType, course.getMaxSeats(), course.getName(), course.getCurrentEnrollment());
+                course.getId(), assignedSemester.getId(), intakeType, course.getMaxSeats(), course.getName(), course.getCurrentEnrollment());
 
         // 3. Persist enrollment (Handle re-enrolling if previously dropped)
         Enrollment enrollment = enrollmentRepository
-                .findByStudentIdAndCourseIdAndSemesterId(studentId, course.getId(), semester.getId())
+                .findByStudentIdAndCourseIdAndSemesterId(studentId, course.getId(), assignedSemester.getId())
                 .orElse(null);
 
         if (enrollment != null) {
@@ -72,11 +87,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             enrollment.setRetake(request.retake());
             enrollment.setTargetSemesterLevel(targetLevel);
             enrollment.setIntakeType(intakeType);
+            enrollment.setSemester(assignedSemester);
         } else {
             enrollment = Enrollment.builder()
                     .student(student)
                     .course(course)
-                    .semester(semester)
+                    .semester(assignedSemester)
                     .status(EnrollmentStatus.ACTIVE)
                     .isRetake(request.retake())
                     .targetSemesterLevel(targetLevel)
@@ -91,7 +107,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         courseRepository.save(course);
 
         log.info("Student {} enrolled in course {} for semester {}",
-                studentId, course.getCode(), semester.getLabel());
+                studentId, course.getCode(), assignedSemester.getLabel());
 
         // ── Publish domain event (replaces inline fee creation) ──────────────────
         // BillingEnrollmentEventListener handles retake fee generation AFTER COMMIT.
@@ -103,7 +119,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 course.getCode(),
                 course.getName(),
                 course.getCreditHours(),
-                semester.getId(),
+                assignedSemester.getId(),
                 request.retake(),
                 Instant.now()
         );

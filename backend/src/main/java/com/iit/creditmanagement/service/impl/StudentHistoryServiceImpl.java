@@ -129,12 +129,14 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
                 .filter(e -> e.getCourse() != null && e.getCourse().isActive())
                 .toList();
 
-        // Group enrollments by actual semester or target semester level
+        // Group enrollments by target semester level or actual semester
         Map<Long, List<Enrollment>> enrollmentsBySemester = new HashMap<>();
         for (Enrollment e : allEnrollments) {
             Long targetSemId = (e.getSemester() != null) ? e.getSemester().getId() : null;
-            if (targetSemId == null) {
-                int level = resolveCourseLevel(e.getCourse(), e.getTargetSemesterLevel());
+            if (e.getTargetSemesterLevel() != null && e.getTargetSemesterLevel() > 0 && e.getTargetSemesterLevel() <= allSemesters.size()) {
+                targetSemId = allSemesters.get(e.getTargetSemesterLevel() - 1).getId();
+            } else if (targetSemId == null) {
+                int level = resolveCourseLevel(e.getCourse(), null);
                 if (level > 0 && level <= allSemesters.size()) {
                     targetSemId = allSemesters.get(level - 1).getId();
                 }
