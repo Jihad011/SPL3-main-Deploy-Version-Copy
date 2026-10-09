@@ -9,6 +9,7 @@ public final class AppConstants {
     public static final int TOTAL_CREDITS_TO_COMPLETE = 36;
 
     // ── Seat Rules ───────────────────────────────────────────
+    public static final int MAX_SEATS_PER_COURSE = 40;
     public static final int MAX_SEATS_OPTIONAL_COURSE = 40;
 
     // ── Mark Boundaries ──────────────────────────────────────

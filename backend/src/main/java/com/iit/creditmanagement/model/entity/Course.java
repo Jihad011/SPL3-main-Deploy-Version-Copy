@@ -83,9 +83,6 @@ public class Course {
 
     /** Returns true if this course still has available seats. */
     public boolean hasAvailableSeats() {
-        if (courseType == CourseType.CORE) {
-            return true;
-        }
         return currentEnrollment < maxSeats;
     }
 }

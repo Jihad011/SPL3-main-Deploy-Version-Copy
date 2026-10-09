@@ -51,7 +51,7 @@ class EnrollmentServiceTest {
         course = Course.builder()
                 .id(10L).code("MITM 303").name("Advanced Computer Networks & Internetworking")
                 .creditHours(3).courseType(CourseType.CORE)
-                .maxSeats(200).currentEnrollment(5).build();
+                .maxSeats(40).currentEnrollment(5).build();
 
         activeSemester = Semester.builder()
                 .id(1L).name(SemesterName.FIRST_SEMESTER).year(2026)

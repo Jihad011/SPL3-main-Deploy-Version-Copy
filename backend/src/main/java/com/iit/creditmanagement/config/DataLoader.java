@@ -214,7 +214,7 @@ public class DataLoader implements CommandLineRunner {
                         .semesterLevel(semesterLevel)
                         .track(track)
                         .description(desc)
-                        .maxSeats(200)
+                        .maxSeats(40)
                         .currentEnrollment(0)
                         .isActive(true)
                         .teacher(teacher)

@@ -46,9 +46,7 @@ public class CourseServiceImpl implements CourseService {
             throw new BusinessRuleException("Course code already exists: " + request.code());
         }
 
-        int maxSeats = (request.maxSeats() != null) ? request.maxSeats()
-                : (request.courseType() == CourseType.OPTIONAL
-                        ? AppConstants.MAX_SEATS_OPTIONAL_COURSE : 200);
+        int maxSeats = (request.maxSeats() != null) ? request.maxSeats() : AppConstants.MAX_SEATS_PER_COURSE;
 
         Course course = Course.builder()
                 .code(request.code())
