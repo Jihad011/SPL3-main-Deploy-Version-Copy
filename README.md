@@ -1,4 +1,4 @@
-# 🎓 MIT Open Credit Management System (OCMS)
+# MIT Open Credit Management System (OCMS)
 ### *Enterprise Student Lifecycle, Dynamic Credit Validation & Academic Governance Platform*
 
 <p align="center">
@@ -18,37 +18,37 @@
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [🏛️ Institutional Context & Project Overview](#️-institutional-context--project-overview)
-2. [🌟 Flagship Innovations & Core Features](#-flagship-innovations--core-features)
-   - [🆔 Dynamic Semester Roll ID System](#1--dynamic-semester-roll-id-generation-system)
-   - [⚡ Academic Governance & Credit Caps](#2--academic-governance--credit-capping-engine)
-   - [💳 Domain-Driven Event Billing & SSLCommerz](#3--domain-driven-event-billing--payment-integration)
-   - [📄 Official University Transcript Generation](#4--official-academic-transcript-generation)
-3. [📚 Active Curriculum & Course Catalog (3 Semesters)](#-active-curriculum--course-catalog-3-semesters)
-4. [🎯 University of Dhaka Standard Grading Scale](#-university-of-dhaka-standard-grading-scale)
-5. [🏛️ System Architecture & Data Model](#️-system-architecture--data-model)
+1. [Institutional Context and Project Overview](#institutional-context-and-project-overview)
+2. [Flagship Innovations and Core Features](#flagship-innovations-and-core-features)
+   - [Dynamic Semester Roll ID Generation System](#1-dynamic-semester-roll-id-generation-system)
+   - [Academic Governance and Credit Capping Engine](#2-academic-governance-and-credit-capping-engine)
+   - [Domain-Driven Event Billing and Payment Integration](#3-domain-driven-event-billing-and-payment-integration)
+   - [Official Academic Transcript Generation](#4-official-academic-transcript-generation)
+3. [Active Curriculum and Course Catalog (3 Semesters)](#active-curriculum-and-course-catalog-3-semesters)
+4. [University of Dhaka Standard Grading Scale](#university-of-dhaka-standard-grading-scale)
+5. [System Architecture and Data Model](#system-architecture-and-data-model)
    - [Layered Architecture Diagram](#layered-architecture)
    - [End-to-End Registration Flow Diagram](#end-to-end-registration-flow)
    - [Entity-Relationship Diagram (ERD)](#entity-relationship-diagram-erd)
-6. [🖥️ Portals & Functional Workspaces](#️-portals--functional-workspaces)
-   - [Student Portal](#-1-student-portal-modules)
-   - [Faculty Portal](#-2-faculty-teacher-portal-modules)
-   - [Administrator Portal](#-3-administrator-portal-modules)
-7. [🛠️ Complete Technology Stack](#️-complete-technology-stack)
-8. [🗄️ Database Migrations History (Flyway V1–V26)](#️-database-migrations-history-flyway-v1v26)
-9. [🛡️ Enterprise Security, Resilience & Observability](#️-enterprise-security-resilience--observability)
-10. [👥 Demo Credentials & Test Accounts](#-demo-credentials--test-accounts)
-11. [🚀 Quickstart & Local Installation Guide](#-quickstart--local-installation-guide)
-12. [🧪 Testing & Quality Assurance (84/84 Passing)](#-testing--quality-assurance-8484-passing)
-13. [📡 Comprehensive REST API Reference](#-comprehensive-rest-api-reference)
-14. [❓ Frequently Asked Questions & Troubleshooting](#-frequently-asked-questions--troubleshooting)
-15. [🏛️ Academic Attribution & Project Supervision](#️-academic-attribution--project-supervision)
+6. [Portals and Functional Workspaces](#portals-and-functional-workspaces)
+   - [Student Portal Modules](#1-student-portal-modules)
+   - [Faculty Portal Modules](#2-faculty-teacher-portal-modules)
+   - [Administrator Portal Modules](#3-administrator-portal-modules)
+7. [Complete Technology Stack](#complete-technology-stack)
+8. [Database Migrations History (Flyway V1-V26)](#database-migrations-history-flyway-v1-v26)
+9. [Enterprise Security, Resilience and Observability](#enterprise-security-resilience-and-observability)
+10. [Demo Credentials and Test Accounts](#demo-credentials-and-test-accounts)
+11. [Quickstart and Local Installation Guide](#quickstart-and-local-installation-guide)
+12. [Testing and Quality Assurance (84/84 Passing)](#testing-and-quality-assurance-8484-passing)
+13. [Comprehensive REST API Reference](#comprehensive-rest-api-reference)
+14. [Frequently Asked Questions and Troubleshooting](#frequently-asked-questions-and-troubleshooting)
+15. [Academic Attribution and Project Supervision](#academic-attribution-and-project-supervision)
 
 ---
 
-## 🏛️ Institutional Context & Project Overview
+## Institutional Context and Project Overview
 
 Developed for the **Institute of Information Technology (IIT), University of Dhaka** as the flagship **8th Semester Software Project Lab 3 (SPL-3)** capstone project, the **MIT Open Credit Management System (OCMS)** is an enterprise academic lifecycle, curriculum governance, and credit validation platform.
 
@@ -64,15 +64,17 @@ The **MIT OCMS** addresses these challenges through a modern, reactive Single Pa
 
 ---
 
-## 🌟 Flagship Innovations & Core Features
+## Flagship Innovations and Core Features
 
-### 1. 🆔 Dynamic Semester Roll ID Generation System
+### 1. Dynamic Semester Roll ID Generation System
 
 The system dynamically derives an immutable, university-standard semester roll identifier for every enrolled student in every term conforming to a 5-component concatenation schema:
 
-$$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf{ClassRoll}$$
+```text
+YY + TermCode + TermType + Batch + ClassRoll
+```
 
-#### 🧩 Semester Roll Component Breakdown:
+#### Semester Roll Component Breakdown
 
 | Component | Format | Description | Accepted / Generated Values |
 | :--- | :---: | :--- | :--- |
@@ -82,7 +84,7 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 | **`Batch`** | 2 Digits | Program Cohort Number | `14` (Batch 14), `02` (Batch 2) |
 | **`ClassRoll`** | 2 Digits | Student Roll Number | `13` (Roll 13), `04` (Roll 04) |
 
-#### 📋 Semester Roll Variations for Student 1413 (Batch 14, Roll 13):
+#### Semester Roll Variations for Student 1413 (Batch 14, Roll 13)
 
 | Academic Semester Level | Intake Cycle | Year | Derived Semester Roll | Meaning |
 | :--- | :--- | :---: | :---: | :--- |
@@ -93,7 +95,7 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 | **Third Semester** | **Spring** | 2026 | **`26TS1413`** | Year 2026, 3rd Term, Spring Intake, Batch 14, Roll 13 |
 | **Third Semester** | **Fall** | 2026 | **`26TF1413`** | Year 2026, 3rd Term, Fall Intake, Batch 14, Roll 13 |
 
-#### 🔍 Universal Roll Number Regex Matching Engine:
+#### Universal Roll Number Regex Matching Engine
 
 ```regex
 ^(\d{2})([SFT123])([SF]?)([0-9]{2})(\d{2,4})$
@@ -103,12 +105,12 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 | :--- | :--- | :--- | :---: | :---: |
 | **New 5-Part Dynamic** | `26FS1413` | Year `26`, Term `F`, Intake `S`, Batch `14`, Roll `13` | `14` | `13` |
 | **Legacy 4-Part Dynamic**| `26S0204` | Year `26`, Term `S`, Intake `null`, Batch `02`, Roll `04` | `2` | `4` |
-| **Legacy BSSE Format** | `BSSE1204` | `^BSSE(\d{2})(\d{2})$` $\rightarrow$ Batch `12`, Roll `04` | `12` | `4` |
-| **Standard 4-Digit Roll**| `1413` | `^(\d{2})(\d{2})$` $\rightarrow$ Batch `14`, Roll `13` | `14` | `13` |
+| **Legacy BSSE Format** | `BSSE1204` | `^BSSE(\d{2})(\d{2})$` -> Batch `12`, Roll `04` | `12` | `4` |
+| **Standard 4-Digit Roll**| `1413` | `^(\d{2})(\d{2})$` -> Batch `14`, Roll `13` | `14` | `13` |
 
 ---
 
-### 2. ⚡ Academic Governance & Credit Capping Engine
+### 2. Academic Governance and Credit Capping Engine
 
 | Policy | Academic Rule | Technical Enforcement | Failure Handling |
 | :--- | :--- | :--- | :--- |
@@ -119,7 +121,7 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 
 ---
 
-### 3. 💳 Domain-Driven Event Billing & Payment Integration
+### 3. Domain-Driven Event Billing and Payment Integration
 
 | Fee Category | Institutional Rate | Billing Trigger | Processing Mode |
 | :--- | :--- | :--- | :--- |
@@ -130,7 +132,7 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 
 ---
 
-### 4. 📄 Official Academic Transcript Generation
+### 4. Official Academic Transcript Generation
 
 | Transcript Component | Data Source | Calculation / Processing Standard | Output Format |
 | :--- | :--- | :--- | :--- |
@@ -141,11 +143,11 @@ $$\mathbf{YY} + \mathbf{TermCode} + \mathbf{TermType} + \mathbf{Batch} + \mathbf
 
 ---
 
-## 📚 Active Curriculum & Course Catalog (3 Semesters)
+## Active Curriculum and Course Catalog (3 Semesters)
 
 The active curriculum for the **Executive Master in Information Technology (EMIT)** program is organized into 3 distinct progression levels:
 
-### 📗 First Semester (12 Credits Total — All Mandatory Core)
+### First Semester (12 Credits Total - All Mandatory Core)
 | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
 | :--- | :--- | :---: | :---: | :--- |
 | **`MITM 303`** | Advanced Computer Networks & Internetworking | 3 | Core | **Dr. Md. Shariful Islam** (Professor) |
@@ -153,7 +155,7 @@ The active curriculum for the **Executive Master in Information Technology (EMIT
 | **`MITM 310`** | Advanced Data Structures and Algorithms | 3 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
 | **`MITM 311`** | Advanced Object-Oriented Programming | 3 | Core | **Dr. B. M. Mainul Hossain** (Professor) |
 
-### 📘 Second Semester (12 Credits Max — Core + Technical Electives)
+### Second Semester (12 Credits Max - Core + Technical Electives)
 | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
 | :--- | :--- | :---: | :---: | :--- |
 | **`MITM 301`** | IT Project Management | 3 | Core | **Md. Saeed Siddik** |
@@ -163,7 +165,7 @@ The active curriculum for the **Executive Master in Information Technology (EMIT
 | **`MITE 430`** | Machine Learning | 3 | Elective | Faculty Assigned |
 | **`MITE 434`** | Software Quality Assurance and Testing | 3 | Elective | Faculty Assigned |
 
-### 📙 Third Semester (12 Credits Max — Capstone + Electives)
+### Third Semester (12 Credits Max - Capstone + Electives)
 | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
 | :--- | :--- | :---: | :---: | :--- |
 | **`MITM 421`** | Project for MIT / Internship | 6 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
@@ -175,7 +177,7 @@ The active curriculum for the **Executive Master in Information Technology (EMIT
 
 ---
 
-## 🎯 University of Dhaka Standard Grading Scale
+## University of Dhaka Standard Grading Scale
 
 As implemented in [`GradeLetter.java`](file:///d:/8th%20Semester/SPL3-main-Deploy-Version-Copy/backend/src/main/java/com/iit/creditmanagement/model/enums/GradeLetter.java) and verified by [`GradeCalculatorTest.java`](file:///d:/8th%20Semester/SPL3-main-Deploy-Version-Copy/backend/src/test/java/com/iit/creditmanagement/unit/util/GradeCalculatorTest.java):
 
@@ -192,11 +194,13 @@ As implemented in [`GradeLetter.java`](file:///d:/8th%20Semester/SPL3-main-Deplo
 | **40% to 44%** | **D** | **2.00** | Pass | Passed |
 | **Below 40%** | **F** | **0.00** | Fail | Retake Required |
 
-$$\text{SGPA / CGPA} = \frac{\sum (\text{Grade Point}_i \times \text{Credit Hours}_i)}{\sum \text{Credit Hours}_i}$$
+```text
+SGPA / CGPA = SUM(Grade Point * Credit Hours) / SUM(Credit Hours)
+```
 
 ---
 
-## 🏛️ System Architecture & Data Model
+## System Architecture and Data Model
 
 ### Layered Architecture
 
@@ -367,9 +371,9 @@ erDiagram
 
 ---
 
-## 🖥️ Portals & Functional Workspaces
+## Portals and Functional Workspaces
 
-### 🎓 1. Student Portal Modules
+### 1. Student Portal Modules
 
 | Module Name | Path | Key Capabilities | Technical Highlights |
 | :--- | :--- | :--- | :--- |
@@ -382,7 +386,7 @@ erDiagram
 
 ---
 
-### 👨‍🏫 2. Faculty (Teacher) Portal Modules
+### 2. Faculty (Teacher) Portal Modules
 
 | Module Name | Path | Key Capabilities | Technical Highlights |
 | :--- | :--- | :--- | :--- |
@@ -394,7 +398,7 @@ erDiagram
 
 ---
 
-### 🛡️ 3. Administrator Portal Modules
+### 3. Administrator Portal Modules
 
 | Module Name | Path | Key Capabilities | Technical Highlights |
 | :--- | :--- | :--- | :--- |
@@ -407,7 +411,7 @@ erDiagram
 
 ---
 
-## 🛠️ Complete Technology Stack
+## Complete Technology Stack
 
 | Architectural Layer | Technology / Library | Version | Technical Role in Project |
 | :--- | :--- | :---: | :--- |
@@ -435,7 +439,7 @@ erDiagram
 
 ---
 
-## 🗄️ Database Migrations History (Flyway V1–V26)
+## Database Migrations History (Flyway V1-V26)
 
 All database schema evolutions are versioned and reproducible in `backend/src/main/resources/db/migration`:
 
@@ -470,14 +474,14 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 
 ---
 
-## 🛡️ Enterprise Security, Resilience & Observability
+## Enterprise Security, Resilience and Observability
 
-### 🔐 1. Security Architecture (Spring Security 6 + JJWT)
+### 1. Security Architecture (Spring Security 6 + JJWT)
 * **Stateless Token Authentication**: Requests require a signed HMAC-SHA256 Bearer JWT token in the `Authorization` header.
 * **Role-Based Access Control (RBAC)**: Endpoint methods are strictly guarded using `@PreAuthorize("hasRole('STUDENT')")`, `@PreAuthorize("hasRole('TEACHER')")`, or `@PreAuthorize("hasRole('ADMIN')")`.
 * **CORS & CSRF Defense**: Origin-validated CORS gateway with disabled CSRF for stateless REST execution.
 
-### 🛡️ 2. Fault Tolerance (Resilience4j + Caffeine)
+### 2. Fault Tolerance (Resilience4j + Caffeine)
 * **Circuit Breakers**: Configured on critical notification and grading services with automatic fallback handling:
   * Sliding window size: `10` calls.
   * Failure rate threshold: `50%`.
@@ -485,21 +489,21 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 * **Automated Retries**: 3 automatic retry attempts with exponential backoff on transient failures.
 * **Multi-Tier Caching**: Caffeine high-performance in-memory caching (`maximumSize=1000`, `expireAfterWrite=15m`) caching active semester calendars and course catalogs.
 
-### 📊 3. Observability & Traffic Defense (Actuator + Bucket4j)
+### 3. Observability and Traffic Defense (Actuator + Bucket4j)
 * **Token Bucket Rate Limiting**: Defends authentication and registration APIs against denial-of-service spikes.
 * **SLF4J MDC Correlation Tracking**: Every request generates a unique UUID `correlationId` injected into request logs for distributed tracing.
 * **Spring Boot Actuator**: Health, info, and Prometheus metrics exposed beneath `/api/actuator`.
 
 ---
 
-## 👥 Demo Credentials & Test Accounts
+## Demo Credentials and Test Accounts
 
-### 👑 System Administrator
+### System Administrator
 | Role | Email | Password | Access Level |
 | :--- | :--- | :--- | :--- |
 | **System Admin** | `admin@iit.du.ac.bd` | `Admin@123` | Full System Governance & Clearance |
 
-### 👨‍🏫 First Semester Faculty Accounts
+### First Semester Faculty Accounts
 | Course Code | Course Title | Faculty Name | Institutional Email | Password |
 | :--- | :--- | :--- | :--- | :--- |
 | **MITM 303** | Advanced Computer Networks & Internetworking | Dr. Md. Shariful Islam | `shariful@iit.du.ac.bd` | `Shariful@303` |
@@ -507,7 +511,7 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 | **MITM 310** | Advanced Data Structures and Algorithms | Dr. Ahmedul Kabir | `ahmedul.kabir@iit.du.ac.bd` | `Ahmedul@310` |
 | **MITM 311** | Advanced Object-Oriented Programming | Dr. B. M. Mainul Hossain | `mainul@iit.du.ac.bd` | `Mainul@311` |
 
-### 🎓 Sample Student Accounts (Default Password: `Student@123`)
+### Sample Student Accounts (Default Password: `Student@123`)
 | Roll No | Dynamic Term Roll (1st Sem) | Student Name | Institutional Email | Cohort / Batch |
 | :---: | :---: | :--- | :--- | :---: |
 | **1413** | **`26FS1413`** | Md. Jihad Hossain | `jihad@iit.du.ac.bd` | Batch 14 |
@@ -518,9 +522,9 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 
 ---
 
-## 🚀 Quickstart & Local Installation Guide
+## Quickstart and Local Installation Guide
 
-### 📋 Prerequisites & Compatibility Matrix
+### Prerequisites and Compatibility Matrix
 
 | Dependency | Required Version | Verification Command |
 | :--- | :---: | :--- |
@@ -532,7 +536,7 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 
 ---
 
-### ⚙️ Step-by-Step Setup
+### Step-by-Step Setup
 
 #### 1. Database Creation
 Create the target database in PostgreSQL:
@@ -565,14 +569,14 @@ ng serve --open       # Starts dev server on http://localhost:4200
 
 ---
 
-## 🧪 Testing & Quality Assurance (84/84 Passing)
+## Testing and Quality Assurance (84/84 Passing)
 
 ```bash
 cd backend
 mvn test
 ```
 
-### 📊 Test Suite Execution Results:
+### Test Suite Execution Results
 
 | Metric | Result |
 | :--- | :---: |
@@ -582,7 +586,7 @@ mvn test
 | **Skipped** | **0** |
 | **Build Status** | **BUILD SUCCESS** |
 
-#### 🔬 Test Class Breakdown:
+#### Test Class Breakdown
 
 | Test Class | Package | Tested Responsibilities | Result |
 | :--- | :--- | :--- | :---: |
@@ -601,7 +605,7 @@ mvn test
 
 ---
 
-## 📡 Comprehensive REST API Reference
+## Comprehensive REST API Reference
 
 | HTTP Method | Endpoint | Allowed Roles | Request Payload / Params | Response DTO | Purpose |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -619,7 +623,7 @@ mvn test
 
 ---
 
-## ❓ Frequently Asked Questions & Troubleshooting
+## Frequently Asked Questions and Troubleshooting
 
 ### Q1: What should I do if port 8080 is already in use?
 In PowerShell, locate and terminate the process holding port 8080:
@@ -632,16 +636,16 @@ Flyway is configured with `spring.flyway.baseline-on-migrate=true` and `spring.f
 
 ### Q3: How is student `1413`'s Semester Roll calculated?
 Student `1413` has base roll `1413` (Batch 14, Roll 13). When enrolled in 1st Semester under Spring intake in 2026, the `StudentRollHelper` evaluates:
-* Year: `2026 % 100` $\rightarrow$ `26`
-* Term: `FIRST_SEMESTER` $\rightarrow$ `F`
-* Intake: `Spring` $\rightarrow$ `S`
+* Year: `2026 % 100` -> `26`
+* Term: `FIRST_SEMESTER` -> `F`
+* Intake: `Spring` -> `S`
 * Batch: `14`
 * Roll: `13`
 * **Output:** `26FS1413`.
 
 ---
 
-## 🏛️ Academic Attribution & Project Supervision
+## Academic Attribution and Project Supervision
 
 | Academic Role | Name & Title | Institutional Designation & Affiliation |
 | :--- | :--- | :--- |
@@ -657,7 +661,7 @@ Student `1413` has base roll `1413` (Batch 14, Roll 13). When enrolled in 1st Se
 <p align="center">
   <b>Institute of Information Technology (IIT), University of Dhaka</b><br>
   <b>Project:</b> MIT Open Credit Management System (OCMS) — Software Project Lab III (SPL-3)<br>
-  👨‍🏫 <b>Supervised by:</b> Dr. Md. Nurul Ahad Tawhid, Associate Professor, IIT, University of Dhaka<br>
-  🎓 <b>Developed by:</b> Md. Jihad Hossain (Roll: BSSE-1413 / Batch: 14)<br>
+  <b>Supervised by:</b> Dr. Md. Nurul Ahad Tawhid, Associate Professor, IIT, University of Dhaka<br>
+  <b>Developed by:</b> Md. Jihad Hossain (Roll: BSSE-1413 / Batch: 14)<br>
   <i>Empowering Academic Governance Through Software Engineering Excellence</i>
 </p>
