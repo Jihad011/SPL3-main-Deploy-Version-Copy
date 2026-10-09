@@ -121,7 +121,6 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
     private StudentHistoryResponse buildHistoryResponse(User student) {
         int classRoll = StudentRollHelper.extractClassRoll(student);
         Semester activeSemester = semesterRepository.findActiveSemester().orElse(null);
-        String currentSemesterRoll = StudentRollHelper.deriveSemesterRoll(student, activeSemester);
 
         // Fetch all semesters sorted chronologically
         List<Semester> allSemesters = semesterRepository.findAll(Sort.by(Sort.Direction.ASC, "startDate", "id"));
@@ -147,6 +146,21 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
             }
         }
 
+        // Determine intake type for active semester roll ID
+        String activeIntakeType = null;
+        if (activeSemester != null) {
+            List<Enrollment> activeSemEnrollments = enrollmentsBySemester.get(activeSemester.getId());
+            if (activeSemEnrollments != null && !activeSemEnrollments.isEmpty()) {
+                for (Enrollment e : activeSemEnrollments) {
+                    if (e.getIntakeType() != null && !e.getIntakeType().isBlank()) {
+                        activeIntakeType = e.getIntakeType();
+                        break;
+                    }
+                }
+            }
+        }
+        String currentSemesterRoll = StudentRollHelper.deriveSemesterRoll(student, activeSemester, activeIntakeType);
+
         // Find index of first enrolled semester
         int firstEnrolledIndex = -1;
         for (int i = 0; i < allSemesters.size(); i++) {
@@ -168,7 +182,17 @@ public class StudentHistoryServiceImpl implements StudentHistoryService {
         for (int i = 0; i < allSemesters.size(); i++) {
             Semester sem = allSemesters.get(i);
             List<Enrollment> semEnrollments = enrollmentsBySemester.getOrDefault(sem.getId(), List.of());
-            String semRollId = StudentRollHelper.deriveSemesterRoll(student, sem);
+            
+            String semIntakeType = null;
+            if (!semEnrollments.isEmpty()) {
+                for (Enrollment e : semEnrollments) {
+                    if (e.getIntakeType() != null && !e.getIntakeType().isBlank()) {
+                        semIntakeType = e.getIntakeType();
+                        break;
+                    }
+                }
+            }
+            String semRollId = StudentRollHelper.deriveSemesterRoll(student, sem, semIntakeType);
 
             if (semEnrollments.isEmpty()) {
                 // If this semester is after the student started their program, it's a gap semester!

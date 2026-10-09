@@ -11,8 +11,8 @@ public final class StudentRollHelper {
 
     private StudentRollHelper() {}
 
-    // Pattern for Dynamic Semester Roll: e.g. 26S0204, 26F0204, 26T0204
-    private static final Pattern DYNAMIC_ROLL_PATTERN = Pattern.compile("^(\\d{2})([SFT123])(\\d{2})(\\d{2,4})$", Pattern.CASE_INSENSITIVE);
+    // Pattern for Dynamic Semester Roll: e.g. 26FS1413, 26FF1413, 26S0204, 26F0204, 26T0204
+    private static final Pattern DYNAMIC_ROLL_PATTERN = Pattern.compile("^(\\d{2})([SFT123])([SF]?)([0-9]{2})(\\d{2,4})$", Pattern.CASE_INSENSITIVE);
     
     // Pattern for Legacy BSSE Roll: e.g. BSSE1204
     private static final Pattern BSSE_ROLL_PATTERN = Pattern.compile("^BSSE(\\d{2})(\\d{2})$", Pattern.CASE_INSENSITIVE);
@@ -21,35 +21,76 @@ public final class StudentRollHelper {
     private static final Pattern FOUR_DIGIT_ROLL_PATTERN = Pattern.compile("^(\\d{2})(\\d{2})$");
 
     /**
-     * Formats a dynamic semester roll ID conforming to:
-     * [2-digit year] + [Term code 'S'/'F'] + [2-digit batch] + [2-digit class roll]
-     * E.g. (2026, SPRING, 2, 4) -> "26S0204"
+     * Resolves single-character Term Type code ('S' for Spring, 'F' for Fall).
      */
-    public static String formatSemesterRoll(int year, SemesterName term, Integer batch, Integer classRoll) {
-        int yearTwoDigit = Math.abs(year) % 100;
-        String termCode = (term == SemesterName.THIRD_SEMESTER) ? "T" : ((term == SemesterName.SECOND_SEMESTER) ? "S" : "F");
-        int safeBatch = (batch != null && batch > 0) ? (batch > 99 ? batch % 100 : batch) : 1;
-        int safeRoll = (classRoll != null && classRoll > 0) ? (classRoll > 99 ? classRoll % 100 : classRoll) : 1;
-
-        return String.format("%02d%s%02d%02d", yearTwoDigit, termCode, safeBatch, safeRoll);
+    public static String resolveTermTypeCode(String intakeType) {
+        if (intakeType == null || intakeType.isBlank()) {
+            return "S";
+        }
+        String clean = intakeType.trim().toUpperCase();
+        if (clean.startsWith("F")) {
+            return "F";
+        }
+        return "S";
     }
 
     /**
-     * Derives the semester-specific roll ID for a student in a given semester.
+     * Formats a dynamic semester roll ID conforming to:
+     * [2-digit year] + [Term code 'F'/'S'/'T'] + [Term type 'S'/'F'] + [2-digit batch] + [2-digit class roll]
+     * E.g. (2026, FIRST_SEMESTER, "Spring", 14, 13) -> "26FS1413"
+     * E.g. (2026, FIRST_SEMESTER, "Fall", 14, 13)   -> "26FF1413"
+     * E.g. (2026, SECOND_SEMESTER, "Spring", 14, 13)-> "26SS1413"
      */
-    public static String deriveSemesterRoll(User student, Semester semester) {
+    public static String formatSemesterRoll(int year, SemesterName term, String intakeType, Integer batch, Integer classRoll) {
+        int yearTwoDigit = Math.abs(year) % 100;
+        String termCode = (term == SemesterName.THIRD_SEMESTER) ? "T" : ((term == SemesterName.SECOND_SEMESTER) ? "S" : "F");
+        String termTypeCode = resolveTermTypeCode(intakeType);
+        int safeBatch = (batch != null && batch > 0) ? (batch > 99 ? batch % 100 : batch) : 1;
+        int safeRoll = (classRoll != null && classRoll > 0) ? (classRoll > 99 ? classRoll % 100 : classRoll) : 1;
+
+        return String.format("%02d%s%s%02d%02d", yearTwoDigit, termCode, termTypeCode, safeBatch, safeRoll);
+    }
+
+    /**
+     * Formats a dynamic semester roll ID defaulting intake type to Spring.
+     * E.g. (2026, FIRST_SEMESTER, 14, 13) -> "26FS1413"
+     */
+    public static String formatSemesterRoll(int year, SemesterName term, Integer batch, Integer classRoll) {
+        return formatSemesterRoll(year, term, "Spring", batch, classRoll);
+    }
+
+    /**
+     * Derives the semester-specific roll ID for a student in a given semester and intake type.
+     */
+    public static String deriveSemesterRoll(User student, Semester semester, String intakeType) {
         if (student == null) return "N/A";
         int classRoll = extractClassRoll(student);
         int batch = extractBatch(student);
 
+        String effectiveIntake = intakeType;
+        if (effectiveIntake == null || effectiveIntake.isBlank()) {
+            if (semester != null && semester.getStartDate() != null && semester.getStartDate().getMonthValue() >= 7) {
+                effectiveIntake = "Fall";
+            } else {
+                effectiveIntake = "Spring";
+            }
+        }
+
         if (semester == null) {
             int currentYear = java.time.LocalDate.now().getYear();
-            return formatSemesterRoll(currentYear, SemesterName.FIRST_SEMESTER, batch, classRoll);
+            return formatSemesterRoll(currentYear, SemesterName.FIRST_SEMESTER, effectiveIntake, batch, classRoll);
         }
 
         int year = (semester.getYear() != null) ? semester.getYear() : java.time.LocalDate.now().getYear();
         SemesterName term = (semester.getName() != null) ? semester.getName() : SemesterName.FIRST_SEMESTER;
-        return formatSemesterRoll(year, term, batch, classRoll);
+        return formatSemesterRoll(year, term, effectiveIntake, batch, classRoll);
+    }
+
+    /**
+     * Derives the semester-specific roll ID for a student in a given semester (defaulting intake from semester start date).
+     */
+    public static String deriveSemesterRoll(User student, Semester semester) {
+        return deriveSemesterRoll(student, semester, null);
     }
 
     /**
@@ -64,7 +105,7 @@ public final class StudentRollHelper {
             Matcher dynMatcher = DYNAMIC_ROLL_PATTERN.matcher(roll);
             if (dynMatcher.matches()) {
                 try {
-                    return Integer.parseInt(dynMatcher.group(3));
+                    return Integer.parseInt(dynMatcher.group(4));
                 } catch (NumberFormatException ignored) {}
             }
 
@@ -97,11 +138,11 @@ public final class StudentRollHelper {
         if (student == null || student.getRollNumber() == null) return 1;
         String roll = student.getRollNumber().trim();
 
-        // Check Dynamic Roll Pattern: e.g. 26S0204 -> Class Roll is 04
+        // Check Dynamic Roll Pattern: e.g. 26FS1413 -> Class Roll is 13; 26S0204 -> Class Roll is 04
         Matcher dynMatcher = DYNAMIC_ROLL_PATTERN.matcher(roll);
         if (dynMatcher.matches()) {
             try {
-                return Integer.parseInt(dynMatcher.group(4));
+                return Integer.parseInt(dynMatcher.group(5));
             } catch (NumberFormatException ignored) {}
         }
 
@@ -136,7 +177,11 @@ public final class StudentRollHelper {
     /**
      * Parsed roll components for query resolution.
      */
-    public record ParsedRoll(Integer year, String term, Integer batch, Integer classRoll, String rawInput) {}
+    public record ParsedRoll(Integer year, String term, String intakeType, Integer batch, Integer classRoll, String rawInput) {
+        public ParsedRoll(Integer year, String term, Integer batch, Integer classRoll, String rawInput) {
+            this(year, term, null, batch, classRoll, rawInput);
+        }
+    }
 
     /**
      * Attempts to parse an input search string into its constituent roll components.
@@ -150,25 +195,26 @@ public final class StudentRollHelper {
             int yr = Integer.parseInt(dynMatcher.group(1));
             int fullYear = yr >= 70 ? 1900 + yr : 2000 + yr;
             String term = dynMatcher.group(2).toUpperCase();
-            int batch = Integer.parseInt(dynMatcher.group(3));
-            int roll = Integer.parseInt(dynMatcher.group(4));
-            return new ParsedRoll(fullYear, term, batch, roll, clean);
+            String intakeType = (dynMatcher.group(3) != null && !dynMatcher.group(3).isBlank()) ? dynMatcher.group(3).toUpperCase() : null;
+            int batch = Integer.parseInt(dynMatcher.group(4));
+            int roll = Integer.parseInt(dynMatcher.group(5));
+            return new ParsedRoll(fullYear, term, intakeType, batch, roll, clean);
         }
 
         Matcher bsseMatcher = BSSE_ROLL_PATTERN.matcher(clean);
         if (bsseMatcher.matches()) {
             int batch = Integer.parseInt(bsseMatcher.group(1));
             int roll = Integer.parseInt(bsseMatcher.group(2));
-            return new ParsedRoll(null, null, batch, roll, clean);
+            return new ParsedRoll(null, null, null, batch, roll, clean);
         }
 
         Matcher fourMatcher = FOUR_DIGIT_ROLL_PATTERN.matcher(clean);
         if (fourMatcher.matches()) {
             int batch = Integer.parseInt(fourMatcher.group(1));
             int roll = Integer.parseInt(fourMatcher.group(2));
-            return new ParsedRoll(null, null, batch, roll, clean);
+            return new ParsedRoll(null, null, null, batch, roll, clean);
         }
 
-        return new ParsedRoll(null, null, null, null, clean);
+        return new ParsedRoll(null, null, null, null, null, clean);
     }
 }
