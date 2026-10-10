@@ -124,8 +124,8 @@ YY + TermCode + TermType + Batch + ClassRoll
 
 | Fee Category | Institutional Rate | Billing Trigger | Processing Mode |
 | :--- | :--- | :--- | :--- |
-| **Semester Registration Fee**| Base Tuition (BDT 15,000–25,000) | Initial term activation | Synchronous invoice generation |
-| **Gap Semester Fine** | **BDT 10,000** per un-enrolled term | Detected when student skips a chronological term post-matriculation | Asynchronous domain event evaluation (`CourseEnrolledEvent`) |
+| **Semester Registration Fee**| Base Tuition (BDT 10,000–15,000) | Initial term activation | Synchronous invoice generation |
+| **Gap Semester Fine** | **BDT 5,000** per un-enrolled term | Detected when student skips a chronological term post-matriculation | Asynchronous domain event evaluation (`CourseEnrolledEvent`) |
 | **Course Retake Fee** | **BDT 500** per credit hour | Flagged when student re-registers a previously taken course | Handled via `@TransactionalEventListener(phase = AFTER_COMMIT)` |
 | **Online Payment Gateway** | Exact Invoice Total (BDT) | Initiated via Student Portal Checkout button | **SSLCommerz Sandbox Gateway** (IPN callback confirmation) |
 
