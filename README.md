@@ -55,7 +55,7 @@ Developed for the **Institute of Information Technology (IIT), University of Dha
 Traditional university enterprise resource planning (ERP) systems operate on rigid, synchronous semester models. In contrast, modern specialized graduate and undergraduate programs (such as IIT's Evening MIT and BSSE curricula) feature flexible, multi-intake pathways:
 * Students may enroll across multiple intake cycles (**Spring or Fall**).
 * Course registrations must respect a strict **12-credit ceiling per term** and a **40-student seat limit per course section**.
-* Skipped terms must be audited for institutional **gap penalties (BDT 10,000)**.
+* Skipped terms must be audited for institutional **gap penalties (BDT 5,000)**.
 * Repeat enrollments must automatically generate **retake invoices (BDT 500 per credit)**.
 * Students require immediate, on-demand official **academic transcripts** with accurate Grade Point Average (GPA) calculations.
 
