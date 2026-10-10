@@ -1,0 +1,78 @@
+========================================================================================
+MIT OPEN CREDIT MANAGEMENT SYSTEM (OCMS) - COMPLETE USERS, IDS & CREDENTIALS DIRECTORY
+========================================================================================
+
+1. SYSTEM ADMINISTRATOR ACCOUNT
+----------------------------------------------------------------------------------------
+Role:        SYSTEM ADMIN
+Name:        System Administrator
+Email:       admin@iit.du.ac.bd
+Password:    Admin@123
+Permissions: Full System Governance, Student & Faculty Provisioning, Clearance Approval
+
+
+2. FACULTY & TEACHER DIRECTORY (11 FACULTY MEMBERS)
+----------------------------------------------------------------------------------------
+Default Faculty Password:  Teacher@123
+(Individual specialized course passwords also supported below)
+
+ID  | Faculty Name                 | Designation          | Institutional Email        | Password       | Assigned Course(s)
+----+------------------------------+----------------------+----------------------------+----------------+---------------------------------------------------
+1   | Dr. Md. Shariful Islam       | Professor            | shariful@iit.du.ac.bd      | Shariful@303   | MITM 303: Advanced Computer Networks & Internetworking
+2   | Mohammed Shoyaib             | Professor            | shoyaib@iit.du.ac.bd       | Shoyaib@304    | MITM 304: Database Architecture & Administration; MITE 437: Data Mining
+3   | Dr. Ahmedul Kabir            | Associate Professor  | ahmedul.kabir@iit.du.ac.bd | Ahmedul@310    | MITM 310: Advanced Data Structures & Algorithms; MITM 421: Capstone; MITE 436: AI
+4   | Dr. B. M. Mainul Hossain     | Professor            | mainul@iit.du.ac.bd        | Mainul@311     | MITM 311: Advanced Object-Oriented Programming; MITE 430: ML; MITE 431: Big Data
+5   | Dr. Md. Nurul Ahad Tawhid    | Associate Professor  | tawhid@iit.du.ac.bd        | Teacher@123    | MITM 305: Web Technology and Internet Computing
+6   | Md. Saeed Siddik             | Assistant Professor  | saeed@iit.du.ac.bd         | Teacher@123    | MITM 301: IT Project Management; MITE 434: SQA & Testing
+7   | Toukir Ahammed               | Lecturer             | toukir@iit.du.ac.bd        | Teacher@123    | MITE 435: Software Design Pattern; MITE 441: Maintenance & Analytics
+8   | Dr. Kazi Muheymin-Us-Sakib   | Professor            | sakib@iit.du.ac.bd         | Teacher@123    | MITE 439: Software Requirements Engineering & Design
+9   | Dr. Zerina Begum             | Professor            | zerina@iit.du.ac.bd        | Teacher@123    | Faculty Assigned
+10  | Dr. Emon Kumar Dey           | Assistant Professor  | emon@iit.du.ac.bd          | Teacher@123    | Natural Language Processing (Elective)
+
+
+3. STUDENT ACCOUNTS (40 ENROLLED STUDENTS)
+----------------------------------------------------------------------------------------
+Universal Default Student Password:  Student@123
+
+ID  | Roll No  | Dynamic Sem Roll | Student Name             | Institutional Email            | Registration No   | Batch
+----+----------+------------------+--------------------------+--------------------------------+-------------------+-------
+3   | 1413     | 26FS1413         | Md. Jihad Hossain        | jihad@iit.du.ac.bd             | REG-2021-1413     | 14
+5   | BSSE1201 | 26FS0201         | Arefin Shuvo             | student_bsse1201@iit.du.ac.bd  | REG-2021-BSSE1201 | 2
+6   | BSSE1202 | 26FS0202         | Tanvir Ahmed             | student_bsse1202@iit.du.ac.bd  | REG-2021-BSSE1202 | 2
+7   | BSSE1203 | 26FS0203         | Sakib Al Hasan           | student_bsse1203@iit.du.ac.bd  | REG-2021-BSSE1203 | 2
+8   | BSSE1204 | 26FS0204         | Nusrat Jahan             | student_bsse1204@iit.du.ac.bd  | REG-2021-BSSE1204 | 2
+9   | BSSE1205 | 26FS0205         | Mehedi Hasan             | student_bsse1205@iit.du.ac.bd  | REG-2021-BSSE1205 | 2
+10  | BSSE1206 | 26FS0206         | Farhana Akter            | student_bsse1206@iit.du.ac.bd  | REG-2021-BSSE1206 | 2
+11  | BSSE1207 | 26FS0207         | Sabbir Rahman            | student_bsse1207@iit.du.ac.bd  | REG-2021-BSSE1207 | 2
+12  | BSSE1208 | 26FS0208         | Anika Tabassum           | student_bsse1208@iit.du.ac.bd  | REG-2021-BSSE1208 | 2
+13  | BSSE1209 | 26FS0209         | Mahmudul Hasan           | student_bsse1209@iit.du.ac.bd  | REG-2021-BSSE1209 | 2
+14  | BSSE1210 | 26FS0210         | Tasnim Rahman            | student_bsse1210@iit.du.ac.bd  | REG-2021-BSSE1210 | 2
+15  | BSSE1211 | 26FS0211         | Rifat Hossain            | student_bsse1211@iit.du.ac.bd  | REG-2021-BSSE1211 | 2
+16  | BSSE1212 | 26FS0212         | Samiul Islam             | student_bsse1212@iit.du.ac.bd  | REG-2021-BSSE1212 | 2
+17  | BSSE1213 | 26FS0213         | Nazmul Huda              | student_bsse1213@iit.du.ac.bd  | REG-2021-BSSE1213 | 2
+18  | BSSE1214 | 26FS0214         | Sumaiya Akter            | student_bsse1214@iit.du.ac.bd  | REG-2021-BSSE1214 | 2
+19  | BSSE1215 | 26FS0215         | Shahriar Kabir           | student_bsse1215@iit.du.ac.bd  | REG-2021-BSSE1215 | 2
+20  | BSSE1216 | 26FS0216         | Arifur Rahman            | student_bsse1216@iit.du.ac.bd  | REG-2021-BSSE1216 | 2
+21  | BSSE1217 | 26FS0217         | Sharmin Sultana          | student_bsse1217@iit.du.ac.bd  | REG-2021-BSSE1217 | 2
+22  | BSSE1218 | 26FS0218         | Fahim Faysal             | student_bsse1218@iit.du.ac.bd  | REG-2021-BSSE1218 | 2
+23  | BSSE1219 | 26FS0219         | Sadia Afrin              | student_bsse1219@iit.du.ac.bd  | REG-2021-BSSE1219 | 2
+24  | BSSE1220 | 26FS0220         | Zubair Ahmed             | student_bsse1220@iit.du.ac.bd  | REG-2021-BSSE1220 | 2
+25  | BSSE1221 | 26FS0221         | Tahmidur Rahman          | student_bsse1221@iit.du.ac.bd  | REG-2021-BSSE1221 | 2
+26  | BSSE1222 | 26FS0222         | Rumana Yasmin            | student_bsse1222@iit.du.ac.bd  | REG-2021-BSSE1222 | 2
+27  | BSSE1223 | 26FS0223         | Ashikur Rahman           | student_bsse1223@iit.du.ac.bd  | REG-2021-BSSE1223 | 2
+28  | BSSE1224 | 26FS0224         | Nabila Islam             | student_bsse1224@iit.du.ac.bd  | REG-2021-BSSE1224 | 2
+29  | BSSE1225 | 26FS0225         | Hasan Mahmud             | student_bsse1225@iit.du.ac.bd  | REG-2021-BSSE1225 | 2
+30  | BSSE1226 | 26FS0226         | Tanzina Akter            | student_bsse1226@iit.du.ac.bd  | REG-2021-BSSE1226 | 2
+31  | BSSE1227 | 26FS0227         | Kazi Nazrul              | student_bsse1227@iit.du.ac.bd  | REG-2021-BSSE1227 | 2
+32  | BSSE1228 | 26FS0228         | Jannatul Ferdous         | student_bsse1228@iit.du.ac.bd  | REG-2021-BSSE1228 | 2
+33  | BSSE1229 | 26FS0229         | Shakil Ahmed             | student_bsse1229@iit.du.ac.bd  | REG-2021-BSSE1229 | 2
+34  | BSSE1230 | 26FS0230         | Mst. Marufa              | student_bsse1230@iit.du.ac.bd  | REG-2021-BSSE1230 | 2
+35  | BSSE1231 | 26FS0231         | Al Amin                  | student_bsse1231@iit.du.ac.bd  | REG-2021-BSSE1231 | 2
+36  | BSSE1232 | 26FS0232         | Tamim Iqbal              | student_bsse1232@iit.du.ac.bd  | REG-2021-BSSE1232 | 2
+37  | BSSE1233 | 26FS0233         | Mushfiqur Rahim          | student_bsse1233@iit.du.ac.bd  | REG-2021-BSSE1233 | 2
+38  | BSSE1234 | 26FS0234         | Mustafizur Rahman        | student_bsse1234@iit.du.ac.bd  | REG-2021-BSSE1234 | 2
+39  | BSSE1235 | 26FS0235         | Taskin Ahmed             | student_bsse1235@iit.du.ac.bd  | REG-2021-BSSE1235 | 2
+40  | BSSE1236 | 26FS0236         | Liton Das                | student_bsse1236@iit.du.ac.bd  | REG-2021-BSSE1236 | 2
+41  | BSSE1237 | 26FS0237         | Soumya Sarkar            | student_bsse1237@iit.du.ac.bd  | REG-2021-BSSE1237 | 2
+42  | BSSE1238 | 26FS0238         | Mehidy Hasan Miraz       | student_bsse1238@iit.du.ac.bd  | REG-2021-BSSE1238 | 2
+43  | BSSE1239 | 26FS0239         | Shoriful Islam           | student_bsse1239@iit.du.ac.bd  | REG-2021-BSSE1239 | 2
