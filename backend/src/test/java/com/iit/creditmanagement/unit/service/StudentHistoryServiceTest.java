@@ -130,7 +130,7 @@ class StudentHistoryServiceTest {
         when(gradeService.getStudentCgpa(10L)).thenReturn(BigDecimal.valueOf(4.00));
         when(feeRepository.totalUnpaidByStudent(10L)).thenReturn(BigDecimal.ZERO);
         when(feeRepository.totalPaidByStudent(10L)).thenReturn(BigDecimal.valueOf(10000));
-        when(feeRepository.totalGapFinesByStudent(10L)).thenReturn(BigDecimal.valueOf(10000));
+        when(feeRepository.totalGapFinesByStudent(10L)).thenReturn(BigDecimal.valueOf(5000));
 
         StudentHistoryResponse response = studentHistoryService.getStudentHistoryById(10L);
 
@@ -148,7 +148,7 @@ class StudentHistoryServiceTest {
         // Fall 2025 (SECOND_SEMESTER, Fall, Gap semester!) -> Roll: 25SF0204, isGap: true
         assertEquals("25SF0204", response.semesters().get(1).semesterRollId());
         assertTrue(response.semesters().get(1).isGap());
-        assertEquals(BigDecimal.valueOf(10000.0), response.semesters().get(1).gapFineAmount());
+        assertEquals(BigDecimal.valueOf(5000.0), response.semesters().get(1).gapFineAmount());
 
         // Spring 2026 (THIRD_SEMESTER, Spring) -> Roll: 26TS0204
         assertEquals("26TS0204", response.semesters().get(2).semesterRollId());
