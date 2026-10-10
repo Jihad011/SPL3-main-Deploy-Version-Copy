@@ -147,32 +147,32 @@ YY + TermCode + TermType + Batch + ClassRoll
 The active curriculum for the **Executive Master in Information Technology (EMIT)** program is organized into 3 distinct progression levels:
 
 ### First Semester (12 Credits Total - All Mandatory Core)
-| Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
-| :--- | :--- | :---: | :---: | :--- |
-| **`MITM 303`** | Advanced Computer Networks & Internetworking | 3 | Core | **Dr. Md. Shariful Islam** (Professor) |
-| **`MITM 304`** | Database Architecture and Administration | 3 | Core | **Mohammed Shoyaib** (Professor) |
-| **`MITM 310`** | Advanced Data Structures and Algorithms | 3 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
-| **`MITM 311`** | Advanced Object-Oriented Programming | 3 | Core | **Dr. B. M. Mainul Hossain** (Professor) |
+| Course ID | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
+| :---: | :---: | :--- | :---: | :---: | :--- |
+| **`13`** | **`MITM 303`** | Advanced Computer Networks & Internetworking | 3 | Core | **Dr. Md. Shariful Islam** (Professor) |
+| **`14`** | **`MITM 304`** | Database Architecture and Administration | 3 | Core | **Mohammed Shoyaib** (Professor) |
+| **`15`** | **`MITM 310`** | Advanced Data Structures and Algorithms | 3 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
+| **`16`** | **`MITM 311`** | Advanced Object-Oriented Programming | 3 | Core | **Dr. B. M. Mainul Hossain** (Professor) |
 
 ### Second Semester (12 Credits Max - Core + Technical Electives)
-| Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
-| :--- | :--- | :---: | :---: | :--- |
-| **`MITM 301`** | IT Project Management | 3 | Core | **Md. Saeed Siddik** |
-| **`MITM 305`** | Web Technology and Internet Computing | 3 | Core | **Dr. Md. Nurul Ahad Tawhid** |
-| **`MITE 435`** | Software Design Pattern | 3 | Elective | **Toukir Ahammed** |
-| **`MITE 439`** | Software Requirements Engineering and Design | 3 | Elective | **Dr. Kazi Muheymin-Us-Sakib** |
-| **`MITE 430`** | Machine Learning | 3 | Elective | Faculty Assigned |
-| **`MITE 434`** | Software Quality Assurance and Testing | 3 | Elective | Faculty Assigned |
+| Course ID | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
+| :---: | :---: | :--- | :---: | :---: | :--- |
+| **`17`** | **`MITM 301`** | IT Project Management | 3 | Core | **Md. Saeed Siddik** |
+| **`18`** | **`MITM 305`** | Web Technology and Internet Computing | 3 | Core | **Dr. Md. Nurul Ahad Tawhid** |
+| **`21`** | **`MITE 430`** | Machine Learning | 3 | Elective | **Dr. B. M. Mainul Hossain** (Professor) |
+| **`28`** | **`MITE 434`** | Software Quality Assurance and Testing | 3 | Elective | **Md. Saeed Siddik** |
+| **`30`** | **`MITE 435`** | Software Design Pattern | 3 | Elective | **Toukir Ahammed** |
+| **`29`** | **`MITE 439`** | Software Requirements Engineering and Design | 3 | Elective | **Dr. Kazi Muheymin-Us-Sakib** |
 
 ### Third Semester (12 Credits Max - Capstone + Electives)
-| Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
-| :--- | :--- | :---: | :---: | :--- |
-| **`MITM 421`** | Project for MIT / Internship | 6 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
-| **`MITE 431`** | Big Data Analytics | 3 | Elective | **Dr. B. M. Mainul Hossain** (Professor) |
-| **`MITE 441`** | Software Maintenance and Analytics | 3 | Elective | **Toukir Ahammed** |
-| **`MITE 432`** | Cryptography and Security Mechanisms | 3 | Elective | Faculty Assigned |
-| **`MITE 433`** | Cyber Security | 3 | Elective | Faculty Assigned |
-| **`MITE 436`** | Artificial Intelligence | 3 | Elective | Faculty Assigned |
+| Course ID | Course Code | Course Title | Credits | Type | Assigned Faculty Instructor |
+| :---: | :---: | :--- | :---: | :---: | :--- |
+| **`19`** | **`MITM 421`** | Project for MIT / Internship | 6 | Core | **Dr. Ahmedul Kabir** (Associate Professor) |
+| **`23`** | **`MITE 431`** | Big Data Analytics | 3 | Elective | **Dr. B. M. Mainul Hossain** (Professor) |
+| **`31`** | **`MITE 441`** | Software Maintenance and Analytics | 3 | Elective | **Toukir Ahammed** |
+| **`24`** | **`MITE 432`** | Cryptography and Security Mechanisms | 3 | Elective | Faculty Assigned |
+| **`27`** | **`MITE 433`** | Cyber Security | 3 | Elective | Faculty Assigned |
+| **`20`** | **`MITE 436`** | Artificial Intelligence | 3 | Elective | **Dr. Ahmedul Kabir** (Associate Professor) |
 
 ---
 
@@ -432,13 +432,13 @@ All database schema evolutions are versioned and reproducible in `backend/src/ma
 | **MITM 311** | Advanced Object-Oriented Programming | Dr. B. M. Mainul Hossain | `mainul@iit.du.ac.bd` | `Mainul@311` |
 
 ### Sample Student Accounts (Default Password: `Student@123`)
-| Roll No | Dynamic Term Roll (1st Sem) | Student Name | Institutional Email | Cohort / Batch |
-| :---: | :---: | :--- | :--- | :---: |
-| **1413** | **`26FS1413`** | Md. Jihad Hossain | `jihad@iit.du.ac.bd` | Batch 14 |
-| **BSSE1201** | **`26FS0201`** | Arefin Shuvo | `student_bsse1201@iit.du.ac.bd` | Batch 2 |
-| **BSSE1202** | **`26FS0202`** | Tanvir Ahmed | `student_bsse1202@iit.du.ac.bd` | Batch 2 |
-| **BSSE1203** | **`26FS0203`** | Sakib Al Hasan | `student_bsse1203@iit.du.ac.bd` | Batch 2 |
-| *BSSE1204–1239* | *Dynamic* | *(36 additional students)* | `student_bsseXXXX@iit.du.ac.bd` | Batch 2 |
+| Student ID | Roll No | Dynamic Term Roll (1st Sem) | Student Name | Institutional Email | Cohort / Batch |
+| :---: | :---: | :---: | :--- | :--- | :---: |
+| **`3`** | **1413** | **`26FS1413`** | Md. Jihad Hossain | `jihad@iit.du.ac.bd` | Batch 14 |
+| **`5`** | **BSSE1201** | **`26FS0201`** | Arefin Shuvo | `student_bsse1201@iit.du.ac.bd` | Batch 2 |
+| **`6`** | **BSSE1202** | **`26FS0202`** | Tanvir Ahmed | `student_bsse1202@iit.du.ac.bd` | Batch 2 |
+| **`7`** | **BSSE1203** | **`26FS0203`** | Sakib Al Hasan | `student_bsse1203@iit.du.ac.bd` | Batch 2 |
+| *8–43* | *BSSE1204–1239* | *Dynamic* | *(36 additional students)* | `student_bsseXXXX@iit.du.ac.bd` | Batch 2 |
 
 ---
 
