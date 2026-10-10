@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ocms-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: credit_management_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1413}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d credit_management_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ocms-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ocms-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/credit_management_db?stringtype=unspecified
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-1413}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_that_is_at_least_256_bits_long_for_spl3_prod}
+      JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - ocms-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ocms-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "4200:80"
+    networks:
+      - ocms-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  ocms-network:
+    driver: bridge
