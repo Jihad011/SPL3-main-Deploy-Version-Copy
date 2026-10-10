@@ -200,9 +200,12 @@ function computeGradeLetter(total: number): string {
             </td>
             <td>
               <ng-container *ngIf="row.isEditing; else viewMidterm">
-                <input type="number" class="mark-input font-mono" [(ngModel)]="row.midtermInput"
+                <input type="number" class="mark-input font-mono"
+                       [class.mark-input-invalid]="isMidtermInvalid(row)"
+                       [(ngModel)]="row.midtermInput"
                        min="0" max="40" step="0.5" placeholder="—"
                        (ngModelChange)="onMarkChange(row)" />
+                <div class="mark-error-msg" *ngIf="isMidtermInvalid(row)">Max 40</div>
               </ng-container>
               <ng-template #viewMidterm>
                 <span class="numeric font-mono">{{ row.midtermInput !== null ? row.midtermInput : '—' }}</span>
@@ -210,9 +213,12 @@ function computeGradeLetter(total: number): string {
             </td>
             <td>
               <ng-container *ngIf="row.isEditing; else viewFinal">
-                <input type="number" class="mark-input font-mono" [(ngModel)]="row.finalInput"
+                <input type="number" class="mark-input font-mono"
+                       [class.mark-input-invalid]="isFinalInvalid(row)"
+                       [(ngModel)]="row.finalInput"
                        min="0" max="60" step="0.5" placeholder="—"
                        (ngModelChange)="onMarkChange(row)" />
+                <div class="mark-error-msg" *ngIf="isFinalInvalid(row)">Max 60</div>
               </ng-container>
               <ng-template #viewFinal>
                 <span class="numeric font-mono">{{ row.finalInput !== null ? row.finalInput : '—' }}</span>
@@ -223,6 +229,7 @@ function computeGradeLetter(total: number): string {
                       [class.total-valid]="!isInvalid(row)"
                       [class.total-invalid]="isInvalid(row)">
                 {{ (row.midtermInput || 0) + (row.finalInput || 0) }}
+                <div class="mark-error-msg" *ngIf="isInvalid(row)">Invalid Total</div>
               </strong>
               <span *ngIf="row.midtermInput === null || row.finalInput === null" class="text-muted">—</span>
             </td>
@@ -538,6 +545,31 @@ function computeGradeLetter(total: number): string {
       background: linear-gradient(135deg, #0456b8, #1d4ed8) !important;
       color: #ffffff !important;
     }
+    .btn-save-action:disabled {
+      opacity: 0.45 !important;
+      cursor: not-allowed !important;
+      background: #64748b !important;
+      box-shadow: none !important;
+    }
+    .mark-input-invalid {
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.12) !important;
+      color: #ef4444 !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+    }
+    .mark-error-msg {
+      color: #ef4444;
+      font-size: 0.65rem;
+      font-weight: 700;
+      margin-top: 2px;
+      text-align: center;
+    }
+    .total-invalid {
+      color: #ef4444 !important;
+    }
+    .row-invalid {
+      background: rgba(239, 68, 68, 0.04) !important;
+    }
     .grade-badge {
       display: inline-block;
       padding: 0.2rem 0.5rem;
@@ -776,6 +808,14 @@ export class GradeEntryComponent implements OnInit {
   isInvalid(row: GradeRow): boolean {
     return (row.midtermInput !== null && (row.midtermInput < 0 || row.midtermInput > 40)) ||
            (row.finalInput   !== null && (row.finalInput   < 0 || row.finalInput   > 60));
+  }
+
+  isMidtermInvalid(row: GradeRow): boolean {
+    return row.midtermInput !== null && (row.midtermInput < 0 || row.midtermInput > 40);
+  }
+
+  isFinalInvalid(row: GradeRow): boolean {
+    return row.finalInput !== null && (row.finalInput < 0 || row.finalInput > 60);
   }
 
   liveGrade(row: GradeRow): string | null {
