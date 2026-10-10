@@ -11,21 +11,6 @@ jobs:
     name: Backend Test & Build (Spring Boot 3 + Java 21)
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: credit_management_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -40,9 +25,7 @@ jobs:
       - name: Run Backend Unit & Integration Tests
         working-directory: ./backend
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/credit_management_db
-          DB_USERNAME: postgres
-          DB_PASSWORD: password
+          CORS_ORIGINS: http://localhost:4200
           JWT_SECRET: super_secret_jwt_key_that_is_at_least_256_bits_long_for_spl3_testing
         run: mvn clean test -B
 

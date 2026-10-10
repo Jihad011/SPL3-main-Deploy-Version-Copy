@@ -11,6 +11,8 @@
 *.suo
 *.user
 
-# OS
-.DS_Store
-Thumbs.db
+# Logs & Crash Dumps
+*.log
+hs_err_pid*
+replay_pid*
+Error.txt
